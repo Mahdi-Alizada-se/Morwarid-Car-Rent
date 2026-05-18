@@ -2,26 +2,26 @@
 
 @section('page-title', __('Add Vehicle'))
 @section('breadcrumb')
-    <a href="{{ route('admin.vehicles.index') }}" class="hover:text-gray-700">{{ __('Vehicles') }}</a>
+    <a href="{{ route('admin.vehicles.index') }}" class="hover:text-gray-700">{{ __('common.nav_vehicles') }}</a>
     <span>/</span>
     <span class="text-gray-900 font-medium">{{ __('Add New') }}</span>
 @endsection
 
 @section('content')
     <div class="max-w-5xl" x-data="{
-            images: [],
-            rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
-            addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
-            removeRule(i) { this.rules.splice(i, 1) },
-            handleImages(event) {
-                this.images = [];
-                Array.from(event.target.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
-                    reader.readAsDataURL(file);
-                });
-            }
-         }">
+                images: [],
+                rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
+                addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
+                removeRule(i) { this.rules.splice(i, 1) },
+                handleImages(event) {
+                    this.images = [];
+                    Array.from(event.target.files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
+                        reader.readAsDataURL(file);
+                    });
+                }
+             }">
 
         <form method="POST" action="{{ route('admin.vehicles.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
@@ -78,7 +78,8 @@
                             <option value="">{{ __('Select category') }}</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
-                                    {{ $cat->name }}</option>
+                                    {{ $cat->name }}
+                                </option>
                             @endforeach
                         </select>
                         @error('category_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -123,7 +124,8 @@
                             <option value="diesel" {{ old('fuel_type') === 'diesel' ? 'selected' : '' }}>{{ __('Diesel') }}
                             </option>
                             <option value="electric" {{ old('fuel_type') === 'electric' ? 'selected' : '' }}>
-                                {{ __('Electric') }}</option>
+                                {{ __('Electric') }}
+                            </option>
                             <option value="hybrid" {{ old('fuel_type') === 'hybrid' ? 'selected' : '' }}>{{ __('Hybrid') }}
                             </option>
                         </select>
@@ -135,7 +137,8 @@
                         <select name="transmission"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="automatic" {{ old('transmission') === 'automatic' ? 'selected' : '' }}>
-                                {{ __('Automatic') }}</option>
+                                {{ __('Automatic') }}
+                            </option>
                             <option value="manual" {{ old('transmission') === 'manual' ? 'selected' : '' }}>{{ __('Manual') }}
                             </option>
                         </select>
@@ -147,9 +150,11 @@
                         <select name="status"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="available" {{ old('status', 'available') === 'available' ? 'selected' : '' }}>
-                                {{ __('Available') }}</option>
+                                {{ __('Available') }}
+                            </option>
                             <option value="maintenance" {{ old('status') === 'maintenance' ? 'selected' : '' }}>
-                                {{ __('Maintenance') }}</option>
+                                {{ __('Maintenance') }}
+                            </option>
                         </select>
                     </div>
 

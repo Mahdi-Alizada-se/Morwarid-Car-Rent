@@ -161,5 +161,8 @@ return [
     'of' => 'از',
     'next' => 'بعدی',
     'calculating' => 'در حال محاسبه',
+    'paid' => 'Paid',
+    'review' => 'Review',
+    'refresh' => 'Refresh',
 
 ];

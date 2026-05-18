@@ -14,28 +14,28 @@
         </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="{
-                    currentImage: {{ $vehicle->thumbnail ? '\'' . asset('storage/' . $vehicle->thumbnail) . '\'' : '\'\''}},
-                    images: @js(
-                        collect($vehicle->images)->map(fn($i) => asset('storage/' . $i->path))->prepend($vehicle->thumbnail ? asset('storage/' . $vehicle->thumbnail) : null)->filter()->values()
-                    ),
-                    selectedFrom: '{{ request('date_from', '') }}',
-                    selectedTo: '{{ request('date_to', '') }}',
-                    pricing: null,
-                    loadingPrice: false,
-                    async fetchPrice() {
-                        if (!this.selectedFrom || !this.selectedTo) return;
-                        this.loadingPrice = true;
-                        try {
-                            const res = await fetch(`/api/v1/availability/check`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                                body: JSON.stringify({ vehicle_id: {{ $vehicle->id }}, pickup_date: this.selectedFrom, return_date: this.selectedTo })
-                            });
-                            this.pricing = await res.json();
-                        } catch(e) {}
-                        this.loadingPrice = false;
-                    }
-                 }" x-init="if (selectedFrom && selectedTo) fetchPrice()">
+                        currentImage: {{ $vehicle->thumbnail ? '\'' . asset('storage/' . $vehicle->thumbnail) . '\'' : '\'\''}},
+                        images: @js(
+                            collect($vehicle->images)->map(fn($i) => asset('storage/' . $i->path))->prepend($vehicle->thumbnail ? asset('storage/' . $vehicle->thumbnail) : null)->filter()->values()
+                        ),
+                        selectedFrom: '{{ request('date_from', '') }}',
+                        selectedTo: '{{ request('date_to', '') }}',
+                        pricing: null,
+                        loadingPrice: false,
+                        async fetchPrice() {
+                            if (!this.selectedFrom || !this.selectedTo) return;
+                            this.loadingPrice = true;
+                            try {
+                                const res = await fetch(`/api/v1/availability/check`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                    body: JSON.stringify({ vehicle_id: {{ $vehicle->id }}, pickup_date: this.selectedFrom, return_date: this.selectedTo })
+                                });
+                                this.pricing = await res.json();
+                            } catch(e) {}
+                            this.loadingPrice = false;
+                        }
+                     }" x-init="if (selectedFrom && selectedTo) fetchPrice()">
 
             {{-- ─── Left: Images + Specs ─────────────────────────────────────────── --}}
             <div class="lg:col-span-2 space-y-6">
@@ -234,8 +234,8 @@
                             <input type="hidden" name="pickup_date" x-model="selectedFrom" :value="selectedFrom">
                             <input type="hidden" name="return_date" x-model="selectedTo" :value="selectedTo">
                             <button type="submit" :disabled="!pricing?.available || !selectedFrom || !selectedTo" :class="pricing?.available && selectedFrom && selectedTo
-                                                    ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
-                                                    : 'bg-gray-300 cursor-not-allowed'"
+                                                            ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
+                                                            : 'bg-gray-300 cursor-not-allowed'"
                                 class="w-full py-3 text-white text-sm font-bold rounded-lg transition-colors">
                                 {{ __('bookings.confirm_booking') }}
                             </button>
@@ -247,7 +247,8 @@
                         </a>
                         <p class="text-xs text-center text-gray-400 mt-2">
                             {{ __("Don't have an account?") }}
-                            <a href="{{ route('register') }}" class="text-indigo-600 hover:underline">{{ __('Register') }}</a>
+                            <a href="{{ route('register') }}"
+                                class="text-indigo-600 hover:underline">{{ __('common.register') }}</a>
                         </p>
                     @endauth
 

@@ -2,7 +2,7 @@
 
 @section('page-title', __('Edit Vehicle'))
 @section('breadcrumb')
-    <a href="{{ route('admin.vehicles.index') }}" class="hover:text-gray-700">{{ __('Vehicles') }}</a>
+    <a href="{{ route('admin.vehicles.index') }}" class="hover:text-gray-700">{{ __('common.nav_vehicles') }}</a>
     <span>/</span>
     <span class="text-gray-900 font-medium">{{ $vehicle->full_name }}</span>
 @endsection

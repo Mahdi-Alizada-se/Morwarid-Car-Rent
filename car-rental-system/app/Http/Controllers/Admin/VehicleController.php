@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Intervention\Image\Laravel\Facades\Image;
+
 
 class VehicleController extends Controller
 {
@@ -210,9 +210,23 @@ class VehicleController extends Controller
 
     private function processAndStore($file): string
     {
-        $filename = 'vehicles/' . uniqid() . '.webp';
-        $image = Image::read($file)->cover(800, 600)->toWebp(85);
-        Storage::disk('public')->put($filename, $image);
+        // Create directory if it does not exist
+        $directory = storage_path('app/public/vehicles');
+        if (!file_exists($directory)) {
+            mkdir($directory, 0775, true);
+        }
+
+        // Get original extension
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = 'vehicles/' . uniqid() . '.' . $extension;
+
+        // Save file directly without image processing
+        Storage::disk('public')->putFileAs(
+            'vehicles',
+            $file,
+            basename($filename)
+        );
+
         return $filename;
     }
 }

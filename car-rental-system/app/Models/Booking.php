@@ -9,6 +9,62 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $reference_code
+ * @property int $customer_id
+ * @property int $vehicle_id
+ * @property \Illuminate\Support\Carbon $pickup_date
+ * @property \Illuminate\Support\Carbon $return_date
+ * @property \Illuminate\Support\Carbon|null $actual_return_date
+ * @property string|null $pickup_location
+ * @property string|null $return_location
+ * @property string $status
+ * @property numeric $total_amount
+ * @property string $currency
+ * @property string|null $payment_method
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $cancelled_at
+ * @property string|null $cancellation_reason
+ * @property numeric|null $cancellation_fee
+ * @property bool $cancellation_fee_paid
+ * @property \Illuminate\Support\Carbon|null $booked_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $customer
+ * @property-read int $duration_in_days
+ * @property-read \App\Models\Payment|null $latestPayment
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VehicleLocation> $locations
+ * @property-read int|null $locations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $payments
+ * @property-read int|null $payments_count
+ * @property-read \App\Models\Vehicle|null $vehicle
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereActualReturnDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereBookedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationFeePaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancelledAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePaymentMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePickupDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePickupLocation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReferenceCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReturnDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReturnLocation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereTotalAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereVehicleId($value)
+ * @mixin \Eloquent
+ */
 class Booking extends Model
 {
     use HasFactory;
@@ -45,6 +101,9 @@ class Booking extends Model
         'cancelled_at',
         'cancellation_reason',
         'payment_method',
+        'cancellation_fee',        // ← ADD
+        'cancellation_fee_paid',   // ← ADD
+        'booked_at',               // ← ADD
     ];
     protected function casts(): array
     {
@@ -53,7 +112,10 @@ class Booking extends Model
             'return_date' => 'datetime',
             'actual_return_date' => 'datetime',
             'cancelled_at' => 'datetime',
+            'booked_at' => 'datetime',       // ← ADD
             'total_amount' => 'decimal:2',
+            'cancellation_fee' => 'decimal:2',      // ← ADD
+            'cancellation_fee_paid' => 'boolean',        // ← ADD
         ];
     }
 
@@ -81,8 +143,50 @@ class Booking extends Model
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
+        // Always cancellable — fee may apply after 5 hours
+        return true;
     }
+
+    public function hasCancellationFee(): bool
+    {
+        $reference = $this->booked_at ?? $this->created_at;
+
+        return $reference
+            && now()->diffInHours($reference) > 5
+            && $this->status !== 'cancelled';
+    }
+
+    public function getCancellationFeeAmount(): float
+    {
+        $rule = $this->vehicle
+                ?->pricingRules()
+            ->where('type', 'daily')
+            ->where('is_active', true)
+            ->first();
+
+        return $rule ? (float) $rule->base_rate : 0.0;
+    }
+
+    // public function hasCancellationFee(): bool
+    // {
+    //     if (!$this->booked_at) {
+    //         return false;
+    //     }
+
+    //     return (now()->diffInHours($this->booked_at) > 5)
+    //         && $this->status !== 'cancelled';
+    // }
+
+    // public function getCancellationFeeAmount(): float
+    // {
+    //     $rule = $this->vehicle
+    //             ?->pricingRules()
+    //         ->where('type', 'daily')
+    //         ->where('is_active', true)
+    //         ->first();
+
+    //     return $rule ? (float) $rule->base_rate : 0.0;
+    // }
 
     public function cancel(string $reason = null): bool
     {

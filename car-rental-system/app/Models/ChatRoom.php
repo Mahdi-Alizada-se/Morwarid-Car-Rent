@@ -8,6 +8,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property int $customer_id
+ * @property \Illuminate\Support\Carbon|null $last_message_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $customer
+ * @property-read \App\Models\Message|null $latestMessage
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Message> $messages
+ * @property-read int|null $messages_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom whereLastMessageAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ChatRoom whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class ChatRoom extends Model
 {
     use HasFactory;

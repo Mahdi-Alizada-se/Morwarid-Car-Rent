@@ -162,4 +162,17 @@ return [
     'category_not_exist' => 'The selected category does not exist.',
     'year_min' => 'Vehicle year must be 1990 or later.',
 
+
+    'available_vehicles' => 'Available Vehicles',
+    'browse_subtitle' => 'Choose from our fleet of quality vehicles',
+    'search_placeholder' => 'Search by brand, model...',
+    'all_categories' => 'All Categories',
+    'all_transmissions' => 'All Transmissions',
+    'no_vehicles_found' => 'No vehicles found',
+    'try_different_filters' => 'Try different search filters',
+    'book_now' => 'Book Now',
+    'not_available' => 'Not Available',
+    'daily_rate' => 'Daily Rate',
+    'color' => 'Color',
+    'license_plate' => 'License Plate',
 ];

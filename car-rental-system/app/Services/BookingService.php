@@ -56,7 +56,8 @@ class BookingService
                 'total_amount' => $priceData['amount'],
                 'currency' => $priceData['currency'],
                 'notes' => $data['notes'] ?? null,
-                'payment_method' => $data['payment_method'] ?? 'counter',
+                'booked_at' => now(),
+
             ]);
 
             return $booking;
@@ -110,19 +111,48 @@ class BookingService
     public function cancelBooking(Booking $booking, string $reason): void
     {
         DB::transaction(function () use ($booking, $reason) {
-            $wasActive = $booking->status === Booking::STATUS_ACTIVE;
 
-            $booking->update([
-                'status' => Booking::STATUS_CANCELLED,
-                'cancelled_at' => now(),
-                'cancellation_reason' => $reason,
-            ]);
+            $hoursElapsed = now()->diffInHours(
+                $booking->booked_at ?? $booking->created_at
+            );
 
-            // Free the vehicle only if rental was active
-            if ($wasActive) {
-                $booking->vehicle->update([
-                    'status' => 'available',
-                ]);
+            if ($hoursElapsed > 5) {
+                // ─── Late Cancellation — fee applies ──────────────────────────────
+                $fee = $booking->getCancellationFeeAmount();
+
+                $booking->cancellation_fee = $fee;
+                $booking->cancellation_fee_paid = false;
+                $booking->status = Booking::STATUS_CANCELLED;
+                $booking->cancellation_reason = $reason;
+                $booking->cancelled_at = now();
+                $booking->save();
+
+                // Free the vehicle if it was booked
+                if ($booking->vehicle?->status === 'booked') {
+                    $booking->vehicle->update(['status' => 'available']);
+                }
+
+                // Notify customer with fee details
+                $booking->customer->notify(
+                    new \App\Notifications\BookingCancelledWithFeeNotification($booking)
+                );
+
+            } else {
+                // ─── Free Cancellation ────────────────────────────────────────────
+                $booking->status = Booking::STATUS_CANCELLED;
+                $booking->cancellation_reason = $reason;
+                $booking->cancelled_at = now();
+                $booking->save();
+
+                // Free the vehicle if it was booked
+                if ($booking->vehicle?->status === 'booked') {
+                    $booking->vehicle->update(['status' => 'available']);
+                }
+
+                // Notify customer — free cancellation
+                $booking->customer->notify(
+                    new \App\Notifications\BookingCancelledNotification($booking)
+                );
             }
         });
     }

@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('page-title', __('Vehicles'))
+@section('page-title', __('common.nav_vehicles'))
 @section('breadcrumb')
-    <span class="text-gray-900 font-medium">{{ __('Vehicles') }}</span>
+    <span class="text-gray-900 font-medium">{{ __('common.nav_vehicles') }}</span>
 @endsection
 
 @section('content')

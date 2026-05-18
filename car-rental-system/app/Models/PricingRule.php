@@ -7,6 +7,39 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $vehicle_id
+ * @property string $type
+ * @property numeric $base_rate
+ * @property string $currency
+ * @property \Illuminate\Support\Carbon|null $date_from
+ * @property \Illuminate\Support\Carbon|null $date_to
+ * @property numeric $multiplier
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read float $effective_rate
+ * @property-read \App\Models\Vehicle|null $vehicle
+ * @method static Builder<static>|PricingRule active()
+ * @method static Builder<static>|PricingRule applicableOn(string $date)
+ * @method static Builder<static>|PricingRule newModelQuery()
+ * @method static Builder<static>|PricingRule newQuery()
+ * @method static Builder<static>|PricingRule ofType(string $type)
+ * @method static Builder<static>|PricingRule query()
+ * @method static Builder<static>|PricingRule whereBaseRate($value)
+ * @method static Builder<static>|PricingRule whereCreatedAt($value)
+ * @method static Builder<static>|PricingRule whereCurrency($value)
+ * @method static Builder<static>|PricingRule whereDateFrom($value)
+ * @method static Builder<static>|PricingRule whereDateTo($value)
+ * @method static Builder<static>|PricingRule whereId($value)
+ * @method static Builder<static>|PricingRule whereIsActive($value)
+ * @method static Builder<static>|PricingRule whereMultiplier($value)
+ * @method static Builder<static>|PricingRule whereType($value)
+ * @method static Builder<static>|PricingRule whereUpdatedAt($value)
+ * @method static Builder<static>|PricingRule whereVehicleId($value)
+ * @mixin \Eloquent
+ */
 class PricingRule extends Model
 {
     use HasFactory;

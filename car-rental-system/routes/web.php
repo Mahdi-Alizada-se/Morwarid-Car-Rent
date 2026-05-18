@@ -40,6 +40,7 @@ Route::get('/vehicles/{vehicle}', [\App\Http\Controllers\Customer\VehicleControl
 Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
     Route::get('/dashboard', function () {
         if (auth()->user()->isAdmin()) {
             return redirect()->route('admin.dashboard');
@@ -47,13 +48,16 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Booking confirmed page — accessible by both customer and admin
+    Route::get('/bookings/{booking}/confirmed', [\App\Http\Controllers\Customer\BookingController::class, 'confirmed'])
+        ->name('bookings.confirmed');
+
     // ─── Admin Area ────────────────────────────────────────────────────────────
 
     Route::middleware('ensure.admin')
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
-
 
             // Dashboard
             Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])
@@ -77,15 +81,6 @@ Route::middleware('auth')->group(function () {
             Route::patch('vehicles/{vehicle}/toggle-status', [\App\Http\Controllers\Admin\VehicleController::class, 'toggleStatus'])
                 ->name('vehicles.toggle-status');
 
-            // Vehicles CRUD
-            Route::resource('vehicles', \App\Http\Controllers\Admin\VehicleController::class);
-
-            // Toggle available ↔ maintenance
-            Route::patch(
-                'vehicles/{vehicle}/toggle-status',
-                [\App\Http\Controllers\Admin\VehicleController::class, 'toggleStatus']
-            )->name('vehicles.toggle-status');
-
             // Bookings
             Route::get('bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])
                 ->name('bookings.index');
@@ -95,6 +90,7 @@ Route::middleware('auth')->group(function () {
                 ->name('bookings.update-status');
             Route::get('bookings/calendar', [\App\Http\Controllers\Admin\BookingController::class, 'calendarData'])
                 ->name('bookings.calendar');
+
             // Payments
             Route::get('payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])
                 ->name('payments.index');
@@ -119,29 +115,24 @@ Route::middleware('auth')->group(function () {
 
         });
 
-    // ─── Customer Area ─────────────────────────────────────────────────────────────
+    // ─── Customer Area ─────────────────────────────────────────────────────────
 
     Route::middleware('ensure.customer')
         ->name('customer.')
         ->group(function () {
 
-
-
-
+            // Bookings
             Route::get('/my-bookings', [\App\Http\Controllers\Customer\BookingController::class, 'index'])
                 ->name('bookings.index');
-
             Route::get('/bookings/create', [\App\Http\Controllers\Customer\BookingController::class, 'create'])
                 ->name('bookings.create');
-
             Route::post('/bookings', [\App\Http\Controllers\Customer\BookingController::class, 'store'])
                 ->name('bookings.store');
-
             Route::get('/bookings/{booking}', [\App\Http\Controllers\Customer\BookingController::class, 'show'])
                 ->name('bookings.show');
-
             Route::patch('/bookings/{booking}/cancel', [\App\Http\Controllers\Customer\BookingController::class, 'cancel'])
                 ->name('bookings.cancel');
+
             // Payments
             Route::get('/payments/{booking}/checkout', [\App\Http\Controllers\Customer\PaymentController::class, 'checkout'])
                 ->name('payments.checkout');
@@ -149,11 +140,15 @@ Route::middleware('auth')->group(function () {
                 ->name('payments.status');
             Route::post('/payments/counter', [\App\Http\Controllers\Customer\PaymentController::class, 'counter'])
                 ->name('payments.counter');
+            Route::post('/payments/bank-transfer', [\App\Http\Controllers\Customer\PaymentController::class, 'initiateBankTransfer'])
+                ->name('payments.bank-transfer');
+
         });
 
 });
 
 // ─── Language Switcher ─────────────────────────────────────────────────────────
+
 Route::post('/language/switch', function () {
     $locale = request('locale');
     $supported = ['en', 'fa'];
@@ -161,7 +156,6 @@ Route::post('/language/switch', function () {
     if (in_array($locale, $supported)) {
         session(['locale' => $locale]);
 
-        // If user is logged in, save to their profile too
         if (auth()->check()) {
             auth()->user()->update(['locale' => $locale]);
         }

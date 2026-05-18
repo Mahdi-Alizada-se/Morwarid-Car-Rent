@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
+
 class VehicleController extends Controller
 {
     public function __construct(
@@ -294,9 +295,21 @@ class VehicleController extends Controller
 
     private function uploadImage($file): string
     {
-        $filename = 'vehicles/img_' . uniqid() . '.webp';
-        $image = Image::read($file)->cover(800, 600)->toWebp(85);
-        Storage::disk('public')->put($filename, $image);
+        // Create directory if it does not exist
+        $directory = storage_path('app/public/vehicles');
+        if (!file_exists($directory)) {
+            mkdir($directory, 0775, true);
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = 'vehicles/' . uniqid() . '.' . $extension;
+
+        Storage::disk('public')->putFileAs(
+            'vehicles',
+            $file,
+            basename($filename)
+        );
+
         return $filename;
     }
 }

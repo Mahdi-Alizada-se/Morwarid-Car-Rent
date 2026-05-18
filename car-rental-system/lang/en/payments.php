@@ -91,4 +91,15 @@ return [
     'confirmed_by' => 'Confirmed By',
     'counter_selected' => 'Pay at counter selected. Please pay when you pick up your vehicle.',
 
+    'counter_step1' => 'Complete your booking now — no payment needed yet',
+    'counter_step2' => 'Come to',
+    'counter_step3' => 'Pay',
+    'counter_step4' => 'Receive your vehicle keys and drive away!',
+    'bank_step1' => 'Complete your booking now',
+    'bank_step2' => 'Transfer',
+    'bank_step3' => 'Take a clear photo of your bank receipt',
+    'bank_step4' => 'Upload the receipt photo on the next screen',
+    'bank_step5' => 'Wait for admin confirmation (usually within 2 hours)',
+    'select_bank_transfer' => 'Book Now — Bank Transfer',
+
 ];

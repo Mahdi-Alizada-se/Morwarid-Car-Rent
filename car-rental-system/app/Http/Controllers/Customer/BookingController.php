@@ -43,8 +43,8 @@ class BookingController extends Controller
             );
 
             return redirect()
-                ->route('customer.bookings.show', $booking)
-                ->with('success', __('Booking created successfully.'));
+                ->route('bookings.confirmed', $booking)
+                ->with('success', __('bookings.created_successfully'));
 
         } catch (BookingConflictException $e) {
             return back()
@@ -103,5 +103,32 @@ class BookingController extends Controller
         return redirect()
             ->route('customer.bookings.index')
             ->with('success', __('Booking cancelled successfully.'));
+    }
+
+
+    // ─── Confirmed Page ───────────────────────────────────────────────────────────
+
+    public function confirmed(Booking $booking): View
+    {
+        // Check ownership — customer can only see their own, admin can see all
+        if (auth()->id() !== $booking->customer_id && !auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        $booking->load([
+            'customer',
+            'vehicle.category',
+            'vehicle.pricingRules',
+            'payments',
+        ]);
+
+        $dailyRate = $booking->vehicle
+            ?->pricingRules
+            ->where('type', 'daily')
+            ->where('is_active', true)
+            ->first()
+                ?->base_rate ?? 0;
+
+        return view('bookings.confirmed', compact('booking', 'dailyRate'));
     }
 }

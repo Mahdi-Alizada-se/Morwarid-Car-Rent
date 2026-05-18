@@ -100,21 +100,21 @@
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">{{ __('common.my_bookings') }}</a>
                                 @if(auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}"
-                                        class="block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-50">{{ __('Admin Panel') }}</a>
+                                        class="block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-50">{{ __('common.admin_panel') }}</a>
                                 @endif
                                 <hr class="my-1 border-gray-100">
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">{{ __('Logout') }}</button>
+                                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">{{ __('common.logout') }}</button>
                                 </form>
                             </div>
                         </div>
                     @else
                         <a href="{{ route('login') }}"
-                            class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">{{ __('Login') }}</a>
+                            class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">{{ __('common.login') }}</a>
                         <a href="{{ route('register') }}"
-                            class="text-sm font-medium bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">{{ __('Register') }}</a>
+                            class="text-sm font-medium bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">{{ __('common.register') }}</a>
                     @endauth
                 </div>
 
@@ -248,7 +248,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">{{ __('Contact') }}</h4>
+                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">{{ __('common.nav_contact') }}</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
                         <li>{{ __('Kabul, Afghanistan') }}</li>
                         <li>info@carrental.com</li>

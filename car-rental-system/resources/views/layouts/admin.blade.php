@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }} — {{ __('Admin Panel') }}</title>
+    <title>{{ config('app.name') }} — {{ __('common.admin_panel') }}</title>
 
     {{-- Tailwind CSS CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -110,7 +110,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    {{ __('GPS Tracking') }}
+                    {{ __('common.nav_gps_tracking') }}
                 </a>
 
                 <a href="#" class="sidebar-link">
@@ -118,7 +118,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    {{ __('Reports') }}
+                    {{ __('common.nav_reports') }}
                 </a>
             </nav>
 
@@ -131,12 +131,12 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500 truncate">{{ __('Administrator') }}</p>
+                        <p class="text-xs text-gray-500 truncate">{{ __('common.administrator') }}</p>
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors"
-                            title="{{ __('Logout') }}">
+                            title="{{ __('common.logout') }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -164,7 +164,7 @@
                 </button>
 
                 <div class="flex-1">
-                    <h1 class="text-lg font-semibold text-gray-900">@yield('page-title', __('Dashboard'))</h1>
+                    <h1 class="text-lg font-semibold text-gray-900">@yield('page-title', __('common.dashboard'))</h1>
                 </div>
 
                 {{-- Language Switcher --}}
@@ -193,7 +193,8 @@
 
                 {{-- Breadcrumb --}}
                 <nav class="hidden md:flex items-center gap-2 text-sm text-gray-500">
-                    <a href="{{ route('admin.dashboard') }}" class="hover:text-gray-700">{{ __('Admin') }}</a>
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="hover:text-gray-700">{{ __('common.admin_panel') }}</a>
                     @hasSection('breadcrumb')
                         <span>/</span>
                         @yield('breadcrumb')
