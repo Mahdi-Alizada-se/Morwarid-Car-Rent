@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\NewChatMessage;
 use App\Http\Controllers\Controller;
 use App\Models\ChatRoom;
 use App\Models\Message;
@@ -24,7 +25,7 @@ class ChatController extends Controller
         $user = auth()->user();
         $room = $this->chatService->getOrCreateRoom($user);
 
-        $messages = Message::with('sender')
+        $messages = Message::with('sender:id,name,role')
             ->where('chat_room_id', $room->id)
             ->latest()
             ->limit(30)
@@ -32,10 +33,10 @@ class ChatController extends Controller
             ->reverse()
             ->values();
 
-        // Mark messages as read
         $this->chatService->markAsRead($room, $user);
 
         return response()->json([
+            'success' => true,
             'room' => [
                 'id' => $room->id,
                 'last_message_at' => $room->last_message_at?->diffForHumans(),
@@ -44,55 +45,72 @@ class ChatController extends Controller
         ]);
     }
 
-    // ─── Admin: All Rooms ─────────────────────────────────────────────────────
+    // ─── Rooms ────────────────────────────────────────────────────────────────
 
     public function rooms(Request $request): JsonResponse
     {
-        $rooms = ChatRoom::with(['customer', 'latestMessage.sender'])
-            ->orderByDesc('last_message_at')
-            ->get()
-            ->map(fn($room) => [
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            $rooms = ChatRoom::with(['customer:id,name,email'])
+                ->withCount([
+                    'messages as unread_count' => fn($q) =>
+                        $q->where('is_read', false)
+                            ->whereHas(
+                                'sender',
+                                fn($sq) =>
+                                $sq->where('role', 'customer')
+                            )
+                ])
+                ->with(['lastMessage.sender:id,name,role'])
+                ->orderByDesc('last_message_at')
+                ->get();
+        } else {
+            $rooms = ChatRoom::with(['customer:id,name,email'])
+                ->where('customer_id', $user->id)
+                ->with(['lastMessage.sender:id,name,role'])
+                ->get();
+        }
+
+        return response()->json([
+            'success' => true,
+            'rooms' => $rooms->map(fn($room) => [
                 'id' => $room->id,
                 'customer' => [
                     'id' => $room->customer?->id,
                     'name' => $room->customer?->name,
                     'email' => $room->customer?->email,
-                    'avatar' => $room->customer?->avatar
-                        ? asset('storage/' . $room->customer->avatar)
-                        : null,
                 ],
-                'last_message' => $room->latestMessage
-                    ? [
-                        'body' => $room->latestMessage->body,
-                        'sender' => $room->latestMessage->sender?->name,
-                        'created_at' => $room->latestMessage->created_at->diffForHumans(),
-                    ]
-                    : null,
-                'unread_count' => $room->getUnreadCountFor(auth()->id()),
+                'last_message' => $room->lastMessage ? [
+                    'body' => $room->lastMessage->body,
+                    'sender' => $room->lastMessage->sender?->name,
+                    'is_admin' => $room->lastMessage->sender?->role === 'admin',
+                    'created_at' => $room->lastMessage->created_at->diffForHumans(),
+                ] : null,
+                'unread_count' => $room->unread_count ?? 0,
                 'last_message_at' => $room->last_message_at?->diffForHumans(),
-            ]);
-
-        return response()->json(['rooms' => $rooms]);
+            ]),
+        ]);
     }
 
-    // ─── Get Messages (Cursor Paginated) ──────────────────────────────────────
+    // ─── Get Messages ─────────────────────────────────────────────────────────
 
     public function messages(Request $request, ChatRoom $chatRoom): JsonResponse
     {
         $user = auth()->user();
 
-        // Customer can only access their own room
         if ($user->isCustomer() && $chatRoom->customer_id !== $user->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
-        $messages = Message::with('sender')
+        $messages = Message::with('sender:id,name,role')
             ->where('chat_room_id', $chatRoom->id)
             ->latest()
             ->cursorPaginate(20);
 
         return response()->json([
-            'messages' => collect($messages->items())
+            'success' => true,
+            'data' => collect($messages->items())
                 ->reverse()
                 ->values()
                 ->map(fn($m) => $this->formatMessage($m)),
@@ -106,9 +124,9 @@ class ChatController extends Controller
     {
         $user = auth()->user();
 
-        // Customer can only message in their own room
+        // Customer can only send to their own room
         if ($user->isCustomer() && $chatRoom->customer_id !== $user->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
         $request->validate([
@@ -116,15 +134,33 @@ class ChatController extends Controller
             'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,gif', 'max:5120'],
         ]);
 
-        $message = $this->chatService->sendMessage(
-            $chatRoom,
-            $user,
-            $request->body ?? '',
-            $request->file('attachment')
-        );
+        $attachmentPath = null;
+
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('chat', 'public');
+        }
+
+        // Create message
+        $message = Message::create([
+            'chat_room_id' => $chatRoom->id,
+            'sender_id' => $user->id,
+            'body' => $request->body ?? '',
+            'is_read' => false,
+            'attachment_path' => $attachmentPath,
+        ]);
+
+        // Update last message timestamp
+        $chatRoom->update(['last_message_at' => now()]);
+
+        // Load sender for broadcast
+        $message->load('sender:id,name,role');
+
+        // Broadcast to channel
+        broadcast(new NewChatMessage($message))->toOthers();
 
         return response()->json([
-            'message' => $this->formatMessage($message),
+            'success' => true,
+            'data' => $this->formatMessage($message),
         ], 201);
     }
 
@@ -135,12 +171,12 @@ class ChatController extends Controller
         $user = auth()->user();
 
         if ($user->isCustomer() && $chatRoom->customer_id !== $user->id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
         $this->chatService->markAsRead($chatRoom, $user);
 
-        return response()->json(['message' => 'Messages marked as read.']);
+        return response()->json(['success' => true, 'message' => 'Messages marked as read.']);
     }
 
     // ─── Helper ───────────────────────────────────────────────────────────────
@@ -151,19 +187,14 @@ class ChatController extends Controller
             'id' => $message->id,
             'body' => $message->body,
             'is_read' => $message->is_read,
+            'is_admin' => $message->sender?->role === 'admin',
+            'sender_id' => $message->sender_id,
+            'sender_name' => $message->sender?->name,
             'attachment_url' => $message->attachment_path
                 ? Storage::disk('public')->url($message->attachment_path)
                 : null,
-            'sender' => [
-                'id' => $message->sender?->id,
-                'name' => $message->sender?->name,
-                'is_admin' => $message->sender?->isAdmin() ?? false,
-                'avatar' => $message->sender?->avatar
-                    ? asset('storage/' . $message->sender->avatar)
-                    : null,
-            ],
-            'created_at' => $message->created_at->diffForHumans(),
-            'created_at_full' => $message->created_at->format('M d, Y H:i'),
+            'created_at_human' => $message->created_at->diffForHumans(),
+            'created_at' => $message->created_at->toISOString(),
         ];
     }
 }

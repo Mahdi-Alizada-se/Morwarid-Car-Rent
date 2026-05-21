@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -21,21 +21,38 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(RegisterRequest $request): RedirectResponse
+    public function register(Request $request): RedirectResponse
     {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'driver_license_number' => ['required', 'string', 'max:100'],
+            'driver_license_image' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ]);
+
+        // Store the license image
+        $licensePath = $request->file('driver_license_image')
+            ->store('licenses/' . date('Y/m'), 'public');
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'role' => 'customer',
+            'driver_license_number' => $request->driver_license_number,
+            'driver_license_image' => $licensePath,
         ]);
 
         Auth::login($user);
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))->with('success', 'Welcome! Your account has been created.');
+        return redirect()
+            ->intended(route('dashboard'))
+            ->with('success', 'Welcome! Your account has been created.');
     }
 
     // ─── Login ────────────────────────────────────────────────────────────────────

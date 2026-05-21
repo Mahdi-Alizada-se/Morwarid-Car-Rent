@@ -7,12 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\VehicleLocation;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 class GpsController extends Controller
 {
+    use ApiResponseTrait;
+
     // ─── Update Vehicle Location ──────────────────────────────────────────────
 
     public function update(Request $request): JsonResponse
@@ -30,55 +33,55 @@ class GpsController extends Controller
 
         if (RateLimiter::tooManyAttempts($throttleKey, 1)) {
             $seconds = RateLimiter::availableIn($throttleKey);
-            return response()->json([
-                'message' => "Too many requests. Try again in {$seconds} seconds.",
-            ], 429);
+            return $this->errorResponse(
+                "Too many requests. Try again in {$seconds} seconds.",
+                429
+            );
         }
 
-        RateLimiter::hit($throttleKey, 10); // decay 10 seconds
+        RateLimiter::hit($throttleKey, 10);
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
 
-        // Validate vehicle has active booking
-        $activeBooking = Booking::where('vehicle_id', $vehicle->id)
-            ->where('status', 'active')
+        // Find active or confirmed booking
+        $booking = Booking::where('vehicle_id', $vehicle->id)
+            ->whereIn('status', ['active', 'confirmed'])
             ->latest()
             ->first();
 
-        if (!$activeBooking) {
-            return response()->json([
-                'message' => 'No active booking found for this vehicle.',
-            ], 422);
-        }
-
         // Create location record
-        $location = VehicleLocation::create([
+        VehicleLocation::create([
             'vehicle_id' => $vehicle->id,
-            'booking_id' => $activeBooking->id,
+            'booking_id' => $booking?->id,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'speed' => $request->speed,
-            'heading' => $request->heading,
+            'speed' => $request->speed ?? 0,
+            'heading' => $request->heading ?? 0,
             'recorded_at' => now(),
+        ]);
+
+        // Update vehicle's cached location for display on vehicle cards
+        $vehicle->update([
+            'last_seen_at' => now(),
+            'last_latitude' => $request->latitude,
+            'last_longitude' => $request->longitude,
+            'last_speed' => $request->speed ?? 0,
         ]);
 
         // Broadcast location update
         broadcast(new VehicleLocationUpdated(
-            $location,
-            $vehicle->id,
-            $vehicle->full_name
+            vehicleId: $vehicle->id,
+            vehicleName: $vehicle->brand . ' ' . $vehicle->model,
+            latitude: (float) $request->latitude,
+            longitude: (float) $request->longitude,
+            speed: (float) ($request->speed ?? 0),
+            heading: (float) ($request->heading ?? 0),
         ));
 
-        return response()->json([
-            'message' => 'Location updated.',
-            'location' => [
-                'latitude' => (float) $location->latitude,
-                'longitude' => (float) $location->longitude,
-                'speed' => $location->speed ? (float) $location->speed : null,
-                'heading' => $location->heading ? (float) $location->heading : null,
-                'recorded_at' => $location->recorded_at->toISOString(),
-            ],
-        ]);
+        return $this->successResponse(
+            ['recorded_at' => now()->toISOString()],
+            'Location updated'
+        );
     }
 
     // ─── Get Live Location ────────────────────────────────────────────────────
@@ -90,10 +93,10 @@ class GpsController extends Controller
             ->first();
 
         if (!$location) {
-            return response()->json(['message' => 'No location data available.'], 404);
+            return $this->notFoundResponse('Location data');
         }
 
-        return response()->json([
+        return $this->successResponse([
             'vehicle' => [
                 'id' => $vehicle->id,
                 'full_name' => $vehicle->full_name,
@@ -120,7 +123,7 @@ class GpsController extends Controller
             ->first();
 
         if (!$activeBooking) {
-            return response()->json(['message' => 'No active booking for this vehicle.'], 404);
+            return $this->notFoundResponse('Active booking');
         }
 
         $locations = VehicleLocation::where('vehicle_id', $vehicle->id)
@@ -128,7 +131,7 @@ class GpsController extends Controller
             ->orderBy('recorded_at')
             ->get(['latitude', 'longitude', 'speed', 'heading', 'recorded_at']);
 
-        return response()->json([
+        return $this->successResponse([
             'vehicle' => $vehicle->full_name,
             'booking' => $activeBooking->reference_code,
             'locations' => $locations->map(fn($l) => [
@@ -176,6 +179,6 @@ class GpsController extends Controller
             ];
         })->filter()->values();
 
-        return response()->json(['vehicles' => $locations]);
+        return $this->successResponse(['vehicles' => $locations]);
     }
 }

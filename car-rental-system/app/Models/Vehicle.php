@@ -93,6 +93,11 @@ class Vehicle extends Model
         'description',
         'thumbnail',
         'features',
+        'tracker_token',    // ← ADD
+        'last_seen_at',     // ← ADD
+        'last_latitude',    // ← ADD
+        'last_longitude',   // ← ADD
+        'last_speed',       // ← ADD
     ];
 
     protected function casts(): array
@@ -102,6 +107,10 @@ class Vehicle extends Model
             'year' => 'integer',
             'seats' => 'integer',
             'odometer' => 'integer',
+            'last_seen_at' => 'datetime',    // ← ADD
+            'last_latitude' => 'decimal:7',   // ← ADD
+            'last_longitude' => 'decimal:7',   // ← ADD
+            'last_speed' => 'decimal:2',   // ← ADD
         ];
     }
 

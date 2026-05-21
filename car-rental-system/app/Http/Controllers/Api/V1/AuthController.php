@@ -4,28 +4,40 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Register a new customer.
-     */
-    public function register(RegisterRequest $request): JsonResponse
+    // ─── Register ─────────────────────────────────────────────────────────────────
+
+    public function register(Request $request): JsonResponse
     {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'driver_license_number' => ['required', 'string', 'max:100'],
+            'driver_license_image' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ]);
+
+        // Store the license image
+        $licensePath = $request->file('driver_license_image')
+            ->store('licenses/' . date('Y/m'), 'public');
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'role' => 'customer',
+            'driver_license_number' => $request->driver_license_number,
+            'driver_license_image' => $licensePath,
         ]);
 
         $deviceName = $request->device_name ?? ($request->userAgent() ?? 'API Client');
@@ -38,9 +50,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
-     * Authenticate user and return Sanctum token.
-     */
+    // ─── Login ────────────────────────────────────────────────────────────────────
+
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
@@ -66,9 +77,8 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Revoke the current access token (logout).
-     */
+    // ─── Logout ───────────────────────────────────────────────────────────────────
+
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -78,9 +88,8 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Return the authenticated user.
-     */
+    // ─── Me ───────────────────────────────────────────────────────────────────────
+
     public function me(Request $request): JsonResponse
     {
         return response()->json([

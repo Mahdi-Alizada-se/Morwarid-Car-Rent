@@ -78,10 +78,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'phone',
+        'role',
         'avatar',
         'locale',
+        'driver_license_image',    // ← ADD
+        'driver_license_number',   // ← ADD
+        'driver_license_verified', // ← ADD
         'social_provider',
         'social_id',
         'fcm_token',
@@ -99,6 +102,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'driver_license_verified' => 'boolean', // ← ADD
         ];
     }
 

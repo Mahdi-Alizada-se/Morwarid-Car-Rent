@@ -61,6 +61,11 @@ class ChatRoom extends Model
         return $this->hasOne(Message::class)->latestOfMany();
     }
 
+
+    public function lastMessage(): HasOne
+    {
+        return $this->hasOne(\App\Models\Message::class)->latestOfMany();
+    }
     // ─── Helpers ─────────────────────────────────────────────────────────────────
 
     public function getUnreadCountFor(int $userId): int

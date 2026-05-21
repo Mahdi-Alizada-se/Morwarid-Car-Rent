@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-
+use Illuminate\Support\Str;
 
 class VehicleController extends Controller
 {
@@ -228,5 +228,18 @@ class VehicleController extends Controller
         );
 
         return $filename;
+    }
+
+
+    // ─── Regenerate Tracker Token ─────────────────────────────────────────────────
+
+    public function regenerateToken(Vehicle $vehicle): RedirectResponse
+    {
+        $vehicle->tracker_token = Str::random(32);
+        $vehicle->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'New GPS tracker URL generated. Update the Samsung phone.');
     }
 }

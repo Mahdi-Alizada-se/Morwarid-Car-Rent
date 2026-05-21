@@ -29,42 +29,41 @@
             <div class="flex items-center justify-between h-16">
 
                 {{-- Logo --}}
-                <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8l2-2zM15 7h2l3 5v4h-2M9 17H7" />
-                        </svg>
+                <a href="/" class="flex items-center gap-2">
+                    <div class="rounded-xl px-2 py-1" style="background-color: #4F46E5;">
+                        <img src="{{ asset('images/logo.png') }}" alt="Morwarid Car Rental"
+                            class="h-12 w-auto object-contain">
                     </div>
-                    <span class="font-bold text-gray-900 text-lg">{{ config('app.name') }}</span>
+                    <div class="leading-tight">
+                        <span class="block text-lg font-bold text-gray-800">Morwarid</span>
+                        <span class="block text-xs font-medium text-blue-600 -mt-1">Car Rental</span>
+                    </div>
                 </a>
 
                 {{-- Desktop Nav --}}
                 <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-                    <a href="{{ route('vehicles.index') }}"
-                        class="text-gray-600 hover:text-indigo-600 transition-colors">
+                    <a href="{{ route('vehicles.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">
                         {{ __('common.nav_vehicles') }}
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">
+                    <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
                         {{ __('common.nav_about') }}
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">
+                    <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
                         {{ __('common.nav_contact') }}
                     </a>
                 </nav>
 
                 {{-- Auth Buttons --}}
                 <div class="hidden md:flex items-center gap-3">
+
                     {{-- Language Switcher --}}
                     <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                         <form method="POST" action="{{ route('language.switch') }}">
                             @csrf
                             <input type="hidden" name="locale" value="en">
                             <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                    {{ app()->getLocale() === 'en'
-    ? 'bg-white text-indigo-600 shadow-sm'
+                                           {{ app()->getLocale() === 'en'
+    ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                                 EN
                             </button>
@@ -73,19 +72,21 @@
                             @csrf
                             <input type="hidden" name="locale" value="fa">
                             <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                    {{ app()->getLocale() === 'fa'
-    ? 'bg-white text-indigo-600 shadow-sm'
+                                           {{ app()->getLocale() === 'fa'
+    ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                                 FA
                             </button>
                         </form>
                     </div>
+
                     @auth
                         <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open"
-                                class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-indigo-600">
+                            <button @click="open = !open" class="flex items-center gap-2 text-sm font-medium
+                                                                       text-gray-700 hover:text-blue-600">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-xs">
+                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center
+                                                                        justify-center text-blue-700 font-semibold text-xs">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                                 </div>
                                 {{ auth()->user()->name }}
@@ -94,27 +95,37 @@
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div x-show="open" x-cloak @click.outside="open = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                            <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg
+                                                                    border border-gray-100 py-1 z-50">
                                 <a href="{{ route('customer.bookings.index') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">{{ __('common.my_bookings') }}</a>
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    {{ __('common.my_bookings') }}
+                                </a>
                                 @if(auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}"
-                                        class="block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-50">{{ __('common.admin_panel') }}</a>
+                                        class="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-50">
+                                        {{ __('common.admin_panel') }}
+                                    </a>
                                 @endif
                                 <hr class="my-1 border-gray-100">
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50">{{ __('common.logout') }}</button>
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm
+                                                                               text-red-600 hover:bg-gray-50">
+                                        {{ __('common.logout') }}
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     @else
                         <a href="{{ route('login') }}"
-                            class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">{{ __('common.login') }}</a>
-                        <a href="{{ route('register') }}"
-                            class="text-sm font-medium bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">{{ __('common.register') }}</a>
+                            class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                            {{ __('common.login') }}
+                        </a>
+                        <a href="{{ route('register') }}" class="text-sm font-medium bg-blue-600 text-white px-4 py-2
+                                                              rounded-lg hover:bg-blue-700 transition-colors">
+                            {{ __('common.register') }}
+                        </a>
                     @endauth
                 </div>
 
@@ -140,8 +151,8 @@
                             @csrf
                             <input type="hidden" name="locale" value="en">
                             <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                        {{ app()->getLocale() === 'en'
-    ? 'bg-white text-indigo-600 shadow-sm'
+                                           {{ app()->getLocale() === 'en'
+    ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                                 EN
                             </button>
@@ -150,8 +161,8 @@
                             @csrf
                             <input type="hidden" name="locale" value="fa">
                             <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                        {{ app()->getLocale() === 'fa'
-    ? 'bg-white text-indigo-600 shadow-sm'
+                                           {{ app()->getLocale() === 'fa'
+    ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                                 FA
                             </button>
@@ -159,10 +170,11 @@
                     </div>
                 </div>
 
-                <a href="{{ route('vehicles.index') }}" <a href="{{ route('vehicles.index') }}"
+                <a href="{{ route('vehicles.index') }}"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                     {{ __('common.nav_vehicles') }}
                 </a>
+
                 @auth
                     <a href="{{ route('customer.bookings.index') }}"
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
@@ -170,8 +182,8 @@
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit"
-                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 rounded-lg">
+                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm
+                                                                   text-red-600 hover:bg-gray-50 rounded-lg">
                             {{ __('common.logout') }}
                         </button>
                     </form>
@@ -180,8 +192,8 @@
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         {{ __('common.login') }}
                     </a>
-                    <a href="{{ route('register') }}"
-                        class="block px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                    <a href="{{ route('register') }}" class="block px-4 py-2 text-sm font-medium text-blue-600
+                                                          hover:bg-blue-50 rounded-lg">
                         {{ __('common.register') }}
                     </a>
                 @endauth
@@ -189,12 +201,13 @@
         </div>
     </header>
 
-    {{-- Flash Messages --}}
+    {{-- ─── Flash Messages ───────────────────────────────────────────────────── --}}
     @if(session('success') || session('error'))
         <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
             @if(session('success'))
                 <div
-                    class="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+                    class="flex items-center gap-3 px-4 py-3 bg-green-50 border
+                                                                                    border-green-200 text-green-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -203,7 +216,9 @@
                 </div>
             @endif
             @if(session('error'))
-                <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+                <div
+                    class="flex items-center gap-3 px-4 py-3 bg-red-50 border
+                                                                                    border-red-200 text-red-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -223,41 +238,51 @@
     <footer class="bg-white border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
                 <div>
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8l2-2zM15 7h2l3 5v4h-2M9 17H7" />
-                            </svg>
+                        <div class="rounded-xl px-2 py-1" style="background-color: #4F46E5;">
+                            <img src="{{ asset('images/logo.png') }}" alt="Morwarid Car Rental"
+                                class="h-12 w-auto object-contain">
                         </div>
-                        <span class="font-bold text-gray-900">{{ config('app.name') }}</span>
+                        <div class="leading-tight">
+                            <span class="block font-bold text-gray-800">Morwarid</span>
+                            <span class="block text-xs font-medium text-blue-600 -mt-0.5">Car Rental</span>
+                        </div>
                     </div>
-                    <p class="text-sm text-gray-500">{{ __('Your trusted car rental service.') }}</p>
+                    <p class="text-sm text-gray-500">Your trusted car rental service in Kabul.</p>
                 </div>
+
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">{{ __('Quick Links') }}</h4>
+                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">Quick Links</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="{{ route('vehicles.index') }}"
-                                class="hover:text-indigo-600 transition-colors">{{ __('Browse Vehicles') }}</a></li>
-                        <li><a href="#" class="hover:text-indigo-600 transition-colors">{{ __('How It Works') }}</a>
+                        <li>
+                            <a href="{{ route('vehicles.index') }}" class="hover:text-blue-600 transition-colors">Browse
+                                Vehicles</a>
                         </li>
-                        <li><a href="#" class="hover:text-indigo-600 transition-colors">{{ __('Contact Us') }}</a></li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600 transition-colors">How It Works</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600 transition-colors">Contact Us</a>
+                        </li>
                     </ul>
                 </div>
+
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">{{ __('common.nav_contact') }}</h4>
+                    <h4 class="font-semibold text-gray-900 mb-3 text-sm">
+                        {{ __('common.nav_contact') }}
+                    </h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li>{{ __('Kabul, Afghanistan') }}</li>
+                        <li>{{ config('company.address', 'Dasht-e-Barchi, Kabul, Afghanistan') }}</li>
                         <li>info@carrental.com</li>
-                        <li>+93 700 000 000</li>
+                        <li>{{ config('company.phone', '+93 700 000 000') }}</li>
                     </ul>
                 </div>
+
             </div>
             <div class="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-400">
-                © {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+                © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
             </div>
         </div>
     </footer>
@@ -265,13 +290,8 @@
     {{-- Chat Widget --}}
     @include('components.chat-widget')
 
-    {{-- Chat Widget (Day 5) --}}
-    @include('components.chat-widget')
-
     {{-- AI Chatbot Widget --}}
     <x-chatbot-widget />
-
-
 
     @stack('scripts')
 </body>
