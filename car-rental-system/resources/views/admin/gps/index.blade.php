@@ -168,7 +168,11 @@
                     const latlng = [vehicle.latitude, vehicle.longitude];
 
                     const icon = L.divIcon({
-                        html: `<div style="background:#4f46e5;color:white;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🚗 ${vehicle.vehicle_name}</div>`,
+                        html: `<div style="background:#4f46e5;color:white;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:center;margin-bottom:12px;">
+        <svg width="52" height="52" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#4f46e5" stroke="#4f46e5">
+            <path d="M15.7639,4 C16.9002,4 17.939,4.64201 18.4472,5.65836 L19.8297,8.42332 C20.0735,8.32394 20.3168,8.22155 20.5532,8.10538 C21.0471,7.85869 21.6475,8.05894 21.8944,8.55279 C22.1414,9.04676 21.9412,9.64744 21.4472,9.89443 C20.9532,10.1414 20.7265,10.2169 20.7265,10.2169 L21.6833,12.1305 C21.8915,12.5471 22,13.0064 22,13.4721 L22,16 C22,16.8885 21.6137,17.6868 21,18.2361 L21,19.5 C21,20.3284 20.3284,21 19.5,21 C18.6715,21 18,20.3284 18,19.5 L18,19 L5.99998,19 L5.99998,19.5 C5.99998,20.3284 5.3284,21 4.49997,21 C3.67155,21 2.99997,20.3284 2.99997,19.5 L2.99997,18.2361 C2.38623,17.6868 1.99997,16.8885 1.99997,16 L1.99997,13.4721 C1.99997,13.0064 2.10841,12.5471 2.31669,12.1305 L3.2735,10.2169 C3.03141,10.116 2.79108,10.0105 2.55525,9.89567 C2.05878,9.64744 1.85856,9.04676 2.10555,8.55279 C2.35213,8.05962 2.96121,7.86667 3.4517,8.10779 C3.68712,8.22182 3.92811,8.3246 4.17028,8.42332 L5.55276,5.65836 C6.06094,4.64201 7.09973,4 8.23604,4 Z M18.8341,10.9044 C17.1339,11.4406 14.715,12 12,12 C9.28499,12 6.86601,11.4406 5.16583,10.9044 L4.10555,13.0249 C4.03612,13.1638 3.99997,13.3169 3.99997,13.4721 L3.99997,16 C3.99997,16.5523 4.44769,17 4.99997,17 L19,17 C19.5523,17 20,16.5523 20,16 L20,13.4721 C20,13.3169 19.9638,13.1638 19.8944,13.0249 Z M7.49997,13 C8.3284,13 8.99997,13.6716 8.99997,14.5 C8.99997,15.3284 8.3284,16 7.49997,16 C6.67155,16 5.99997,15.3284 5.99997,14.5 C5.99997,13.6716 6.67155,13 7.49997,13 Z M16.5,13 C17.3284,13 18,13.6716 18,14.5 C18,15.3284 17.3284,16 16.5,16 C15.6715,16 15,15.3284 15,14.5 C15,13.6716 15.6715,13 16.5,13 Z M15.7639,6 L8.23604,6 C7.85727,6 7.51101,6.214 7.34162,6.55279 L6.07258,9.09086 C7.61992,9.55498 9.70503,10 12,10 C14.2949,10 16.38,9.55498 17.9274,9.09086 L16.6583,6.55279 C16.4889,6.214 16.1427,6 15.7639,6 Z" fill="#4f46e5"/>
+        </svg>
+    </div> ${vehicle.vehicle_name}</div>`,
                         className: '',
                         iconAnchor: [40, 10],
                     });
@@ -189,14 +193,14 @@
 
                 buildPopup(vehicle) {
                     return `
-                    <div style="min-width: 180px;">
-                        <p style="font-weight:700;font-size:14px;margin-bottom:6px;">${vehicle.vehicle_name}</p>
-                        <p style="color:#6b7280;font-size:12px;">Customer: ${vehicle.customer}</p>
-                        <p style="color:#6b7280;font-size:12px;">Ref: ${vehicle.reference}</p>
-                        ${vehicle.speed !== null ? `<p style="color:#6b7280;font-size:12px;">Speed: ${vehicle.speed} km/h</p>` : ''}
-                        <p style="color:#9ca3af;font-size:11px;margin-top:4px;">Updated: ${vehicle.recorded_ago}</p>
-                    </div>
-                `;
+                            <div style="min-width: 180px;">
+                                <p style="font-weight:700;font-size:14px;margin-bottom:6px;">${vehicle.vehicle_name}</p>
+                                <p style="color:#6b7280;font-size:12px;">Customer: ${vehicle.customer}</p>
+                                <p style="color:#6b7280;font-size:12px;">Ref: ${vehicle.reference}</p>
+                                ${vehicle.speed !== null ? `<p style="color:#6b7280;font-size:12px;">Speed: ${vehicle.speed} km/h</p>` : ''}
+                                <p style="color:#9ca3af;font-size:11px;margin-top:4px;">Updated: ${vehicle.recorded_ago}</p>
+                            </div>
+                        `;
                 },
 
                 subscribeToVehicle(vehicleId) {

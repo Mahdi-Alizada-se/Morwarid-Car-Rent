@@ -27,6 +27,12 @@ Route::middleware('guest')->group(function () {
         ->where('provider', 'google|facebook');
 });
 
+
+// ─── GPS Tracker Route (no auth — runs on Samsung phone in car) ───────────────
+
+Route::get('/track/{vehicle}/{token}', [\App\Http\Controllers\GpsTrackerController::class, 'track'])
+    ->name('gps.tracker');
+
 // ─── Public Vehicle Routes ─────────────────────────────────────────────────────
 
 Route::get('/vehicles', [\App\Http\Controllers\Customer\VehicleController::class, 'index'])
@@ -77,9 +83,12 @@ Route::middleware('auth')->group(function () {
                 ->name('reports.pdf');
 
             // Vehicles
+            // Vehicles
             Route::resource('vehicles', \App\Http\Controllers\Admin\VehicleController::class);
             Route::patch('vehicles/{vehicle}/toggle-status', [\App\Http\Controllers\Admin\VehicleController::class, 'toggleStatus'])
                 ->name('vehicles.toggle-status');
+            Route::post('vehicles/{vehicle}/regenerate-token', [\App\Http\Controllers\Admin\VehicleController::class, 'regenerateToken'])
+                ->name('vehicles.regenerate-token');
 
             // Bookings
             Route::get('bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])
@@ -103,15 +112,22 @@ Route::middleware('auth')->group(function () {
             Route::post('payments/counter', [\App\Http\Controllers\Admin\PaymentController::class, 'counterPayment'])
                 ->name('payments.counter');
 
-            // Chat
-            Route::get('chat', function () {
-                return view('admin.chat.index');
-            })->name('chat.index');
+            // Chat — now uses proper controller
+            Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])
+                ->name('chat.index');
 
             // GPS
             Route::get('gps', function () {
                 return view('admin.gps.index');
             })->name('gps.index');
+
+            // Users
+            Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])
+                ->name('users.index');
+            Route::post('users/{user}/verify-license', [\App\Http\Controllers\Admin\UserController::class, 'verifyLicense'])
+                ->name('users.verify-license');
+            Route::get('users/{user}/license', [\App\Http\Controllers\Admin\UserController::class, 'showLicense'])
+                ->name('users.license');
 
         });
 
