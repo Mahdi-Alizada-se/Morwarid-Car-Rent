@@ -9,19 +9,19 @@
 
 @section('content')
     <div class="max-w-5xl" x-data="{
-                images: [],
-                rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
-                addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
-                removeRule(i) { this.rules.splice(i, 1) },
-                handleImages(event) {
-                    this.images = [];
-                    Array.from(event.target.files).forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
-                        reader.readAsDataURL(file);
-                    });
-                }
-             }">
+                        images: [],
+                        rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
+                        addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
+                        removeRule(i) { this.rules.splice(i, 1) },
+                        handleImages(event) {
+                            this.images = [];
+                            Array.from(event.target.files).forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
+                                reader.readAsDataURL(file);
+                            });
+                        }
+                     }">
 
         <form method="POST" action="{{ route('admin.vehicles.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
@@ -308,16 +308,39 @@
                 </div>
             </div>
 
+            {{-- ─── GPS Tracker ────────────────────────────────────────────────────── --}}
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                    </svg>
+                    GPS Tracker
+                </h3>
+                <p class="text-xs text-gray-500 mb-4">
+                    After creating the vehicle, go to the vehicle detail page to generate
+                    a GPS tracker URL for the Samsung phone in the car.
+                </p>
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700">
+                    <strong>How it works:</strong> A Samsung phone is placed in each car.
+                    It opens a special page in Chrome that sends GPS location every 5 minutes.
+                    No app installation needed.
+                </div>
+            </div>
+
             {{-- Submit --}}
             <div class="flex items-center gap-3">
-                <button type="submit"
-                    class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
-                    {{ __('Create Vehicle') }}
-                </button>
-                <a href="{{ route('admin.vehicles.index') }}"
-                    class="px-6 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    {{ __('Cancel') }}
-                </a>
+                <button type="submit" {{-- Submit --}} <div class="flex items-center gap-3">
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+                        {{ __('Create Vehicle') }}
+                    </button>
+                    <a href="{{ route('admin.vehicles.index') }}"
+                        class="px-6 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        {{ __('Cancel') }}
+                    </a>
             </div>
 
         </form>

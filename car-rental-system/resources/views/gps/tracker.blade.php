@@ -184,9 +184,9 @@
         </div>
 
         <div class="last" id="lastTxt">Last sent: never</div>
-        <div class="notice" id="notice">
-            🔒 Keep this page open in Chrome.<br>
-            Screen can dim — GPS keeps running.
+        <div class="notice" id="notice">🔒 Keep this page open in Chrome.<br>Screen can dim — GPS keeps running.</div>
+        <div class="notice" id="nextUpdateBox" style="margin-top:8px;">
+            Next GPS update in: <span id="nextUpdate" style="font-weight:700;color:#94a3b8;">5:00</span>
         </div>
         <div class="count" id="countTxt"></div>
     </div>
@@ -297,13 +297,28 @@
             navigator.geolocation.watchPosition(send, onError, opts);
 
             // Also send every 15 seconds
+            // ─── 5-minute interval ────────────────────────────────────────────────────────
+            let nextUpdate = 300;
+            const countdownEl = document.getElementById('nextUpdate');
+
             setInterval(() => {
-                navigator.geolocation.getCurrentPosition(
-                    send,
-                    onError,
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-                );
-            }, 15000);
+                navigator.geolocation.getCurrentPosition(send, onError, {
+                    enableHighAccuracy: true,
+                    timeout: 30000,
+                    maximumAge: 10000,
+                });
+            }, 300000);
+
+            // ─── Countdown timer ──────────────────────────────────────────────────────────
+            setInterval(() => {
+                nextUpdate--;
+                if (nextUpdate <= 0) nextUpdate = 300;
+                const m = Math.floor(nextUpdate / 60);
+                const s = nextUpdate % 60;
+                if (countdownEl) {
+                    countdownEl.textContent = m + ':' + s.toString().padStart(2, '0');
+                }
+            }, 1000);
         }
 
         keepAwake();

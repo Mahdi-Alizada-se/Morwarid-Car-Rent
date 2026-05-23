@@ -14,28 +14,28 @@
         </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="{
-                        currentImage: {{ $vehicle->thumbnail ? '\'' . asset('storage/' . $vehicle->thumbnail) . '\'' : '\'\''}},
-                        images: @js(
-                            collect($vehicle->images)->map(fn($i) => asset('storage/' . $i->path))->prepend($vehicle->thumbnail ? asset('storage/' . $vehicle->thumbnail) : null)->filter()->values()
-                        ),
-                        selectedFrom: '{{ request('date_from', '') }}',
-                        selectedTo: '{{ request('date_to', '') }}',
-                        pricing: null,
-                        loadingPrice: false,
-                        async fetchPrice() {
-                            if (!this.selectedFrom || !this.selectedTo) return;
-                            this.loadingPrice = true;
-                            try {
-                                const res = await fetch(`/api/v1/availability/check`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                                    body: JSON.stringify({ vehicle_id: {{ $vehicle->id }}, pickup_date: this.selectedFrom, return_date: this.selectedTo })
-                                });
-                                this.pricing = await res.json();
-                            } catch(e) {}
-                            this.loadingPrice = false;
-                        }
-                     }" x-init="if (selectedFrom && selectedTo) fetchPrice()">
+                                currentImage: {{ $vehicle->thumbnail ? '\'' . asset('storage/' . $vehicle->thumbnail) . '\'' : '\'\''}},
+                                images: @js(
+                                    collect($vehicle->images)->map(fn($i) => asset('storage/' . $i->path))->prepend($vehicle->thumbnail ? asset('storage/' . $vehicle->thumbnail) : null)->filter()->values()
+                                ),
+                                selectedFrom: '{{ request('date_from', '') }}',
+                                selectedTo: '{{ request('date_to', '') }}',
+                                pricing: null,
+                                loadingPrice: false,
+                                async fetchPrice() {
+                                    if (!this.selectedFrom || !this.selectedTo) return;
+                                    this.loadingPrice = true;
+                                    try {
+                                        const res = await fetch(`/api/v1/availability/check`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                                            body: JSON.stringify({ vehicle_id: {{ $vehicle->id }}, pickup_date: this.selectedFrom, return_date: this.selectedTo })
+                                        });
+                                        this.pricing = await res.json();
+                                    } catch(e) {}
+                                    this.loadingPrice = false;
+                                }
+                             }" x-init="if (selectedFrom && selectedTo) fetchPrice()">
 
             {{-- ─── Left: Images + Specs ─────────────────────────────────────────── --}}
             <div class="lg:col-span-2 space-y-6">
@@ -49,9 +49,10 @@
                         </template>
                         <template x-if="!currentImage">
                             <div class="w-full h-full flex items-center justify-center">
-                                <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                                 </svg>
                             </div>
                         </template>
@@ -228,28 +229,48 @@
 
                     {{-- Book Button --}}
                     @auth
-                        <form method="POST" action="{{ route('customer.bookings.store') }}">
-                            @csrf
-                            <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-                            <input type="hidden" name="pickup_date" x-model="selectedFrom" :value="selectedFrom">
-                            <input type="hidden" name="return_date" x-model="selectedTo" :value="selectedTo">
-                            <button type="submit" :disabled="!pricing?.available || !selectedFrom || !selectedTo" :class="pricing?.available && selectedFrom && selectedTo
-                                                            ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
-                                                            : 'bg-gray-300 cursor-not-allowed'"
-                                class="w-full py-3 text-white text-sm font-bold rounded-lg transition-colors">
-                                {{ __('bookings.confirm_booking') }}
-                            </button>
-                        </form>
+                        @if(auth()->user()->role === 'admin')
+                            {{-- Admin warning --}}
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor"
+                                        stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="text-sm font-medium text-yellow-800">
+                                        You are logged in as Admin
+                                    </p>
+                                </div>
+                                <p class="text-xs text-yellow-700 mt-1 ml-7">
+                                    Booking is for customers only.
+                                </p>
+                            </div>
+                        @else
+                            {{-- Customer booking form --}}
+                            <form method="POST" action="{{ route('customer.bookings.store') }}">
+                                @csrf
+                                <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+                                <input type="hidden" name="pickup_date" x-bind:value="selectedFrom">
+                                <input type="hidden" name="return_date" x-bind:value="selectedTo">
+                                <button type="submit" :disabled="!pricing?.available || !selectedFrom || !selectedTo" :class="pricing?.available && selectedFrom && selectedTo
+                                    ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
+                                    : 'bg-gray-300 cursor-not-allowed'" class="w-full py-3 text-white text-sm font-bold
+                                       rounded-lg transition-colors">
+                                    {{ __('bookings.confirm_booking') }}
+                                </button>
+                            </form>
+                        @endif
                     @else
-                        <a href="{{ route('login') }}"
-                            class="block w-full py-3 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors text-center">
-                            {{ __('Login to Book') }}
-                        </a>
-                        <p class="text-xs text-center text-gray-400 mt-2">
-                            {{ __("Don't have an account?") }}
-                            <a href="{{ route('register') }}"
-                                class="text-indigo-600 hover:underline">{{ __('common.register') }}</a>
-                        </p>
+                            <a href="{{ route('login') }}" class="block w-full py-3 bg-indigo-600 text-white text-sm font-bold
+                          rounded-lg hover:bg-indigo-700 transition-colors text-center">
+                                {{ __('Login to Book') }}
+                            </a>
+                            <p class="text-xs text-center text-gray-400 mt-2">
+                                {{ __("Don't have an account?") }}
+                                <a href="{{ route('register') }}"
+                                    class="text-indigo-600 hover:underline">{{ __('common.register') }}</a>
+                            </p>
                     @endauth
 
                     {{-- Pricing Rules Summary --}}

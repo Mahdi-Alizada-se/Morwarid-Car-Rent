@@ -47,3 +47,35 @@ Schedule::call(function () {
 
     \Illuminate\Support\Facades\Log::info("Cleaned up {$deleted} old receipt file(s).");
 })->hourly()->name('cleanup-old-receipts')->withoutOverlapping();
+
+
+// use Illuminate\Support\Facades\Schedule;
+
+Schedule::call(function () {
+    $expiredBookings = \App\Models\Booking::where('status', 'pending')
+        ->whereHas(
+            'payments',
+            fn($q) =>
+            $q->where('method', \App\Models\Payment::METHOD_CASH)
+                ->where('status', \App\Models\Payment::STATUS_PENDING)
+        )
+        ->where('created_at', '<', now()->subHours(5))
+        ->get();
+
+    foreach ($expiredBookings as $booking) {
+        $booking->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => 'Customer did not visit office within 5 hours',
+            'cancelled_at' => now(),
+        ]);
+
+        $booking->vehicle?->update(['status' => 'available']);
+
+        try {
+            $booking->customer->notify(
+                new \App\Notifications\BookingCancelledNotification($booking)
+            );
+        } catch (\Exception $e) {
+        }
+    }
+})->everyFiveMinutes()->name('cancel-expired-cash-bookings');

@@ -36,6 +36,13 @@ class BookingController extends Controller
 
     public function store(StoreBookingRequest $request): RedirectResponse
     {
+
+        // Block admins from making bookings
+        if (auth()->user()->role === 'admin') {
+            return redirect()
+                ->back()
+                ->with('error', 'Administrators cannot make bookings. This action is for customers only.');
+        }
         try {
             $booking = $this->bookingService->createBooking(
                 auth()->user(),
@@ -130,5 +137,19 @@ class BookingController extends Controller
                 ?->base_rate ?? 0;
 
         return view('bookings.confirmed', compact('booking', 'dailyRate'));
+    }
+
+
+    // ─── Cash Pending Page ────────────────────────────────────────────────────
+
+    public function cashPending(Booking $booking): View
+    {
+        if ($booking->customer_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $booking->load(['vehicle', 'payments']);
+
+        return view('bookings.cash-pending', compact('booking'));
     }
 }

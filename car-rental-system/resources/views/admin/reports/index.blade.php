@@ -8,165 +8,341 @@
 @section('content')
     <div class="space-y-5">
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between">
+        {{-- ─── Header ──────────────────────────────────────────────────────────── --}}
+        <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">{{ __('reports.title') }}</h2>
-                <p class="text-sm text-gray-500 mt-0.5">{{ __('reports.subtitle') }}</p>
+                <h2 class="text-xl font-bold text-gray-900">Booking Reports</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Full booking records with customer and payment details</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.reports.csv', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm
+                          font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export CSV
+                </a>
+                <a href="{{ route('admin.reports.pdf', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm
+                          font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Export PDF
+                </a>
             </div>
         </div>
 
-        {{-- Summary Stats --}}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
-                <p class="text-3xl font-bold text-gray-900">{{ $totalBookings }}</p>
-                <p class="text-sm text-gray-500 mt-1">{{ __('reports.total_bookings') }}</p>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
-                <p class="text-2xl font-bold text-green-600">AFN {{ number_format($totalRevenue) }}</p>
-                <p class="text-sm text-gray-500 mt-1">{{ __('reports.total_revenue') }}</p>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
-                <p class="text-3xl font-bold text-gray-900">{{ $completedCount }}</p>
-                <p class="text-sm text-gray-500 mt-1">{{ __('reports.completed_rentals') }}</p>
-            </div>
-        </div>
+        {{-- ─── Filters ─────────────────────────────────────────────────────────── --}}
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <form method="GET" class="flex flex-wrap gap-3 items-end">
 
-        {{-- Filter Form --}}
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-            <form method="GET" class="flex flex-col sm:flex-row gap-3 flex-wrap items-end">
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('common.start_date') }}</label>
-                    <input type="date" name="from" value="{{ request('from') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
+                {{-- Date From --}}
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        From
+                    </label>
+                    <input type="date" name="from" value="{{ $from }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('common.end_date') }}</label>
-                    <input type="date" name="to" value="{{ request('to') }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
+                {{-- Date To --}}
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        To
+                    </label>
+                    <input type="date" name="to" value="{{ $to }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('vehicles.status') }}</label>
+                {{-- Status --}}
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Status
+                    </label>
                     <select name="status" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">{{ __('vehicles.all_statuses') }}</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>
-                            {{ __('common.pending') }}</option>
-                        <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>
-                            {{ __('common.confirmed') }}</option>
-                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>
-                            {{ __('bookings.active') }}</option>
-                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>
-                            {{ __('common.completed') }}</option>
-                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>
-                            {{ __('common.cancelled') }}</option>
+                        <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>
+                            All Statuses
+                        </option>
+                        @foreach(['pending', 'confirmed', 'active', 'completed', 'cancelled'] as $s)
+                            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                                {{ ucfirst($s) }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium
-                               rounded-lg hover:bg-indigo-700 transition-colors">
-                    {{ __('common.filter') }}
-                </button>
+                {{-- Payment Method --}}
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Payment Method
+                    </label>
+                    <select name="payment_method" class="text-sm border border-gray-200 rounded-lg px-3 py-2
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all" {{ request('payment_method', 'all') === 'all' ? 'selected' : '' }}>
+                            All Methods
+                        </option>
+                        <option value="cash" {{ request('payment_method') === 'cash' ? 'selected' : '' }}>
+                            Cash
+                        </option>
+                        <option value="online" {{ request('payment_method') === 'online' ? 'selected' : '' }}>
+                            Online
+                        </option>
+                        <option value="bank_transfer" {{ request('payment_method') === 'bank_transfer' ? 'selected' : '' }}>
+                            Bank Transfer
+                        </option>
+                        <option value="counter" {{ request('payment_method') === 'counter' ? 'selected' : '' }}>
+                            Counter
+                        </option>
+                    </select>
+                </div>
 
-                @if(request()->hasAny(['from', 'to', 'status']))
+                {{-- Search --}}
+                <div class="flex flex-col gap-1 flex-1 min-w-48">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Search
+                    </label>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input type="text" name="search" value="{{ request('search') }}"
+                            placeholder="Customer name or reference..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="flex gap-2">
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold
+                                   rounded-lg hover:bg-indigo-700 transition-colors">
+                        Apply
+                    </button>
                     <a href="{{ route('admin.reports') }}" class="px-4 py-2 text-sm text-gray-600 border border-gray-200
-                                  rounded-lg hover:bg-gray-50 transition-colors">
-                        {{ __('common.clear') }}
-                    </a>
-                @endif
-
-                {{-- Export Buttons --}}
-                <div class="flex gap-2 sm:ml-auto">
-                    <a href="{{ route('admin.reports.csv') }}?{{ http_build_query(request()->only(['from', 'to', 'status'])) }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white
-                              text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        {{ __('reports.export_csv') }}
-                    </a>
-                    <a href="{{ route('admin.reports.pdf') }}?{{ http_build_query(request()->only(['from', 'to', 'status'])) }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white
-                              text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        {{ __('reports.export_pdf') }}
+                              rounded-lg hover:bg-gray-50 transition-colors">
+                        Reset
                     </a>
                 </div>
+
             </form>
         </div>
 
-        {{-- Bookings Table --}}
+        {{-- ─── Summary Row ─────────────────────────────────────────────────────── --}}
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Bookings</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $bookings->total() }}</p>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Revenue</p>
+                <p class="text-2xl font-bold text-green-600 mt-1">
+                    AFN {{ number_format($totalRevenue, 0) }}
+                </p>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Confirmed</p>
+                <p class="text-2xl font-bold text-blue-600 mt-1">{{ $confirmedCount }}</p>
+            </div>
+        </div>
+
+        {{-- ─── Table ───────────────────────────────────────────────────────────── --}}
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm min-w-max">
                     <thead>
                         <tr class="border-b border-gray-200 bg-gray-50">
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('bookings.reference') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
-                                {{ __('common.customer') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('vehicles.vehicle') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('vehicles.pickup_date') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('vehicles.status') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('common.amount') }}</th>
-                            <th class="text-right font-semibold text-gray-600 px-4 py-3">{{ __('vehicles.actions') }}</th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Reference
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Customer
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Phone
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                License No.
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Vehicle
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Pickup
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Return
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Days
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Total AFN
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Payment
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Status
+                            </th>
+                            <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
+                                Created
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($bookings as $booking)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                    <tbody>
+                        @forelse($bookings as $i => $booking)
+                            @php
+                                $payment = $booking->payments->first();
+                                $days = $booking->pickup_date?->diffInDays($booking->return_date) ?? 0;
+
+                                $statusColors = [
+                                    'pending' => 'bg-yellow-50 text-yellow-700',
+                                    'confirmed' => 'bg-blue-50 text-blue-700',
+                                    'active' => 'bg-green-50 text-green-700',
+                                    'completed' => 'bg-gray-100 text-gray-600',
+                                    'cancelled' => 'bg-red-50 text-red-700',
+                                ];
+
+                                $methodColors = [
+                                    'cash' => 'bg-green-50 text-green-700',
+                                    'online' => 'bg-blue-50 text-blue-700',
+                                    'bank_transfer' => 'bg-purple-50 text-purple-700',
+                                    'counter' => 'bg-gray-100 text-gray-600',
+                                ];
+
+                                $payStatusColors = [
+                                    'paid' => 'bg-green-50 text-green-700',
+                                    'pending' => 'bg-yellow-50 text-yellow-700',
+                                    'receipt_uploaded' => 'bg-orange-50 text-orange-700',
+                                    'failed' => 'bg-red-50 text-red-700',
+                                    'rejected' => 'bg-red-50 text-red-700',
+                                ];
+                            @endphp
+                            <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors
+                                           {{ $i % 2 === 0 ? '' : 'bg-gray-50/50' }}">
+
+                                {{-- Reference --}}
                                 <td class="px-4 py-3">
-                                    <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
-                                            {{ $booking->reference_code }}
-                                        </code>
+                                    <a href="{{ route('admin.bookings.show', $booking) }}"
+                                        class="font-mono text-xs font-semibold text-indigo-600 hover:underline">
+                                        {{ $booking->reference_code }}
+                                    </a>
                                 </td>
-                                <td class="px-4 py-3 hidden md:table-cell">
-                                    <p class="font-medium text-gray-900">{{ $booking->customer?->name }}</p>
-                                    <p class="text-xs text-gray-400">{{ $booking->customer?->email }}</p>
-                                </td>
-                                <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
-                                    {{ $booking->vehicle?->full_name }}
-                                </td>
-                                <td class="px-4 py-3 hidden lg:table-cell text-gray-500 text-xs">
-                                    {{ $booking->pickup_date->format('M d, Y') }}
-                                </td>
+
+                                {{-- Customer --}}
                                 <td class="px-4 py-3">
-                                    @php
-                                        $statusColors = [
-                                            'pending' => 'bg-yellow-50 text-yellow-700',
-                                            'confirmed' => 'bg-blue-50 text-blue-700',
-                                            'active' => 'bg-green-50 text-green-700',
-                                            'completed' => 'bg-gray-100 text-gray-600',
-                                            'cancelled' => 'bg-red-50 text-red-700',
-                                        ];
-                                    @endphp
-                                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                    <p class="font-semibold text-gray-900">
+                                        {{ $booking->customer?->name ?? '—' }}
+                                    </p>
+                                    <p class="text-xs text-gray-400">
+                                        {{ $booking->customer?->email ?? '' }}
+                                    </p>
+                                </td>
+
+                                {{-- Phone --}}
+                                <td class="px-4 py-3 text-gray-600 text-xs">
+                                    {{ $booking->customer?->phone ?? '—' }}
+                                </td>
+
+                                {{-- License Number --}}
+                                <td class="px-4 py-3">
+                                    @if($booking->customer?->driver_license_number)
+                                        <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono">
+                                                    {{ $booking->customer->driver_license_number }}
+                                                </code>
+                                    @else
+                                        <span class="text-gray-400 text-xs">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- Vehicle --}}
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900 text-xs">
+                                        {{ $booking->vehicle?->brand }} {{ $booking->vehicle?->model }}
+                                    </p>
+                                    <p class="text-xs text-gray-400 font-mono">
+                                        {{ $booking->vehicle?->license_plate }}
+                                    </p>
+                                </td>
+
+                                {{-- Pickup --}}
+                                <td class="px-4 py-3 text-xs text-gray-600">
+                                    {{ $booking->pickup_date?->format('M d, Y') }}
+                                    <span class="block text-gray-400">
+                                        {{ $booking->pickup_date?->format('H:i') }}
+                                    </span>
+                                </td>
+
+                                {{-- Return --}}
+                                <td class="px-4 py-3 text-xs text-gray-600">
+                                    {{ $booking->return_date?->format('M d, Y') }}
+                                    <span class="block text-gray-400">
+                                        {{ $booking->return_date?->format('H:i') }}
+                                    </span>
+                                </td>
+
+                                {{-- Days --}}
+                                <td class="px-4 py-3 text-center">
+                                    <span class="text-sm font-semibold text-gray-700">{{ $days }}</span>
+                                </td>
+
+                                {{-- Total --}}
+                                <td class="px-4 py-3">
+                                    <span class="font-bold text-gray-900">
+                                        {{ number_format($booking->total_amount, 0) }}
+                                    </span>
+                                </td>
+
+                                {{-- Payment --}}
+                                <td class="px-4 py-3">
+                                    @if($payment)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full
+                                                             text-xs font-semibold
+                                                             {{ $methodColors[$payment->method] ?? 'bg-gray-100 text-gray-600' }}">
+                                            {{ ucfirst(str_replace('_', ' ', $payment->method)) }}
+                                        </span>
+                                        <span
+                                            class="block mt-1 inline-flex items-center px-2 py-0.5
+                                                             rounded-full text-xs font-semibold
+                                                             {{ $payStatusColors[$payment->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                            {{ ucfirst(str_replace('_', ' ', $payment->status)) }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">No payment</span>
+                                    @endif
+                                </td>
+
+                                {{-- Booking Status --}}
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
+                                                     text-xs font-semibold
                                                      {{ $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
                                         {{ ucfirst($booking->status) }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 font-semibold text-gray-900">
-                                    AFN {{ number_format($booking->total_amount) }}
+
+                                {{-- Created --}}
+                                <td class="px-4 py-3 text-xs text-gray-500">
+                                    {{ $booking->created_at->format('M d, Y') }}
+                                    <span class="block text-gray-400">
+                                        {{ $booking->created_at->format('H:i') }}
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="{{ route('admin.bookings.show', $booking) }}"
-                                        class="text-xs text-indigo-600 font-medium hover:underline">
-                                        {{ __('common.view') }}
-                                    </a>
-                                </td>
+
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">
-                                    {{ __('bookings.no_bookings') }}
+                                <td colspan="12" class="px-4 py-12 text-center text-gray-400">
+                                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    <p class="font-medium">No bookings found for the selected filters.</p>
                                 </td>
                             </tr>
                         @endforelse

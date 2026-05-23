@@ -10,7 +10,7 @@ class ChatController extends Controller
 {
     public function index(): View
     {
-        $rooms = ChatRoom::with(['customer:id,name,email'])
+        $rooms = ChatRoom::with(['customer:id,name,email,last_seen_at'])
             ->withCount([
                 'messages as unread_count' => fn($q) =>
                     $q->where('is_read', false)

@@ -231,6 +231,15 @@ class VehicleController extends Controller
     }
 
 
+
+
+    // ─── Show ─────────────────────────────────────────────────────────────────────
+
+    public function show(Vehicle $vehicle): View
+    {
+        $vehicle->load(['category', 'images', 'pricingRules']);
+        return view('admin.vehicles.show', compact('vehicle'));
+    }
     // ─── Regenerate Tracker Token ─────────────────────────────────────────────────
 
     public function regenerateToken(Vehicle $vehicle): RedirectResponse

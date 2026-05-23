@@ -93,32 +93,41 @@ class ChatController extends Controller
         ]);
     }
 
-    // ─── Get Messages ─────────────────────────────────────────────────────────
+    // ─── Get Messages ─────────────────────────────────────────────────────────────
 
     public function messages(Request $request, ChatRoom $chatRoom): JsonResponse
     {
         $user = auth()->user();
 
+        // Security check
         if ($user->isCustomer() && $chatRoom->customer_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
-        $messages = Message::with('sender:id,name,role')
-            ->where('chat_room_id', $chatRoom->id)
-            ->latest()
-            ->cursorPaginate(20);
+        $messages = $chatRoom->messages()
+            ->with('sender:id,name,role')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $transformed = $messages->map(fn($message) => [
+            'id' => $message->id,
+            'body' => $message->body,
+            'sender_id' => $message->sender_id,
+            'sender_name' => $message->sender?->name,
+            'is_admin' => $message->sender?->role === 'admin',
+            'created_at_human' => $message->created_at->diffForHumans(),
+            'created_at' => $message->created_at->toISOString(),
+        ]);
 
         return response()->json([
             'success' => true,
-            'data' => collect($messages->items())
-                ->reverse()
-                ->values()
-                ->map(fn($m) => $this->formatMessage($m)),
-            'next_cursor' => $messages->nextCursor()?->encode(),
+            'data' => $transformed,
         ]);
     }
 
     // ─── Send Message ─────────────────────────────────────────────────────────
+
+    // ─── Send Message ─────────────────────────────────────────────────────────────
 
     public function sendMessage(Request $request, ChatRoom $chatRoom): JsonResponse
     {
@@ -130,37 +139,35 @@ class ChatController extends Controller
         }
 
         $request->validate([
-            'body' => ['required_without:attachment', 'string', 'max:2000'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,gif', 'max:5120'],
+            'body' => ['required', 'string', 'max:2000'],
         ]);
 
-        $attachmentPath = null;
-
-        if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('chat', 'public');
-        }
-
-        // Create message
-        $message = Message::create([
+        $message = \App\Models\Message::create([
             'chat_room_id' => $chatRoom->id,
             'sender_id' => $user->id,
-            'body' => $request->body ?? '',
+            'body' => $request->body,
             'is_read' => false,
-            'attachment_path' => $attachmentPath,
         ]);
 
-        // Update last message timestamp
-        $chatRoom->update(['last_message_at' => now()]);
-
-        // Load sender for broadcast
         $message->load('sender:id,name,role');
 
-        // Broadcast to channel
-        broadcast(new NewChatMessage($message))->toOthers();
+        $chatRoom->update(['last_message_at' => now()]);
+
+        $messageData = [
+            'id' => $message->id,
+            'body' => $message->body,
+            'sender_id' => $message->sender_id,
+            'sender_name' => $message->sender?->name,
+            'is_admin' => $message->sender?->role === 'admin',
+            'created_at_human' => $message->created_at->diffForHumans(),
+            'created_at' => $message->created_at->toISOString(),
+        ];
+
+        broadcast(new \App\Events\NewChatMessage($message))->toOthers();
 
         return response()->json([
             'success' => true,
-            'data' => $this->formatMessage($message),
+            'data' => $messageData,
         ], 201);
     }
 

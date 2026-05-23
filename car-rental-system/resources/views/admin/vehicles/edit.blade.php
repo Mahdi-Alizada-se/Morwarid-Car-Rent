@@ -9,20 +9,20 @@
 
 @section('content')
     <div class="max-w-5xl" x-data="{
-            images: @js($vehicle->images->map(fn($i) => ['url' => asset('storage/' . $i->path), 'name' => basename($i->path), 'existing' => true])->toArray()),
-            rules: @js($vehicle->pricingRules->map(fn($r) => ['type' => $r->type, 'base_rate' => $r->base_rate, 'currency' => $r->currency, 'date_from' => $r->date_from?->format('Y-m-d') ?? '', 'date_to' => $r->date_to?->format('Y-m-d') ?? '', 'multiplier' => $r->multiplier, 'is_active' => (bool) $r->is_active])->toArray()),
-            addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
-            removeRule(i) { this.rules.splice(i, 1) },
-            handleImages(event) {
-                const newImgs = [];
-                Array.from(event.target.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = e => newImgs.push({ url: e.target.result, name: file.name, existing: false });
-                    reader.readAsDataURL(file);
-                });
-                setTimeout(() => this.images = [...this.images.filter(i => i.existing), ...newImgs], 100);
-            }
-         }">
+                        images: @js($vehicle->images->map(fn($i) => ['url' => asset('storage/' . $i->path), 'name' => basename($i->path), 'existing' => true])->toArray()),
+                        rules: @js($vehicle->pricingRules->map(fn($r) => ['type' => $r->type, 'base_rate' => $r->base_rate, 'currency' => $r->currency, 'date_from' => $r->date_from?->format('Y-m-d') ?? '', 'date_to' => $r->date_to?->format('Y-m-d') ?? '', 'multiplier' => $r->multiplier, 'is_active' => (bool) $r->is_active])->toArray()),
+                        addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
+                        removeRule(i) { this.rules.splice(i, 1) },
+                        handleImages(event) {
+                            const newImgs = [];
+                            Array.from(event.target.files).forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = e => newImgs.push({ url: e.target.result, name: file.name, existing: false });
+                                reader.readAsDataURL(file);
+                            });
+                            setTimeout(() => this.images = [...this.images.filter(i => i.existing), ...newImgs], 100);
+                        }
+                     }">
 
         <form method="POST" action="{{ route('admin.vehicles.update', $vehicle) }}" enctype="multipart/form-data"
             class="space-y-6">
@@ -130,10 +130,12 @@
                         <select name="status"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="available" {{ old('status', $vehicle->status) === 'available' ? 'selected' : '' }}>
-                                {{ __('Available') }}</option>
+                                {{ __('Available') }}
+                            </option>
                             <option value="maintenance" {{ old('status', $vehicle->status) === 'maintenance' ? 'selected' : '' }}>{{ __('Maintenance') }}</option>
                             <option value="booked" {{ old('status', $vehicle->status) === 'booked' ? 'selected' : '' }}>
-                                {{ __('Booked') }}</option>
+                                {{ __('Booked') }}
+                            </option>
                         </select>
                     </div>
 
@@ -195,7 +197,8 @@
                         <input type="file" name="images[]" accept="image/*" multiple @change="handleImages($event)"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
                         <p class="text-xs text-gray-400 mt-1">
-                            {{ __('Uploading new images will replace all existing gallery images.') }}</p>
+                            {{ __('Uploading new images will replace all existing gallery images.') }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -272,6 +275,82 @@
                     </template>
                 </div>
             </div>
+
+            {{-- ─── GPS Tracker ────────────────────────────────────────────────────── --}}
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                    </svg>
+                    GPS Tracker
+                </h3>
+
+                @if($vehicle->tracker_token)
+
+                    {{-- Tracker URL --}}
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-gray-500 mb-2">Samsung phone tracker URL:</p>
+                        <div class="flex items-center gap-2">
+                            <code class="text-xs bg-white border border-gray-200 rounded-lg px-3 py-2
+                                     flex-1 break-all text-gray-700">
+                            {{ route('gps.tracker', [$vehicle->id, $vehicle->tracker_token]) }}
+                        </code>
+                            <button type="button"
+                                onclick="navigator.clipboard.writeText('{{ route('gps.tracker', [$vehicle->id, $vehicle->tracker_token]) }}'); this.textContent='Copied!';"
+                                class="text-xs bg-blue-600 text-white px-3 py-2 rounded-lg
+                                       flex-shrink-0 hover:bg-blue-700 transition-colors">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- GPS Status --}}
+                    @if($vehicle->last_seen_at && $vehicle->last_seen_at->gt(now()->subHour()))
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4">
+                            <p class="text-sm font-semibold text-green-800 flex items-center gap-1.5">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span>
+                                GPS Active
+                            </p>
+                            <p class="text-xs text-green-700 mt-1">
+                                Last update: <strong>{{ $vehicle->last_seen_at->diffForHumans() }}</strong>
+                                · {{ $vehicle->last_latitude }}, {{ $vehicle->last_longitude }}
+                                · {{ $vehicle->last_speed }} km/h
+                            </p>
+                            <a href="https://maps.google.com/?q={{ $vehicle->last_latitude }},{{ $vehicle->last_longitude }}"
+                                target="_blank" class="text-xs text-green-700 underline mt-1 inline-block">
+                                View on Google Maps →
+                            </a>
+                        </div>
+                    @else
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                            <p class="text-sm text-yellow-700">
+                                ⏳
+                                {{ $vehicle->last_seen_at ? 'GPS signal lost — last seen ' . $vehicle->last_seen_at->diffForHumans() : 'Waiting for first GPS signal' }}
+                            </p>
+                        </div>
+                    @endif
+
+                @else
+                    <p class="text-sm text-gray-500 mb-4">
+                        No tracker URL generated yet.
+                    </p>
+                @endif
+
+                {{-- Generate / Regenerate --}}
+                <form method="POST" action="{{ route('admin.vehicles.regenerate-token', $vehicle) }}"
+                    onsubmit="return confirm('{{ $vehicle->tracker_token ? 'Regenerate tracker URL? The old URL will stop working.' : 'Generate a tracker URL for this vehicle?' }}')">
+                    @csrf
+                    <button type="submit" class="text-sm bg-gray-800 text-white px-4 py-2 rounded-lg
+                           hover:bg-gray-700 transition-colors">
+                        {{ $vehicle->tracker_token ? '🔄 Regenerate Tracker URL' : '🔑 Generate Tracker URL' }}
+                    </button>
+                </form>
+            </div>
+
+
 
             <div class="flex items-center gap-3">
                 <button type="submit"

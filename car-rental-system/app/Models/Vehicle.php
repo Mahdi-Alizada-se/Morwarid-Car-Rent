@@ -98,6 +98,9 @@ class Vehicle extends Model
         'last_latitude',    // ← ADD
         'last_longitude',   // ← ADD
         'last_speed',       // ← ADD
+        'traccar_device_id',   // ← ADD
+        'traccar_device_name', // ← ADD
+        'last_address',        // ← ADD
     ];
 
     protected function casts(): array
@@ -111,6 +114,7 @@ class Vehicle extends Model
             'last_latitude' => 'decimal:7',   // ← ADD
             'last_longitude' => 'decimal:7',   // ← ADD
             'last_speed' => 'decimal:2',   // ← ADD
+
         ];
     }
 

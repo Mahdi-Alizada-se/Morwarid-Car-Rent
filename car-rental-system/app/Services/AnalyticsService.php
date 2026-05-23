@@ -34,6 +34,9 @@ class AnalyticsService
                 'bookings_this_month' => Booking::where('created_at', '>=', $monthStart)->count(),
                 'active_rentals' => Booking::where('status', 'active')->count(),
                 'pending_confirmations' => Booking::where('status', 'pending')->count(),
+                'confirmed_bookings' => Booking::where('status', 'confirmed')->count(),
+                'completed_bookings' => Booking::where('status', 'completed')->count(),
+                'cancelled_bookings' => Booking::where('status', 'cancelled')->count(),
 
                 // Revenue
                 'revenue_today_afn' => (float) Payment::where('status', 'paid')

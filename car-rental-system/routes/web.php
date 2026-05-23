@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// ─── Traccar Webhook (no auth, no CSRF) ──────────────────────────────────────
+
+Route::match(['GET', 'POST'], '/webhooks/traccar', [\App\Http\Controllers\Webhooks\TraccarWebhookController::class, 'handle'])
+    ->name('webhooks.traccar');
+
+// ─── GPS Tracker Route (no auth — runs on Samsung phone in car) ───────────────
+
+Route::get('/track/{vehicle}/{token}', [\App\Http\Controllers\GpsTrackerController::class, 'track'])
+    ->name('gps.tracker');
+
 // ─── Guest Routes ─────────────────────────────────────────────────────────────
 
 Route::middleware('guest')->group(function () {
@@ -27,13 +37,7 @@ Route::middleware('guest')->group(function () {
         ->where('provider', 'google|facebook');
 });
 
-
-// ─── GPS Tracker Route (no auth — runs on Samsung phone in car) ───────────────
-
-Route::get('/track/{vehicle}/{token}', [\App\Http\Controllers\GpsTrackerController::class, 'track'])
-    ->name('gps.tracker');
-
-// ─── Public Vehicle Routes ─────────────────────────────────────────────────────
+// ─── Public Vehicle Routes ────────────────────────────────────────────────────
 
 Route::get('/vehicles', [\App\Http\Controllers\Customer\VehicleController::class, 'index'])
     ->name('vehicles.index');
@@ -41,7 +45,7 @@ Route::get('/vehicles', [\App\Http\Controllers\Customer\VehicleController::class
 Route::get('/vehicles/{vehicle}', [\App\Http\Controllers\Customer\VehicleController::class, 'show'])
     ->name('vehicles.show');
 
-// ─── Authenticated Routes ──────────────────────────────────────────────────────
+// ─── Authenticated Routes ─────────────────────────────────────────────────────
 
 Route::middleware('auth')->group(function () {
 
@@ -54,11 +58,15 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Booking confirmed page — accessible by both customer and admin
+    // Booking confirmed — accessible by both customer and admin
     Route::get('/bookings/{booking}/confirmed', [\App\Http\Controllers\Customer\BookingController::class, 'confirmed'])
         ->name('bookings.confirmed');
 
-    // ─── Admin Area ────────────────────────────────────────────────────────────
+    // Cash pending page — accessible by customer
+    Route::get('/bookings/{booking}/cash-pending', [\App\Http\Controllers\Customer\BookingController::class, 'cashPending'])
+        ->name('bookings.cash-pending');
+
+    // ─── Admin Area ───────────────────────────────────────────────────────────
 
     Route::middleware('ensure.admin')
         ->prefix('admin')
@@ -82,7 +90,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/reports/export/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdf'])
                 ->name('reports.pdf');
 
-            // Vehicles
             // Vehicles
             Route::resource('vehicles', \App\Http\Controllers\Admin\VehicleController::class);
             Route::patch('vehicles/{vehicle}/toggle-status', [\App\Http\Controllers\Admin\VehicleController::class, 'toggleStatus'])
@@ -112,14 +119,23 @@ Route::middleware('auth')->group(function () {
             Route::post('payments/counter', [\App\Http\Controllers\Admin\PaymentController::class, 'counterPayment'])
                 ->name('payments.counter');
 
-            // Chat — now uses proper controller
+            // Chat
             Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])
                 ->name('chat.index');
 
             // GPS
-            Route::get('gps', function () {
-                return view('admin.gps.index');
-            })->name('gps.index');
+            Route::prefix('gps')->name('gps.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\GpsController::class, 'index'])
+                    ->name('index');
+                Route::get('/vehicles/{vehicle}/history', [\App\Http\Controllers\Admin\GpsController::class, 'history'])
+                    ->name('history');
+                Route::get('/vehicles/{vehicle}/setup', [\App\Http\Controllers\Admin\GpsController::class, 'setup'])
+                    ->name('setup');
+                Route::post('/vehicles/{vehicle}/device', [\App\Http\Controllers\Admin\GpsController::class, 'saveDevice'])
+                    ->name('save-device');
+                Route::delete('/vehicles/{vehicle}/device', [\App\Http\Controllers\Admin\GpsController::class, 'removeDevice'])
+                    ->name('remove-device');
+            });
 
             // Users
             Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])
@@ -131,7 +147,7 @@ Route::middleware('auth')->group(function () {
 
         });
 
-    // ─── Customer Area ─────────────────────────────────────────────────────────
+    // ─── Customer Area ────────────────────────────────────────────────────────
 
     Route::middleware('ensure.customer')
         ->name('customer.')
@@ -158,12 +174,16 @@ Route::middleware('auth')->group(function () {
                 ->name('payments.counter');
             Route::post('/payments/bank-transfer', [\App\Http\Controllers\Customer\PaymentController::class, 'initiateBankTransfer'])
                 ->name('payments.bank-transfer');
+            Route::post('/payments/{booking}/cash', [\App\Http\Controllers\Customer\PaymentController::class, 'cashPayment'])
+                ->name('payments.cash');
+            Route::post('/payments/{booking}/online/confirm', [\App\Http\Controllers\Customer\PaymentController::class, 'onlineConfirm'])
+                ->name('payments.online.confirm');
 
         });
 
 });
 
-// ─── Language Switcher ─────────────────────────────────────────────────────────
+// ─── Language Switcher ────────────────────────────────────────────────────────
 
 Route::post('/language/switch', function () {
     $locale = request('locale');
@@ -180,6 +200,6 @@ Route::post('/language/switch', function () {
     return redirect()->back();
 })->name('language.switch');
 
-// ─── Root Redirect ─────────────────────────────────────────────────────────────
+// ─── Root Redirect ────────────────────────────────────────────────────────────
 
 Route::get('/', fn() => redirect()->route('vehicles.index'));

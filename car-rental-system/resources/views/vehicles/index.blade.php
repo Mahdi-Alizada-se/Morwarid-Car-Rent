@@ -23,11 +23,11 @@
                     </svg>
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="{{ __('vehicles.search_placeholder') }}" class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg
-                                                          focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                              focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <select name="category_id" class="text-sm border border-gray-200 rounded-lg px-3 py-2
-                                                       focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                           focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">{{ __('vehicles.all_categories') }}</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
@@ -37,7 +37,7 @@
                 </select>
 
                 <select name="transmission" class="text-sm border border-gray-200 rounded-lg px-3 py-2
-                                                       focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                                           focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">{{ __('vehicles.all_transmissions') }}</option>
                     <option value="automatic" {{ request('transmission') === 'automatic' ? 'selected' : '' }}>
                         Automatic
@@ -48,14 +48,14 @@
                 </select>
 
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium
-                                                       rounded-lg hover:bg-indigo-700 transition-colors">
+                                                           rounded-lg hover:bg-indigo-700 transition-colors">
                     {{ __('common.filter') }}
                 </button>
 
                 @if(request()->hasAny(['search', 'category_id', 'transmission']))
                     <a href="{{ route('vehicles.index') }}"
                         class="px-4 py-2 text-sm text-gray-600 border border-gray-200
-                                                                                  rounded-lg hover:bg-gray-50 transition-colors">
+                                                                                          rounded-lg hover:bg-gray-50 transition-colors">
                         {{ __('common.clear') }}
                     </a>
                 @endif
@@ -65,10 +65,11 @@
         {{-- Vehicle Grid --}}
         @if($vehicles->isEmpty())
             <div class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-                <svg class="w-14 h-14 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+     stroke-width="1.5" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+</svg>
                 <p class="font-semibold text-gray-600 text-lg">{{ __('vehicles.no_vehicles_found') }}</p>
                 <p class="text-sm text-gray-400 mt-2">{{ __('vehicles.try_different_filters') }}</p>
             </div>
@@ -86,14 +87,14 @@
                                 <div class="w-full h-full flex items-center justify-center bg-gray-100">
                                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            />
                                     </svg>
                                 </div>
                             @endif
 
                             {{-- Status Badge --}}
                             <span class="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full
-                                                                                                            {{ $vehicle->status === 'available'
+                                                                                                                        {{ $vehicle->status === 'available'
                         ? 'bg-green-100 text-green-700'
                         : ($vehicle->status === 'booked' || $vehicle->status === 'active'
                             ? 'bg-orange-100 text-orange-700'
@@ -152,163 +153,168 @@
                         </div>
 
                         {{-- ─── Location Section ──────────────────────────────────────────────────── --}}
-                        <div class="border-t border-gray-100">
+<div class="border-t border-gray-100">
 
-                            @if($vehicle->status === 'available')
+    @if($vehicle->status === 'available')
 
-                                {{-- Available — show pickup location map --}}
-                                <div class="p-0">
-                                    <iframe width="100%" height="150" frameborder="0" scrolling="no"
-                                        src="{{ config('company.osm_embed_url') }}" class="w-full" loading="lazy">
-                                    </iframe>
-                                </div>
-                                <div class="px-4 py-3 bg-green-50 flex items-start justify-between gap-2">
-                                    <div class="flex items-start gap-2">
-                                        <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                                            stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                                        </svg>
-                                        <div>
-                                            <p class="text-sm font-semibold text-green-800">
-                                                {{ config('company.pickup_name') }}
-                                            </p>
-                                            <p class="text-xs text-green-600">{{ config('company.address') }}</p>
-                                        </div>
-                                    </div>
-                                    <a href="{{ config('company.maps_url') }}" target="_blank"
-                                        class="text-xs text-green-700 underline flex-shrink-0 mt-0.5 font-medium">
-                                        Maps →
-                                    </a>
-                                </div>
+      <div class="p-0">
+    <iframe
+        width="100%"
+        height="150"
+        frameborder="0"
+        scrolling="no"
+        loading="lazy"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=69.1875%2C34.5253%2C69.2275%2C34.5853&layer=mapnik&marker=34.5553%2C69.2075"
+        class="w-full">
+    </iframe>
+</div>
+<div class="px-4 py-3 bg-green-50 flex items-start justify-between gap-2">
+    <div class="flex items-start gap-2">
+        <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5"
+             fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+        </svg>
+        <div>
+            <p class="text-sm font-semibold text-green-800">Morwarid Car Hub</p>
+            <p class="text-xs text-green-600">Dasht-e-Barchi, Kabul, Afghanistan</p>
+        </div>
+    </div>
+    <a href="https://maps.google.com/?q=Dasht-e-Barchi+Kabul+Afghanistan"
+       target="_blank"
+       class="text-xs text-green-700 underline flex-shrink-0 mt-0.5 font-medium">
+        Maps →
+    </a>
+</div>
 
-                            @elseif(in_array($vehicle->status, ['booked', 'active']))
+    @elseif(in_array($vehicle->status, ['booked', 'active']))
 
-                                @if($vehicle->last_latitude && $vehicle->last_seen_at?->gt(now()->subMinutes(60)))
+        @if($vehicle->last_latitude && $vehicle->last_seen_at?->gt(now()->subMinutes(10)))
 
-                                    {{-- Has recent GPS data — show live location map --}}
-                                    @php
-                                        $lat = $vehicle->last_latitude;
-                                        $lng = $vehicle->last_longitude;
-                                        $delta = 0.015;
-                                        $osmUrl = "https://www.openstreetmap.org/export/embed.html?bbox=" .
-                                            ($lng - $delta) . "%2C" . ($lat - $delta) . "%2C" .
-                                            ($lng + $delta) . "%2C" . ($lat + $delta) .
-                                            "&layer=mapnik&marker={$lat}%2C{$lng}";
-                                    @endphp
+            @php
+                $lat    = $vehicle->last_latitude;
+                $lng    = $vehicle->last_longitude;
+                $delta  = 0.015;
+                $osmUrl = "https://www.openstreetmap.org/export/embed.html?bbox=" .
+                    ($lng - $delta) . "%2C" . ($lat - $delta) . "%2C" .
+                    ($lng + $delta) . "%2C" . ($lat + $delta) .
+                    "&layer=mapnik&marker={$lat}%2C{$lng}";
+            @endphp
 
-                                    <iframe width="100%" height="150" frameborder="0" scrolling="no" src="{{ $osmUrl }}" class="w-full"
-                                        loading="lazy">
-                                    </iframe>
+            <iframe
+    width="100%"
+    height="150"
+    frameborder="0"
+    scrolling="no"
+    loading="lazy"
+    src="{{ $osmUrl }}"
+    class="w-full">
+</iframe>
 
-                                    <div class="px-4 py-2.5 bg-blue-50">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-1.5">
-                                                <span
-                                                    class="w-2 h-2 rounded-full bg-green-500 animate-pulse
-                                                                                                                                                             inline-block flex-shrink-0"></span>
-                                                <p class="text-xs font-semibold text-blue-800">Live location</p>
-                                            </div>
-                                            <p class="text-xs text-blue-400">
-                                                {{ $vehicle->last_seen_at->diffForHumans() }}
-                                            </p>
-                                        </div>
-                                        <div class="flex items-center gap-3 mt-1">
-                                            <p class="text-xs text-blue-600">
-                                                <svg viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"
-                                                    xmlns:xlink="http://www.w3.org/1999/xlink" fill="#4f46e5" stroke="#4f46e5">
-                                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                                    <g id="SVGRepo_iconCarrier">
-                                                        <title>car_line</title>
-                                                        <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                            <g id="Transport" transform="translate(-288.000000, 0.000000)"
-                                                                fill-rule="nonzero">
-                                                                <g id="car_line" transform="translate(288.000000, 0.000000)">
-                                                                    <path
-                                                                        d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z"
-                                                                        id="MingCute" fill-rule="nonzero"> </path>
-                                                                    <path
-                                                                        d="M15.7639,4 C16.9002,4 17.939,4.64201 18.4472,5.65836 L18.4472,5.65836 L19.8297,8.42332 C20.0735,8.32394 20.3168,8.22155 20.5532,8.10538 C21.0471,7.85869 21.6475,8.05894 21.8944,8.55279 C22.1414,9.04676 21.9412,9.64744 21.4472,9.89443 C20.9532,10.1414 20.7265,10.2169 20.7265,10.2169 L20.7265,10.2169 L21.6833,12.1305 C21.8915,12.5471 22,13.0064 22,13.4721 L22,13.4721 L22,16 C22,16.8885 21.6137,17.6868 21,18.2361 L21,18.2361 L21,19.5 C21,20.3284 20.3284,21 19.5,21 C18.6715,21 18,20.3284 18,19.5 L18,19.5 L18,19 L5.99998,19 L5.99998,19.5 C5.99998,20.3284 5.3284,21 4.49997,21 C3.67155,21 2.99997,20.3284 2.99997,19.5 L2.99997,19.5 L2.99997,18.2361 C2.38623,17.6868 1.99997,16.8885 1.99997,16 L1.99997,16 L1.99997,13.4721 C1.99997,13.0064 2.10841,12.5471 2.31669,12.1305 L2.31669,12.1305 L3.2735,10.2169 C3.03141,10.116 2.79108,10.0105 2.55525,9.89567 L2.55525,9.89567 C2.05878,9.64744 1.85856,9.04676 2.10555,8.55279 C2.35213,8.05962 2.96121,7.86667 3.4517,8.10779 C3.68712,8.22182 3.92811,8.3246 4.17028,8.42332 L4.17028,8.42332 L5.55276,5.65836 C6.06094,4.64201 7.09973,4 8.23604,4 L8.23604,4 Z M18.8341,10.9044 C17.1339,11.4406 14.715,12 12,12 C9.28499,12 6.86601,11.4406 5.16583,10.9044 L4.10555,13.0249 C4.03612,13.1638 3.99997,13.3169 3.99997,13.4721 L3.99997,16 C3.99997,16.5523 4.44769,17 4.99997,17 L19,17 C19.5523,17 20,16.5523 20,16 L20,13.4721 C20,13.3169 19.9638,13.1638 19.8944,13.0249 L18.8341,10.9044 Z M7.49997,13 C8.3284,13 8.99997,13.6716 8.99997,14.5 C8.99997,15.3284 8.3284,16 7.49997,16 C6.67155,16 5.99997,15.3284 5.99997,14.5 C5.99997,13.6716 6.67155,13 7.49997,13 Z M16.5,13 C17.3284,13 18,13.6716 18,14.5 C18,15.3284 17.3284,16 16.5,16 C15.6715,16 15,15.3284 15,14.5 C15,13.6716 15.6715,13 16.5,13 Z M15.7639,6 L8.23604,6 C7.85727,6 7.51101,6.214 7.34162,6.55279 L6.07258,9.09086 C7.61992,9.55498 9.70503,10 12,10 C14.2949,10 16.38,9.55498 17.9274,9.09086 L16.6583,6.55279 C16.4889,6.214 16.1427,6 15.7639,6 Z"
-                                                                        id="形状结合" fill="#09244B"> </path>
-                                                                </g>
-                                                            </g>
-                                                        </g>
-                                                    </g>
-                                                </svg> {{ $vehicle->last_speed }} km/h
-                                            </p>
-                                            <a href="https://maps.google.com/?q={{ $vehicle->last_latitude }},{{ $vehicle->last_longitude }}"
-                                                target="_blank" class="text-xs text-blue-600 underline font-medium">
-                                                Open in Maps →
-                                            </a>
-                                        </div>
-                                    </div>
+<div class="px-4 py-2.5 bg-blue-50">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse
+                         inline-block flex-shrink-0"></span>
+            <p class="text-xs font-semibold text-blue-800">Live location</p>
+        </div>
+        <p class="text-xs text-blue-400">
+            {{ $vehicle->last_seen_at->diffForHumans() }}
+        </p>
+    </div>
+    <div class="flex items-center gap-3 mt-1 flex-wrap">
+        <p class="text-xs font-medium text-blue-600">
+            🚗 {{ $vehicle->last_speed }} km/h
+        </p>
+        @if($vehicle->last_address)
+            <p class="text-xs text-blue-500 truncate">
+                {{ \Illuminate\Support\Str::limit($vehicle->last_address, 30) }}
+            </p>
+        @endif
+        <a href="https://www.google.com/maps?q={{ $vehicle->last_latitude }},{{ $vehicle->last_longitude }}"
+           target="_blank"
+           class="text-xs text-blue-600 underline flex-shrink-0 font-medium">
+            Open in Maps →
+        </a>
+    </div>
+</div>
 
-                                @else
+        @else
 
-                                    {{-- On trip but no GPS data --}}
-                                    <div class="px-4 py-3 bg-orange-50">
-                                        <div class="flex items-start gap-2">
-                                            <svg class="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                                                stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                                            </svg>
-                                            <div>
-                                                <p class="text-sm font-semibold text-orange-700">On a rental trip</p>
-                                                @php
-                                                    $next = $vehicle->bookings()
-                                                        ->whereIn('status', ['confirmed', 'active'])
-                                                        ->orderBy('return_date')
-                                                        ->first();
-                                                @endphp
-                                                @if($next)
-                                                    <p class="text-xs text-orange-500 mt-0.5">
-                                                        Back {{ $next->return_date->format('M j, g:i A') }}
-                                                    </p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                @endif
-
-                            @else
-
-                                {{-- Maintenance --}}
-                                <div class="px-4 py-3 bg-gray-50 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor"
-                                        stroke-width="1.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
-                                    </svg>
-                                    <p class="text-sm text-gray-500">Under maintenance</p>
-                                </div>
-
-                            @endif
-
-                        </div>
-
-                        {{-- Book Now Button --}}
-                        @if($vehicle->status === 'available')
-                            <div class="px-4 pb-4 pt-3">
-                                <a href="{{ route('vehicles.show', $vehicle) }}"
-                                    class="block w-full text-center bg-indigo-600 hover:bg-indigo-700
-                                                                                                                                                  text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">
-                                    {{ __('vehicles.book_now') }}
-                                </a>
-                            </div>
-                        @else
-                            <div class="px-4 pb-4 pt-3">
-                                <button disabled
-                                    class="block w-full text-center bg-gray-200 text-gray-400
-                                                                                                                                                       font-semibold py-2.5 rounded-xl text-sm cursor-not-allowed">
-                                    {{ __('vehicles.not_available') }}
-                                </button>
-                            </div>
+            <div class="px-4 py-3 bg-orange-50">
+                <div class="flex items-start gap-2">
+                    <svg class="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5"
+                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-semibold text-orange-700">
+                            Currently on a rental trip
+                        </p>
+                        @php
+                            $next = $vehicle->bookings()
+                                ->whereIn('status', ['confirmed', 'active'])
+                                ->orderBy('return_date')
+                                ->first();
+                        @endphp
+                        @if($next)
+                            <p class="text-xs text-orange-500 mt-0.5">
+                                Available {{ $next->return_date->format('M j, g:i A') }}
+                            </p>
                         @endif
+                    </div>
+                </div>
+            </div>
+
+        @endif
+
+    @else
+
+        <div class="px-4 py-3 bg-gray-50 flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none"
+                 stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+            </svg>
+            <p class="text-sm text-gray-500">Under maintenance — not available</p>
+        </div>
+
+    @endif
+
+</div>
+
+{{-- Book Now Button --}}
+@if($vehicle->status === 'available')
+    <div class="px-4 pb-4 pt-3">
+        @if(auth()->check() && auth()->user()->role === 'admin')
+            <a href="{{ route('admin.vehicles.show', $vehicle) }}"
+               class="block w-full text-center bg-gray-100 text-gray-600
+                      font-medium py-2.5 rounded-xl text-sm hover:bg-gray-200
+                      transition-colors">
+                View Details (Admin)
+            </a>
+        @else
+            <a href="{{ route('vehicles.show', $vehicle) }}"
+               class="block w-full text-center bg-indigo-600 hover:bg-indigo-700
+                      text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">
+                {{ __('vehicles.book_now') }}
+            </a>
+        @endif
+    </div>
+@else
+    <div class="px-4 pb-4 pt-3">
+        <button disabled
+                class="block w-full text-center bg-gray-200 text-gray-400
+                       font-semibold py-2.5 rounded-xl text-sm cursor-not-allowed">
+            {{ __('vehicles.not_available') }}
+        </button>
+    </div>
+@endif
+
+                    
 
                     </div>
                 @endforeach

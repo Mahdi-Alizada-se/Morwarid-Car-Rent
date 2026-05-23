@@ -88,6 +88,7 @@ class User extends Authenticatable
         'social_provider',
         'social_id',
         'fcm_token',
+        'last_seen_at', // ← ADD
     ];
 
     protected $hidden = [
@@ -103,6 +104,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'driver_license_verified' => 'boolean', // ← ADD
+            'last_seen_at' => 'datetime', // ← ADD
         ];
     }
 

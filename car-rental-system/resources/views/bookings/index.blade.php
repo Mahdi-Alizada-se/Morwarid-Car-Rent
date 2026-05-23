@@ -12,6 +12,7 @@
         </div>
 
         @if($bookings->isEmpty())
+
             {{-- Empty State --}}
             <div class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
                 <svg class="w-14 h-14 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,10 +26,13 @@
                     {{ __('common.nav_vehicles') }}
                 </a>
             </div>
+
         @else
+
             <div class="space-y-4">
                 @foreach($bookings as $booking)
-                    <div class="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-sm transition-shadow">
+                    <div class="bg-white rounded-2xl border border-gray-200 p-5
+                                        hover:shadow-sm transition-shadow">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
 
                             {{-- Vehicle Thumbnail --}}
@@ -39,9 +43,9 @@
                                         alt="{{ $booking->vehicle?->full_name }}">
                                 @else
                                     <div class="w-20 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                                         </svg>
                                     </div>
                                 @endif
@@ -92,23 +96,47 @@
                             </div>
 
                             {{-- Actions --}}
-                            <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="{{ route('customer.bookings.show', $booking) }}" class="px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200
-                                                  rounded-lg hover:bg-indigo-50 transition-colors">
+                            <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+
+                                <a href="{{ route('customer.bookings.show', $booking) }}" class="px-3 py-1.5 text-xs font-medium text-indigo-600
+                                                  border border-indigo-200 rounded-lg hover:bg-indigo-50
+                                                  transition-colors">
                                     {{ __('common.view') }}
                                 </a>
+
+                                @if(in_array($booking->status, ['confirmed', 'active', 'completed']))
+                                    <button onclick="window.open('{{ route('customer.bookings.show', $booking) }}', '_blank')" class="px-3 py-1.5 text-xs font-medium text-gray-600
+                                                               border border-gray-200 rounded-lg hover:bg-gray-50
+                                                               transition-colors flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Print
+                                    </button>
+                                @endif
+
+                                @if($booking->status === 'pending')
+                                    <a href="{{ route('customer.payments.checkout', $booking) }}" class="px-3 py-1.5 text-xs font-medium text-green-600
+                                                          border border-green-200 rounded-lg hover:bg-green-50
+                                                          transition-colors">
+                                        Pay Now
+                                    </a>
+                                @endif
 
                                 @if($booking->canBeCancelled())
                                     <form method="POST" action="{{ route('customer.bookings.cancel', $booking) }}"
                                         onsubmit="return confirm('{{ __('bookings.cancel_confirm') }}')">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200
-                                                                   rounded-lg hover:bg-red-50 transition-colors">
+                                        <button type="submit" class="px-3 py-1.5 text-xs font-medium text-red-600
+                                                                   border border-red-200 rounded-lg hover:bg-red-50
+                                                                   transition-colors">
                                             {{ __('common.cancel') }}
                                         </button>
                                     </form>
                                 @endif
+
                             </div>
 
                         </div>
@@ -122,6 +150,7 @@
                     {{ $bookings->links() }}
                 </div>
             @endif
+
         @endif
 
     </div>

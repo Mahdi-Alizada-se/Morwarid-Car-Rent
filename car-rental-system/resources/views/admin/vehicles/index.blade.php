@@ -43,7 +43,8 @@
                     </option>
                     <option value="booked" {{ request('status') === 'booked' ? 'selected' : '' }}>{{ __('Booked') }}</option>
                     <option value="maintenance" {{ request('status') === 'maintenance' ? 'selected' : '' }}>
-                        {{ __('Maintenance') }}</option>
+                        {{ __('Maintenance') }}
+                    </option>
                 </select>
                 <select name="category_id"
                     class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -75,12 +76,15 @@
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 w-16">{{ __('Photo') }}</th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('Vehicle') }}</th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
-                                {{ __('Category') }}</th>
+                                {{ __('Category') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('Status') }}</th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('Daily Rate') }}</th>
+                                {{ __('Daily Rate') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('Plate') }}</th>
+                                {{ __('Plate') }}
+                            </th>
                             <th class="text-right font-semibold text-gray-600 px-4 py-3">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
@@ -94,10 +98,10 @@
                                             class="w-12 h-10 object-cover rounded-lg border border-gray-200">
                                     @else
                                         <div class="w-12 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                                             </svg>
                                         </div>
                                     @endif
@@ -107,7 +111,8 @@
                                 <td class="px-4 py-3">
                                     <p class="font-semibold text-gray-900">{{ $vehicle->brand }} {{ $vehicle->model }}</p>
                                     <p class="text-gray-500 text-xs">{{ $vehicle->year }} ·
-                                        {{ ucfirst($vehicle->transmission) }} · {{ $vehicle->seats }} {{ __('seats') }}</p>
+                                        {{ ucfirst($vehicle->transmission) }} · {{ $vehicle->seats }} {{ __('seats') }}
+                                    </p>
                                 </td>
 
                                 {{-- Category --}}
@@ -182,6 +187,20 @@
                                             </form>
                                         @endif
 
+
+                                        {{-- GPS Status --}}
+                                        @if($vehicle->tracker_token)
+                                            <span
+                                                title="{{ $vehicle->last_seen_at ? 'GPS: ' . $vehicle->last_seen_at->diffForHumans() : 'GPS: No signal' }}"
+                                                class="p-1.5 rounded-lg inline-flex">
+                                                <span
+                                                    class="w-2 h-2 rounded-full {{ $vehicle->last_seen_at && $vehicle->last_seen_at->gt(now()->subMinutes(10)) ? 'bg-green-500 animate-pulse' : 'bg-gray-300' }}"></span>
+                                            </span>
+                                        @endif
+
+                                        {{-- Edit --}}
+                                        <a href="{{ route('admin.vehicles.edit', $vehicle) }}"
+                                            class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-indigo-50"></a>
                                         {{-- Edit --}}
                                         <a href="{{ route('admin.vehicles.edit', $vehicle) }}"
                                             class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-indigo-50">
@@ -210,10 +229,10 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="px-4 py-12 text-center text-gray-400">
-                                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5"
                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                                     </svg>
                                     <p class="font-medium">{{ __('No vehicles found.') }}</p>
                                     <p class="text-sm mt-1">{{ __('Add your first vehicle to get started.') }}</p>

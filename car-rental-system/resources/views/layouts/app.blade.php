@@ -79,14 +79,15 @@
                             </button>
                         </form>
                     </div>
-
+                    {{-- Chat Widget in Navbar --}}
+                    @include('components.chat-widget')
                     @auth
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="flex items-center gap-2 text-sm font-medium
-                                                                       text-gray-700 hover:text-blue-600">
+                                                                               text-gray-700 hover:text-blue-600">
                                 <div
                                     class="w-8 h-8 rounded-full bg-blue-100 flex items-center
-                                                                        justify-center text-blue-700 font-semibold text-xs">
+                                                                                justify-center text-blue-700 font-semibold text-xs">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                                 </div>
                                 {{ auth()->user()->name }}
@@ -96,7 +97,7 @@
                                 </svg>
                             </button>
                             <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg
-                                                                    border border-gray-100 py-1 z-50">
+                                                                            border border-gray-100 py-1 z-50">
                                 <a href="{{ route('customer.bookings.index') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                     {{ __('common.my_bookings') }}
@@ -111,7 +112,7 @@
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm
-                                                                               text-red-600 hover:bg-gray-50">
+                                                                                       text-red-600 hover:bg-gray-50">
                                         {{ __('common.logout') }}
                                     </button>
                                 </form>
@@ -123,7 +124,7 @@
                             {{ __('common.login') }}
                         </a>
                         <a href="{{ route('register') }}" class="text-sm font-medium bg-blue-600 text-white px-4 py-2
-                                                              rounded-lg hover:bg-blue-700 transition-colors">
+                                                                      rounded-lg hover:bg-blue-700 transition-colors">
                             {{ __('common.register') }}
                         </a>
                     @endauth
@@ -183,7 +184,7 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm
-                                                                   text-red-600 hover:bg-gray-50 rounded-lg">
+                                                                           text-red-600 hover:bg-gray-50 rounded-lg">
                             {{ __('common.logout') }}
                         </button>
                     </form>
@@ -193,7 +194,7 @@
                         {{ __('common.login') }}
                     </a>
                     <a href="{{ route('register') }}" class="block px-4 py-2 text-sm font-medium text-blue-600
-                                                          hover:bg-blue-50 rounded-lg">
+                                                                  hover:bg-blue-50 rounded-lg">
                         {{ __('common.register') }}
                     </a>
                 @endauth
@@ -207,7 +208,7 @@
             @if(session('success'))
                 <div
                     class="flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                                                                    border-green-200 text-green-800 rounded-lg text-sm">
+                                                                                                    border-green-200 text-green-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -218,7 +219,7 @@
             @if(session('error'))
                 <div
                     class="flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                                                                    border-red-200 text-red-800 rounded-lg text-sm">
+                                                                                                    border-red-200 text-red-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -286,9 +287,6 @@
             </div>
         </div>
     </footer>
-
-    {{-- Chat Widget --}}
-    @include('components.chat-widget')
 
     {{-- AI Chatbot Widget --}}
     <x-chatbot-widget />
