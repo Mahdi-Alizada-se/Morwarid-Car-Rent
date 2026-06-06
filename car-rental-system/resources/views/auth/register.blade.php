@@ -21,7 +21,7 @@
                 @if($errors->any())
                     <div
                         class="mb-5 flex items-start gap-3 px-4 py-3 bg-red-50
-                                                                                            border border-red-200 text-red-800 rounded-xl text-sm">
+                                                                                                    border border-red-200 text-red-800 rounded-xl text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -47,9 +47,9 @@
                         </label>
                         <input type="text" id="name" name="name" value="{{ old('name') }}" autofocus autocomplete="name"
                             placeholder="{{ __('common.full_name_placeholder') }}" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                                  focus:border-transparent
-                                                                  @error('name') border-red-400 bg-red-50 @enderror">
+                                                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                                                      focus:border-transparent
+                                                                      @error('name') border-red-400 bg-red-50 @enderror">
                         @error('name')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -63,9 +63,9 @@
                         </label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" autocomplete="email"
                             placeholder="you@example.com" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                                  focus:border-transparent
-                                                                  @error('email') border-red-400 bg-red-50 @enderror">
+                                                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                                                      focus:border-transparent
+                                                                      @error('email') border-red-400 bg-red-50 @enderror">
                         @error('email')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -83,9 +83,9 @@
                         </label>
                         <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="+93 700 000 000"
                             class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                                  focus:border-transparent
-                                                                  @error('phone') border-red-400 bg-red-50 @enderror">
+                                                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                                                      focus:border-transparent
+                                                                      @error('phone') border-red-400 bg-red-50 @enderror">
                         @error('phone')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -100,8 +100,8 @@
                         </label>
                         <input type="text" id="driver_license_number" name="driver_license_number"
                             value="{{ old('driver_license_number') }}" required placeholder="e.g. KBL-123456" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                          focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                          @error('driver_license_number') border-red-400 bg-red-50 @enderror">
+                                              focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                              @error('driver_license_number') border-red-400 bg-red-50 @enderror">
                         @error('driver_license_number')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -115,19 +115,19 @@
                         </label>
 
                         <label class="block border-2 border-dashed border-gray-300 rounded-xl p-4
-                                          text-center cursor-pointer hover:border-indigo-400 transition-colors"
+                                              text-center cursor-pointer hover:border-indigo-400 transition-colors"
                             :class="fileName ? 'border-indigo-400 bg-indigo-50' : ''">
 
                             <input type="file" name="driver_license_image"
                                 accept="image/jpeg,image/png,image/jpg,application/pdf" required class="hidden" @change="
-                                           const f = $event.target.files[0];
-                                           if (f) {
-                                               fileName = f.name;
-                                               preview = f.type.startsWith('image/')
-                                                   ? URL.createObjectURL(f)
-                                                   : null;
-                                           }
-                                       ">
+                                               const f = $event.target.files[0];
+                                               if (f) {
+                                                   fileName = f.name;
+                                                   preview = f.type.startsWith('image/')
+                                                       ? URL.createObjectURL(f)
+                                                       : null;
+                                               }
+                                           ">
 
                             <template x-if="!fileName">
                                 <div>
@@ -177,10 +177,11 @@
                             <span class="text-red-500">*</span>
                         </label>
                         <input type="password" id="password" name="password" autocomplete="new-password"
-                            placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                                  focus:border-transparent
-                                                                  @error('password') border-red-400 bg-red-50 @enderror">
+                            placeholder="••••••••"
+                            class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
+                                                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                                                      focus:border-transparent
+                                                                      @error('password') border-red-400 bg-red-50 @enderror">
                         @error('password')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -194,13 +195,24 @@
                         </label>
                         <input type="password" id="password_confirmation" name="password_confirmation"
                             autocomplete="new-password" placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                                  focus:border-transparent">
+                                                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                                                      focus:border-transparent">
+                    </div>
+
+                    {{-- Avatar --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Profile Photo <span class="text-gray-400 text-xs">(optional)</span>
+                        </label>
+                        <input type="file" name="avatar" accept="image/*" class="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                      file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700
+                      hover:file:bg-indigo-100">
                     </div>
 
                     {{-- Submit --}}
                     <button type="submit" class="w-full py-2.5 bg-indigo-600 text-white text-sm font-semibold
-                                                               rounded-xl hover:bg-indigo-700 transition-colors">
+                                                                   rounded-xl hover:bg-indigo-700 transition-colors">
                         {{ __('common.create_account') }}
                     </button>
 
@@ -217,7 +229,7 @@
                 <div class="space-y-3">
                     <a href=" {{ route('social.redirect', 'google') }}"
                         class="flex items-center justify-center gap-3 w-full py-2.5 border border-gray-200
-                                                          rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                              rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="#4285F4"
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -233,7 +245,7 @@
 
                     <a href="{{ route('social.redirect', 'facebook') }}"
                         class="flex items-center justify-center gap-3 w-full py-2.5 border border-gray-200
-                                                          rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                              rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
                             <path
                                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />

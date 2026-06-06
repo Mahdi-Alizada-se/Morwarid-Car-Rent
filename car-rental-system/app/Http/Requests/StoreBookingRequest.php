@@ -15,22 +15,14 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
-            'pickup_date' => [
-                'required',
-                'date',
-                'after:' . now()->addHour()->toDateTimeString(),
-            ],
-            'return_date' => [
-                'required',
-                'date',
-                'after:pickup_date',
-                'before:' . now()->addDays(90)->toDateTimeString(),
-            ],
-            'pickup_location' => ['nullable', 'string', 'max:255'],
-            'return_location' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-            'payment_method' => ['nullable', Rule::in(['stripe', 'paypal', 'counter'])],
+            'vehicle_id' => ['required', 'exists:vehicles,id'],
+            'pickup_date' => ['required', 'date', 'after_or_equal:today'],
+            'return_date' => ['required', 'date', 'after:pickup_date'],
+            'payment_method' => ['nullable', 'string', 'in:cash,bank_transfer,mastercard,counter,online'],
+            'bank_reference' => ['nullable', 'string', 'max:255'],
+            'bank_sender_name' => ['nullable', 'string', 'max:255'],
+            'card_name' => ['nullable', 'string', 'max:255'],
+            'card_last_four' => ['nullable', 'string', 'max:4'],
         ];
     }
 

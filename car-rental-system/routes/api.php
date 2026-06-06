@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\V1\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -12,25 +12,24 @@ use Illuminate\Support\Facades\Route;
 | All routes are versioned under /api/v1/
 |
 */
-
+Broadcast::routes(['middleware' => ['web', 'auth']]);
 Route::prefix('v1')->group(function () {
 
-    // ─── Public Auth Routes ───────────────────────────────────────────────────────
+    // ─── Public Auth Routes ───────────────────────────────────────────────────
 
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register'])
             ->name('api.v1.auth.register');
-
         Route::post('/login', [AuthController::class, 'login'])
             ->name('api.v1.auth.login');
     });
 
-    // ─── Public Availability Check ────────────────────────────────────────────────
+    // ─── Public Availability Check ────────────────────────────────────────────
 
     Route::post('/availability/check', [\App\Http\Controllers\Api\V1\VehicleController::class, 'checkAvailability'])
         ->name('api.v1.availability.check');
 
-    // ─── Chatbot Routes (public — no auth required) ───────────────────────────────
+    // ─── Chatbot Routes (public — no auth required) ───────────────────────────
 
     Route::prefix('chatbot')->group(function () {
         Route::get('/health', [\App\Http\Controllers\Api\V1\ChatbotController::class, 'health'])
@@ -43,7 +42,22 @@ Route::prefix('v1')->group(function () {
             ->name('api.v1.chatbot.clear');
     });
 
-    // ─── Protected Routes (Sanctum) ───────────────────────────────────────────────
+    // ─── Chat Routes (session + sanctum auth — works for admin and customer) ──
+
+    Route::middleware('web', 'auth')->prefix('chat')->group(function () {
+        Route::get('/room', [\App\Http\Controllers\Api\V1\ChatController::class, 'room'])
+            ->name('api.v1.chat.room');
+        Route::get('/rooms', [\App\Http\Controllers\Api\V1\ChatController::class, 'rooms'])
+            ->name('api.v1.chat.rooms');
+        Route::get('/rooms/{chatRoom}/messages', [\App\Http\Controllers\Api\V1\ChatController::class, 'messages'])
+            ->name('api.v1.chat.messages');
+        Route::post('/rooms/{chatRoom}/messages', [\App\Http\Controllers\Api\V1\ChatController::class, 'sendMessage'])
+            ->name('api.v1.chat.send');
+        Route::post('/rooms/{chatRoom}/read', [\App\Http\Controllers\Api\V1\ChatController::class, 'markRead'])
+            ->name('api.v1.chat.read');
+    });
+
+    // ─── Protected Routes (Sanctum) ───────────────────────────────────────────
 
     Route::middleware('auth:sanctum')->group(function () {
 
@@ -55,7 +69,7 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.auth.me');
         });
 
-        // ─── Payments (customer) ──────────────────────────────────────────────────
+        // ─── Payments ─────────────────────────────────────────────────────────
 
         Route::post('/payments/bank-transfer/initiate', [\App\Http\Controllers\Api\V1\PaymentController::class, 'initiateBankTransfer'])
             ->name('api.v1.payments.initiate');
@@ -66,11 +80,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/payments/{payment}/invoice', [\App\Http\Controllers\Api\V1\PaymentController::class, 'invoice'])
             ->name('api.v1.payments.invoice');
 
-        // ─── Customer Routes ──────────────────────────────────────────────────────
+        // ─── Customer Routes ──────────────────────────────────────────────────
 
         Route::middleware('ensure.customer')->group(function () {
 
-            // Vehicles (read-only for customers)
+            // Vehicles
             Route::get('/vehicles', [\App\Http\Controllers\Api\V1\VehicleController::class, 'index'])
                 ->name('api.v1.vehicles.index');
             Route::get('/vehicles/{vehicle}', [\App\Http\Controllers\Api\V1\VehicleController::class, 'show'])
@@ -86,18 +100,6 @@ Route::prefix('v1')->group(function () {
             Route::patch('/bookings/{booking}/cancel', [\App\Http\Controllers\Api\V1\BookingController::class, 'cancel'])
                 ->name('api.v1.bookings.cancel');
 
-            // Chat
-            Route::get('/chat/room', [\App\Http\Controllers\Api\V1\ChatController::class, 'room'])
-                ->name('api.v1.chat.room');
-            Route::get('/chat/rooms', [\App\Http\Controllers\Api\V1\ChatController::class, 'rooms'])
-                ->name('api.v1.chat.rooms');
-            Route::get('/chat/rooms/{chatRoom}/messages', [\App\Http\Controllers\Api\V1\ChatController::class, 'messages'])
-                ->name('api.v1.chat.messages');
-            Route::post('/chat/rooms/{chatRoom}/messages', [\App\Http\Controllers\Api\V1\ChatController::class, 'sendMessage'])
-                ->name('api.v1.chat.send');
-            Route::post('/chat/rooms/{chatRoom}/read', [\App\Http\Controllers\Api\V1\ChatController::class, 'markRead'])
-                ->name('api.v1.chat.read');
-
             // GPS
             Route::post('/gps/update', [\App\Http\Controllers\Api\V1\GpsController::class, 'update'])
                 ->name('api.v1.gps.update');
@@ -109,7 +111,7 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.gps.active');
         });
 
-        // ─── Admin Routes ─────────────────────────────────────────────────────────
+        // ─── Admin Routes ─────────────────────────────────────────────────────
 
         Route::middleware('ensure.admin')->prefix('admin')->group(function () {
 
@@ -117,7 +119,6 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('vehicles', \App\Http\Controllers\Api\V1\VehicleController::class)
                 ->names('api.v1.admin.vehicles');
 
-            // Vehicle Categories (using VehicleController since no separate category controller exists)
             Route::get('vehicle-categories', [\App\Http\Controllers\Api\V1\VehicleController::class, 'index'])
                 ->name('api.v1.admin.vehicle-categories.index');
 
@@ -132,14 +133,6 @@ Route::prefix('v1')->group(function () {
             // Payments
             Route::get('payments', [\App\Http\Controllers\Api\V1\PaymentController::class, 'show'])
                 ->name('api.v1.admin.payments.index');
-
-            // Chat (admin reads all rooms)
-            Route::get('chats', [\App\Http\Controllers\Api\V1\ChatController::class, 'rooms'])
-                ->name('api.v1.admin.chats.index');
-            Route::get('chats/{chatRoom}', [\App\Http\Controllers\Api\V1\ChatController::class, 'messages'])
-                ->name('api.v1.admin.chats.show');
-            Route::post('chats/{chatRoom}/messages', [\App\Http\Controllers\Api\V1\ChatController::class, 'sendMessage'])
-                ->name('api.v1.admin.chats.send');
         });
     });
 });

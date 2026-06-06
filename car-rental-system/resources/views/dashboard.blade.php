@@ -27,7 +27,7 @@
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('admin.dashboard') }}"
                         class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white
-                                                                                  font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
+                                                                                                  font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -36,17 +36,22 @@
                     </a>
                 @endif
 
-                <a href="{{ route('vehicles.index') }}"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200
-                                                  text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
-                    v>
+                <a href="{{ route('vehicles.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200
+                  text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3
+                 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55
+                 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13
+                 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5
+                 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+                    </svg>
                     {{ __('common.nav_vehicles') }}
                 </a>
 
                 @if(auth()->user()->isCustomer())
                     <a href="{{ route('customer.bookings.index') }}"
                         class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200
-                                                                                  text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                                                                                                  text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

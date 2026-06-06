@@ -14,7 +14,7 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    // ─── Register ─────────────────────────────────────────────────────────────────
+    // ─── Register ─────────────────────────────────────────────────────────────
 
     public function showRegister(): View
     {
@@ -30,11 +30,19 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'driver_license_number' => ['required', 'string', 'max:100'],
             'driver_license_image' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
         // Store the license image
         $licensePath = $request->file('driver_license_image')
             ->store('licenses/' . date('Y/m'), 'public');
+
+        // Store avatar if uploaded
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')
+                ->store('avatars', 'public');
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -44,6 +52,7 @@ class AuthController extends Controller
             'role' => 'customer',
             'driver_license_number' => $request->driver_license_number,
             'driver_license_image' => $licensePath,
+            'avatar' => $avatarPath,
         ]);
 
         Auth::login($user);
@@ -55,7 +64,7 @@ class AuthController extends Controller
             ->with('success', 'Welcome! Your account has been created.');
     }
 
-    // ─── Login ────────────────────────────────────────────────────────────────────
+    // ─── Login ─────────────────────────────────────────────────────────────────
 
     public function showLogin(): View
     {
@@ -77,7 +86,7 @@ class AuthController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    // ─── Logout ───────────────────────────────────────────────────────────────────
+    // ─── Logout ────────────────────────────────────────────────────────────────
 
     public function logout(Request $request): RedirectResponse
     {

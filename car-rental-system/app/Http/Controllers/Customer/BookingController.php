@@ -33,25 +33,73 @@ class BookingController extends Controller
     }
 
     // ─── Store Booking ────────────────────────────────────────────────────────
-
     public function store(StoreBookingRequest $request): RedirectResponse
     {
-
         // Block admins from making bookings
         if (auth()->user()->role === 'admin') {
             return redirect()
                 ->back()
-                ->with('error', 'Administrators cannot make bookings. This action is for customers only.');
+                ->with('error', 'Administrators cannot make bookings.');
         }
+
         try {
             $booking = $this->bookingService->createBooking(
                 auth()->user(),
                 $request->validated()
             );
 
-            return redirect()
-                ->route('bookings.confirmed', $booking)
-                ->with('success', __('bookings.created_successfully'));
+            $paymentMethod = $request->input('payment_method', 'cash');
+
+            if ($paymentMethod === 'bank_transfer') {
+
+                // Bank transfer needs admin review — keep booking pending
+                $booking->payments()->create([
+                    'amount' => $booking->total_amount,
+                    'method' => 'bank_transfer',
+                    'status' => 'receipt_uploaded',
+                    'user_id' => auth()->id(),
+                    'notes' => 'Reference: ' . $request->input('bank_reference', '')
+                        . ' | Sender: ' . $request->input('bank_sender_name', ''),
+                ]);
+
+                return redirect()
+                    ->route('bookings.confirmed', $booking)
+                    ->with('success', 'Booking received! Your bank transfer is under review. We will confirm your booking shortly.');
+
+            } elseif ($paymentMethod === 'mastercard') {
+
+                // Auto-confirm booking
+                $booking->update(['status' => 'confirmed']);
+
+                $booking->payments()->create([
+                    'amount' => $booking->total_amount,
+                    'method' => 'online',
+                    'status' => 'paid',
+                    'user_id' => auth()->id(),
+                    'notes' => 'Card ending in: ' . $request->input('card_last_four', '****'),
+                ]);
+
+                return redirect()
+                    ->route('bookings.confirmed', $booking)
+                    ->with('success', 'Booking confirmed! Your card payment was successful.');
+
+            } else {
+                // Cash — pending until admin confirms within 5 hours
+                $booking->payments()->create([
+                    'amount' => $booking->total_amount,
+                    'method' => 'cash',
+                    'status' => 'pending',
+                    'user_id' => auth()->id(),
+                ]);
+
+                // Schedule auto-cancel after 5 hours if not confirmed
+                \App\Jobs\AutoCancelUnconfirmedBooking::dispatch($booking)
+                    ->delay(now()->addHours(5));
+
+                return redirect()
+                    ->route('bookings.confirmed', $booking)
+                    ->with('success', 'Booking received! Please pay at our office within 5 hours or your booking will be automatically cancelled.');
+            }
 
         } catch (BookingConflictException $e) {
             return back()
@@ -59,7 +107,6 @@ class BookingController extends Controller
                 ->withErrors(['vehicle_id' => $e->getMessage()]);
         }
     }
-
     // ─── My Bookings List ─────────────────────────────────────────────────────
 
     public function index(Request $request): View

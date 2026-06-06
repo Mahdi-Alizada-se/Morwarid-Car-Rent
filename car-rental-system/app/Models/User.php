@@ -89,6 +89,7 @@ class User extends Authenticatable
         'social_id',
         'fcm_token',
         'last_seen_at', // ← ADD
+        'avatar',  // ← ADD THIS
     ];
 
     protected $hidden = [

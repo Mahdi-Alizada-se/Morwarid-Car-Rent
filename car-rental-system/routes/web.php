@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ─── Traccar Webhook (no auth, no CSRF) ──────────────────────────────────────
-
+Broadcast::routes(['middleware' => ['web', 'auth']]);
 Route::match(['GET', 'POST'], '/webhooks/traccar', [\App\Http\Controllers\Webhooks\TraccarWebhookController::class, 'handle'])
     ->name('webhooks.traccar');
 

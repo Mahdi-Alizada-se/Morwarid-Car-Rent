@@ -93,13 +93,13 @@ class ChatController extends Controller
         ]);
     }
 
-    // ─── Get Messages ─────────────────────────────────────────────────────────────
+    // ─── Get Messages ─────────────────────────────────────────────────────────
 
     public function messages(Request $request, ChatRoom $chatRoom): JsonResponse
     {
         $user = auth()->user();
 
-        // Security check
+        // Customer can only see their own room
         if ($user->isCustomer() && $chatRoom->customer_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
@@ -127,8 +127,6 @@ class ChatController extends Controller
 
     // ─── Send Message ─────────────────────────────────────────────────────────
 
-    // ─── Send Message ─────────────────────────────────────────────────────────────
-
     public function sendMessage(Request $request, ChatRoom $chatRoom): JsonResponse
     {
         $user = auth()->user();
@@ -142,7 +140,7 @@ class ChatController extends Controller
             'body' => ['required', 'string', 'max:2000'],
         ]);
 
-        $message = \App\Models\Message::create([
+        $message = Message::create([
             'chat_room_id' => $chatRoom->id,
             'sender_id' => $user->id,
             'body' => $request->body,
@@ -163,7 +161,7 @@ class ChatController extends Controller
             'created_at' => $message->created_at->toISOString(),
         ];
 
-        broadcast(new \App\Events\NewChatMessage($message))->toOthers();
+        broadcast(new NewChatMessage($message))->toOthers();
 
         return response()->json([
             'success' => true,

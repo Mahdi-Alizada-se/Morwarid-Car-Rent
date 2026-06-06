@@ -68,10 +68,13 @@
                       {{ request()->routeIs('admin.vehicles.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42
+             1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45
+             1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83
+             0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5
+             16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5
+             1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
                     </svg>
                     <span>{{ __('common.nav_vehicles') }}</span>
                 </a>
@@ -94,10 +97,9 @@
                       {{ request()->routeIs('admin.payments.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75" />
+                    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89
+             2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
                     </svg>
                     <span>{{ __('common.nav_payments') }}</span>
                 </a>
@@ -116,16 +118,34 @@
                 </a>
 
                 {{-- Chat --}}
+                @php
+                    $totalUnreadMessages = \App\Models\Message::whereHas('chatRoom')
+                        ->where('is_read', false)
+                        ->whereHas('sender', fn($q) => $q->where('role', 'customer'))
+                        ->count();
+                @endphp
                 <a href="{{ route('admin.chat.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
-                      {{ request()->routeIs('admin.chat.*')
+          {{ request()->routeIs('admin.chat.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125
+              0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0
+              11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994
+              2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0
+              01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626
+              2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0
+              0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25
+              6.741v6.018z" />
                     </svg>
-                    <span>{{ __('common.nav_chat') }}</span>
+                    <span class="flex-1">{{ __('common.nav_chat') }}</span>
+                    @if($totalUnreadMessages > 0)
+                        <span class="chat-nav-badge w-5 h-5 bg-red-500 text-white text-xs font-bold
+                                 rounded-full flex items-center justify-center flex-shrink-0">
+                            {{ $totalUnreadMessages > 9 ? '9+' : $totalUnreadMessages }}
+                        </span>
+                    @endif
                 </a>
 
                 {{-- GPS Tracking --}}
@@ -252,8 +272,9 @@
             {{-- Flash Messages --}}
             <div class="px-4 lg:px-6 pt-4">
                 @if(session('success'))
-                    <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                                    border-green-200 text-green-800 rounded-lg text-sm">
+                    <div
+                        class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 border
+                                                                        border-green-200 text-green-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -264,7 +285,7 @@
                 @endif
                 @if(session('error'))
                     <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                                    border-red-200 text-red-800 rounded-lg text-sm">
+                                                                        border-red-200 text-red-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -282,6 +303,45 @@
 
         </div>
     </div>
+
+    {{-- Echo + Reverb for real-time features --}}
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+        // Set up Echo with Reverb
+        const PusherClient = Pusher;
+
+        window.Echo = {
+            _channels: {},
+
+            private(channel) {
+                const key = 'private-' + channel;
+                const pusher = new PusherClient('{{ config('broadcasting.connections.reverb.key') }}', {
+                    wsHost: '{{ config('broadcasting.connections.reverb.options.host', 'localhost') }}',
+                    wsPort:           {{ config('broadcasting.connections.reverb.options.port', 8080) }},
+                    wssPort:          {{ config('broadcasting.connections.reverb.options.port', 8080) }},
+                    forceTLS: false,
+                    enabledTransports: ['ws'],
+                    cluster: 'mt1',
+                    authEndpoint: '/broadcasting/auth',
+                    auth: {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        }
+                    }
+                });
+
+                const sub = pusher.subscribe(key);
+
+                return {
+                    listen(event, callback) {
+                        const eventName = event.startsWith('.') ? event.slice(1) : event;
+                        sub.bind(eventName, callback);
+                        return this;
+                    }
+                };
+            }
+        };
+    </script>
 
     @stack('scripts')
 </body>

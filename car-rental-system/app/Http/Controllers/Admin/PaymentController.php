@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentController extends Controller
 {
@@ -67,6 +68,12 @@ class PaymentController extends Controller
 
         $this->paymentService->confirmPayment($payment, auth()->user());
 
+        // Also confirm the booking
+        $payment->booking?->update(['status' => 'confirmed']);
+
+        // Clear dashboard cache so counts update immediately
+        Cache::forget('analytics:dashboard_stats');
+
         return redirect()
             ->route('admin.payments.show', $payment)
             ->with('success', 'Payment confirmed and booking activated.');
@@ -81,6 +88,9 @@ class PaymentController extends Controller
         ]);
 
         $this->paymentService->rejectReceipt($payment, $request->reason);
+
+        // Clear dashboard cache
+        Cache::forget('analytics:dashboard_stats');
 
         return redirect()
             ->route('admin.payments.show', $payment)
@@ -103,3 +113,5 @@ class PaymentController extends Controller
             ->with('success', 'Counter payment recorded and booking confirmed.');
     }
 }
+
+
