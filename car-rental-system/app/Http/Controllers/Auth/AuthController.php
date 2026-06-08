@@ -90,6 +90,14 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        // Clear chatbot history from cache
+        $sessionId = $request->cookie('chatbot_session_id')
+            ?? $request->input('chatbot_session_id');
+
+        if ($sessionId) {
+            \Illuminate\Support\Facades\Cache::forget('chatbot:' . $sessionId);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

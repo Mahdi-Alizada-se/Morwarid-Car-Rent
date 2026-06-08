@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-50">
+@php
+    $isRtl = in_array(app()->getLocale(), ['fa', 'ps']);
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" class="h-full">
+
+</html>
 
 <head>
     <meta charset="UTF-8">
@@ -16,6 +21,15 @@
         [x-cloak] {
             display: none !important;
         }
+
+        @if(in_array(app()->getLocale(), ['fa', 'ps']))
+            body {
+                font-family: 'Tahoma', 'Arial', sans-serif;
+                direction: rtl;
+                text-align: right;
+            }
+
+        @endif
     </style>
 
     @stack('styles')
@@ -142,7 +156,7 @@
                     <span class="flex-1">{{ __('common.nav_chat') }}</span>
                     @if($totalUnreadMessages > 0)
                         <span class="chat-nav-badge w-5 h-5 bg-red-500 text-white text-xs font-bold
-                                 rounded-full flex items-center justify-center flex-shrink-0">
+                                                 rounded-full flex items-center justify-center flex-shrink-0">
                             {{ $totalUnreadMessages > 9 ? '9+' : $totalUnreadMessages }}
                         </span>
                     @endif
@@ -238,7 +252,7 @@
                         @csrf
                         <input type="hidden" name="locale" value="en">
                         <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                   {{ app()->getLocale() === 'en'
+                       {{ app()->getLocale() === 'en'
     ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                             EN
@@ -248,10 +262,20 @@
                         @csrf
                         <input type="hidden" name="locale" value="fa">
                         <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                   {{ app()->getLocale() === 'fa'
+                       {{ app()->getLocale() === 'fa'
     ? 'bg-white text-blue-600 shadow-sm'
     : 'text-gray-500 hover:text-gray-700' }}">
                             FA
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('language.switch') }}">
+                        @csrf
+                        <input type="hidden" name="locale" value="ps">
+                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
+                       {{ app()->getLocale() === 'ps'
+    ? 'bg-white text-blue-600 shadow-sm'
+    : 'text-gray-500 hover:text-gray-700' }}">
+                            PS
                         </button>
                     </form>
                 </div>
@@ -274,7 +298,7 @@
                 @if(session('success'))
                     <div
                         class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                                                        border-green-200 text-green-800 rounded-lg text-sm">
+                                                                                        border-green-200 text-green-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -284,8 +308,9 @@
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                                                        border-red-200 text-red-800 rounded-lg text-sm">
+                    <div
+                        class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 border
+                                                                                        border-red-200 text-red-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

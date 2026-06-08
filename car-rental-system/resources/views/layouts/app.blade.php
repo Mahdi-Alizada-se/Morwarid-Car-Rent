@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+@php
+    $isRtl = in_array(app()->getLocale(), ['fa', 'ps']);
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" class="h-full">
 
 <head>
     <meta charset="UTF-8">
@@ -16,6 +19,15 @@
         [x-cloak] {
             display: none !important;
         }
+
+        @if(in_array(app()->getLocale(), ['fa', 'ps']))
+            body {
+                font-family: 'Tahoma', 'Arial', sans-serif;
+                direction: rtl;
+                text-align: right;
+            }
+
+        @endif
     </style>
 
     @stack('styles')
@@ -57,27 +69,64 @@
                 <div class="hidden md:flex items-center gap-3">
 
                     {{-- Language Switcher --}}
-                    <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                        <form method="POST" action="{{ route('language.switch') }}">
-                            @csrf
-                            <input type="hidden" name="locale" value="en">
-                            <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                           {{ app()->getLocale() === 'en'
-    ? 'bg-white text-blue-600 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700' }}">
-                                EN
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ route('language.switch') }}">
-                            @csrf
-                            <input type="hidden" name="locale" value="fa">
-                            <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                           {{ app()->getLocale() === 'fa'
-    ? 'bg-white text-blue-600 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700' }}">
-                                FA
-                            </button>
-                        </form>
+                    <div class="relative" x-data="{ langOpen: false }">
+                        <button @click="langOpen = !langOpen" class="flex items-center gap-1.5 px-3 py-1.5 text-white text-sm
+                                       font-medium rounded-lg transition-colors" style="background-color: #4F46E5;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 64 64"
+                                fill="none" stroke="currentColor" stroke-width="3">
+                                <circle cx="32" cy="32" r="28" />
+                                <path d="M32 4 C32 4 20 18 20 32 C20 46 32 60 32 60" />
+                                <path d="M32 4 C32 4 44 18 44 32 C44 46 32 60 32 60" />
+                                <line x1="4" y1="32" x2="60" y2="32" />
+                                <line x1="8" y1="18" x2="56" y2="18" />
+                                <line x1="8" y1="46" x2="56" y2="46" />
+                            </svg>
+                            <span class="text-xs font-bold text-white uppercase">
+                                {{ app()->getLocale() }}
+                            </span>
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {{-- Dropdown --}}
+                        <div x-show="langOpen" x-cloak @click.outside="langOpen = false" class="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-lg
+                                    border border-gray-100 py-1 z-50">
+                            <form method="POST" action="{{ route('language.switch') }}">
+                                @csrf
+                                <input type="hidden" name="locale" value="en">
+                                <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                                               hover:bg-gray-50 transition-colors
+                                               {{ app()->getLocale() === 'en'
+    ? 'text-indigo-600 font-bold'
+    : 'text-gray-700' }}">
+                                    🇺🇸 English
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('language.switch') }}">
+                                @csrf
+                                <input type="hidden" name="locale" value="fa">
+                                <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                                               hover:bg-gray-50 transition-colors
+                                               {{ app()->getLocale() === 'fa'
+    ? 'text-indigo-600 font-bold'
+    : 'text-gray-700' }}">
+                                    🇦🇫 دری
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('language.switch') }}">
+                                @csrf
+                                <input type="hidden" name="locale" value="ps">
+                                <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                                               hover:bg-gray-50 transition-colors
+                                               {{ app()->getLocale() === 'ps'
+    ? 'text-indigo-600 font-bold'
+    : 'text-gray-700' }}">
+                                    🇦🇫 پښتو
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     {{-- Chat Widget in Navbar --}}
@@ -86,13 +135,14 @@
                     @auth
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="flex items-center gap-2 text-sm font-medium
-                                                   text-gray-700 hover:text-blue-600">
+                                               text-gray-700 hover:text-blue-600">
                                 @if(auth()->user()->avatar)
                                     <img src="{{ asset('storage/' . auth()->user()->avatar) }}"
                                         class="w-8 h-8 rounded-full object-cover border border-gray-200">
                                 @else
-                                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white
-                                                                flex items-center justify-center text-sm font-bold">
+                                    <div class="w-8 h-8 rounded-full text-white
+                                                        flex items-center justify-center text-sm font-bold"
+                                        style="background-color: #4F46E5;">
                                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                     </div>
                                 @endif
@@ -103,7 +153,7 @@
                                 </svg>
                             </button>
                             <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg
-                                                border border-gray-100 py-1 z-50">
+                                            border border-gray-100 py-1 z-50">
                                 <a href="{{ route('customer.bookings.index') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                     {{ __('common.my_bookings') }}
@@ -118,7 +168,7 @@
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm
-                                                           text-red-600 hover:bg-gray-50">
+                                                       text-red-600 hover:bg-gray-50">
                                         {{ __('common.logout') }}
                                     </button>
                                 </form>
@@ -129,8 +179,8 @@
                             class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
                             {{ __('common.login') }}
                         </a>
-                        <a href="{{ route('register') }}" class="text-sm font-medium bg-blue-600 text-white px-4 py-2
-                                          rounded-lg hover:bg-blue-700 transition-colors"
+                        <a href="{{ route('register') }}"
+                            class="text-sm font-medium text-white px-4 py-2 rounded-lg transition-colors"
                             style="background-color: #4F46E5;">
                             {{ __('common.register') }}
                         </a>
@@ -175,6 +225,16 @@
                                 FA
                             </button>
                         </form>
+                        <form method="POST" action="{{ route('language.switch') }}">
+                            @csrf
+                            <input type="hidden" name="locale" value="ps">
+                            <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
+                                           {{ app()->getLocale() === 'ps'
+    ? 'bg-white text-blue-600 shadow-sm'
+    : 'text-gray-500 hover:text-gray-700' }}">
+                                PS
+                            </button>
+                        </form>
                     </div>
                 </div>
 
@@ -191,7 +251,7 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm
-                                               text-red-600 hover:bg-gray-50 rounded-lg">
+                                           text-red-600 hover:bg-gray-50 rounded-lg">
                             {{ __('common.logout') }}
                         </button>
                     </form>
@@ -200,8 +260,8 @@
                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         {{ __('common.login') }}
                     </a>
-                    <a href="{{ route('register') }}" class="block px-4 py-2 text-sm font-medium text-blue-600
-                                      hover:bg-blue-50 rounded-lg">
+                    <a href="{{ route('register') }}"
+                        class="block px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg">
                         {{ __('common.register') }}
                     </a>
                 @endauth
@@ -214,7 +274,7 @@
         <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
             @if(session('success'))
                 <div class="flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                            border-green-200 text-green-800 rounded-lg text-sm">
+                                    border-green-200 text-green-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -224,7 +284,7 @@
             @endif
             @if(session('error'))
                 <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                            border-red-200 text-red-800 rounded-lg text-sm">
+                                    border-red-200 text-red-800 rounded-lg text-sm">
                     <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -342,8 +402,6 @@
                             };
                         }
                     };
-
-                    console.log('Echo ready with key:', reverbKey);
                 })();
             </script>
         @endif

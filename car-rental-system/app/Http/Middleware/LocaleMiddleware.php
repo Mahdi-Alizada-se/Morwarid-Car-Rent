@@ -12,7 +12,7 @@ class LocaleMiddleware
     /**
      * Supported locales in the application.
      */
-    private const SUPPORTED_LOCALES = ['en', 'fa'];
+    private const SUPPORTED_LOCALES = ['en', 'fa', 'ps'];
 
     /**
      * Handle an incoming request.

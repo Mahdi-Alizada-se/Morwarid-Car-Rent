@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\ChatbotService;
-use App\Services\FaqService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -13,7 +12,6 @@ class ChatbotController extends Controller
 {
     public function __construct(
         private ChatbotService $chatbot,
-        private FaqService $faq,
     ) {
     }
 
@@ -43,15 +41,7 @@ class ChatbotController extends Controller
         $userMessage = trim($request->message);
         $sessionId = $request->session_id;
 
-        // Check FAQ first
-        $faqAnswer = $this->faq->findAnswer($userMessage);
-
-        if ($faqAnswer) {
-            // Stream FAQ answer word by word
-            return $this->streamFaqAnswer($faqAnswer);
-        }
-
-        // Stream from Ollama
+        // Always use Ollama — no hardcoded FAQ answers
         return $this->streamOllamaAnswer($sessionId, $userMessage);
     }
 
@@ -61,7 +51,7 @@ class ChatbotController extends Controller
     {
         $messages = $this->chatbot->getHistory($sessionId);
 
-        // Filter out system messages and return last 10
+        // Filter out system messages
         $filtered = array_filter($messages, fn($m) => $m['role'] !== 'system');
         $filtered = array_slice(array_values($filtered), -10);
 
@@ -79,53 +69,12 @@ class ChatbotController extends Controller
         return response()->json(['cleared' => true]);
     }
 
-    // ─── Stream FAQ Answer ────────────────────────────────────────────────────
-
-    private function streamFaqAnswer(string $answer): StreamedResponse
-    {
-        return response()->stream(function () use ($answer) {
-            $words = explode(' ', $answer);
-
-            foreach ($words as $word) {
-                $data = json_encode([
-                    'delta' => $word . ' ',
-                    'done' => false,
-                    'source' => 'faq',
-                ]);
-
-                echo "data: {$data}\n\n";
-
-                if (ob_get_level() > 0) {
-                    ob_flush();
-                }
-                flush();
-
-                // Natural typing effect — 50ms between words
-                usleep(50000);
-            }
-
-            // Final done signal
-            $done = json_encode(['done' => true, 'source' => 'faq']);
-            echo "data: {$done}\n\n";
-
-            if (ob_get_level() > 0) {
-                ob_flush();
-            }
-            flush();
-
-        }, 200, [
-            'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
-            'X-Accel-Buffering' => 'no',
-            'Connection' => 'keep-alive',
-        ]);
-    }
-
     // ─── Stream Ollama Answer ─────────────────────────────────────────────────
 
     private function streamOllamaAnswer(string $sessionId, string $userMessage): StreamedResponse
     {
         return response()->stream(function () use ($sessionId, $userMessage) {
+
             $generator = $this->chatbot->streamChat($sessionId, $userMessage);
 
             foreach ($generator as $chunk) {
@@ -137,9 +86,8 @@ class ChatbotController extends Controller
 
                 echo "data: {$data}\n\n";
 
-                if (ob_get_level() > 0) {
+                if (ob_get_level() > 0)
                     ob_flush();
-                }
                 flush();
             }
 
@@ -147,9 +95,8 @@ class ChatbotController extends Controller
             $done = json_encode(['done' => true, 'source' => 'ai']);
             echo "data: {$done}\n\n";
 
-            if (ob_get_level() > 0) {
+            if (ob_get_level() > 0)
                 ob_flush();
-            }
             flush();
 
         }, 200, [

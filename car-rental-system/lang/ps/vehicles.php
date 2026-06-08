@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'vehicles' => 'موټرونه',
+    'vehicle' => 'موټر',
+    'all_vehicles' => 'ټول موټرونه',
+    'available' => 'شتون لري',
+    'booked' => 'بکینګ شوی',
+    'maintenance' => 'ترمیم',
+    'status' => 'حالت',
+    'brand' => 'برانډ',
+    'model' => 'ماډل',
+    'year' => 'کال',
+    'color' => 'رنګ',
+    'seats' => 'سیټونه',
+    'fuel_type' => 'د تیلو ډول',
+    'transmission' => 'ګیربکس',
+    'odometer' => 'اودومیټر',
+    'license_plate' => 'د موټر نمبر',
+    'daily_rate' => 'ورځنۍ نرخ',
+    'pickup_date' => 'د اخیستو نیټه',
+    'return_date' => 'د بیرته راستنیدو نیټه',
+    'duration' => 'موده',
+    'days' => 'ورځې',
+    'total' => 'ټول',
+    'actions' => 'کړنې',
+];

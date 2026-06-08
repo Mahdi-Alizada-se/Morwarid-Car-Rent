@@ -35,9 +35,9 @@ class VehicleRequest extends FormRequest
             'odometer' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:2000'],
             'features' => ['nullable', 'string'],
-            'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:20480'],
             'images' => ['nullable', 'array', 'max:10'],
-            'images.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'images.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:20480'],
 
             // Pricing rules
             'pricing_rules' => ['nullable', 'array'],
