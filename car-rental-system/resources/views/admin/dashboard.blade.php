@@ -13,8 +13,8 @@
             </div>
 
             <button id="refreshBtn" onclick="refreshStats()" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700
-                               px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50
-                               transition-colors shadow-sm">
+                                   px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50
+                                   transition-colors shadow-sm">
                 <svg id="refreshIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
                     stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -27,7 +27,7 @@
         {{-- ─── Pending Receipts Alert ───────────────────────────────────────────── --}}
         @if($stats['pending_receipts'] > 0)
             <div class="flex items-center justify-between px-5 py-4 bg-orange-50
-                                    border border-orange-200 rounded-xl">
+                                            border border-orange-200 rounded-xl">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <a href="{{ route('admin.payments.index', ['status' => 'receipt_uploaded']) }}" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold
-                                      rounded-lg hover:bg-orange-700 transition-colors">
+                                              rounded-lg hover:bg-orange-700 transition-colors">
                     {{ __('common.review') }}
                 </a>
             </div>
@@ -90,10 +90,22 @@
             <div class="bg-white rounded-xl border border-gray-200 p-5">
                 <div class="flex items-center justify-between mb-3">
                     <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.5"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                        <svg class="w-5 h-5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 13H8M2 9L4 10L5.27064 6.18807C5.53292 5.40125 5.66405 5.00784
+                 5.90729 4.71698C6.12208 4.46013 6.39792 4.26132 6.70951 4.13878C7.06236
+                 4 7.47705 4 8.30643 4H15.6936C16.523 4 16.9376 4 17.2905 4.13878C17.6021
+                 4.26132 17.8779 4.46013 18.0927 4.71698C18.3359 5.00784 18.4671 5.40125
+                 18.7294 6.18807L20 10L22 9M16 13H19M6.8 10H17.2C18.8802 10 19.7202 10
+                 20.362 10.327C20.9265 10.6146 21.3854 11.0735 21.673 11.638C22 12.2798
+                 22 13.1198 22 14.8V17.5C22 17.9647 22 18.197 21.9616 18.3902C21.8038
+                 19.1836 21.1836 19.8038 20.3902 19.9616C20.197 20 19.9647 20 19.5 20H19C17.8954
+                 20 17 19.1046 17 18C17 17.7239 16.7761 17.5 16.5 17.5H7.5C7.22386 17.5
+                 7 17.7239 7 18C7 19.1046 6.10457 20 5 20H4.5C4.03534 20 3.80302 20
+                 3.60982 19.9616C2.81644 19.8038 2.19624 19.1836 2.03843 18.3902C2 18.197
+                 2 17.9647 2 17.5V14.8C2 13.1198 2 12.2798 2.32698 11.638C2.6146 11.0735
+                 3.07354 10.6146 3.63803 10.327C4.27976 10 5.11984 10 6.8 10Z" />
                         </svg>
                     </div>
                     @if($stats['active_rentals'] > 0)
@@ -108,7 +120,7 @@
 
             {{-- Pending Payments --}}
             <a href="{{ route('admin.payments.index', ['status' => 'receipt_uploaded']) }}" class="bg-white rounded-xl border border-gray-200 p-5
-                          hover:border-yellow-300 transition-colors block">
+                              hover:border-yellow-300 transition-colors block">
                 <div class="flex items-center justify-between mb-3">
                     <div class="w-9 h-9 bg-yellow-100 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +153,7 @@
 
             {{-- Unread Messages --}}
             <a href="{{ route('admin.chat.index') }}" class="bg-white rounded-xl border border-gray-200 p-5
-                          hover:border-purple-300 transition-colors block">
+                              hover:border-purple-300 transition-colors block">
                 <div class="flex items-center justify-between mb-3">
                     <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +192,7 @@
                     <div class="flex gap-1">
                         @foreach(['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly'] as $key => $label)
                                         <button onclick="changePeriod('{{ $key }}')" id="btn-{{ $key }}" class="px-3 py-1 text-xs font-medium rounded-lg transition-colors
-                                                                               {{ $key === 'monthly'
+                                                                                                   {{ $key === 'monthly'
                             ? 'bg-indigo-600 text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                                             {{ $label }}
@@ -347,80 +359,80 @@
                     <thead>
                         <tr class="border-b border-gray-100 bg-gray-50">
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide">
+                                               text-xs uppercase tracking-wide">
                                 {{ __('bookings.reference') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide hidden md:table-cell">
+                                               text-xs uppercase tracking-wide hidden md:table-cell">
                                 {{ __('common.customer') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide hidden lg:table-cell">
+                                               text-xs uppercase tracking-wide hidden lg:table-cell">
                                 {{ __('vehicles.vehicle') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide hidden lg:table-cell">
+                                               text-xs uppercase tracking-wide hidden lg:table-cell">
                                 {{ __('vehicles.pickup_date') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide">
+                                               text-xs uppercase tracking-wide">
                                 {{ __('vehicles.status') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide">
+                                               text-xs uppercase tracking-wide">
                                 {{ __('common.amount') }}
                             </th>
                             <th class="text-right font-semibold text-gray-500 px-5 py-3
-                                           text-xs uppercase tracking-wide">
+                                               text-xs uppercase tracking-wide">
                                 {{ __('vehicles.actions') }}
                             </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @forelse($recentBookings as $booking)
-                                            <tr class="hover:bg-gray-50 transition-colors">
-                                                <td class="px-5 py-3">
-                                                    <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
-                                                                    {{ $booking->reference_code }}
-                                                                </code>
-                                                </td>
-                                                <td class="px-5 py-3 hidden md:table-cell">
-                                                    <p class="font-medium text-gray-900">
-                                                        {{ $booking->customer?->name }}
-                                                    </p>
-                                                </td>
-                                                <td class="px-5 py-3 hidden lg:table-cell text-gray-600">
-                                                    {{ $booking->vehicle?->full_name }}
-                                                </td>
-                                                <td class="px-5 py-3 hidden lg:table-cell text-gray-500 text-xs">
-                                                    {{ $booking->pickup_date->format('M d, Y') }}
-                                                </td>
-                                                <td class="px-5 py-3">
-                                                    @php
-                                                        $statusColors = [
-                                                            'pending' => 'bg-yellow-50 text-yellow-700',
-                                                            'confirmed' => 'bg-blue-50 text-blue-700',
-                                                            'active' => 'bg-green-50 text-green-700',
-                                                            'completed' => 'bg-gray-100 text-gray-600',
-                                                            'cancelled' => 'bg-red-50 text-red-700',
-                                                        ];
-                                                    @endphp
-                             <span
-                                                        class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                                                             {{ $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                                        {{ ucfirst($booking->status) }}
-                                                    </span>
-                                                </td>
-                                                <td class="px-5 py-3 font-semibold text-gray-900">
-                                                    AFN {{ number_format($booking->total_amount) }}
-                                                </td>
-                                                <td class="px-5 py-3 text-right">
-                                                    <a href="{{ route('admin.bookings.show', $booking) }}"
-                                                        class="text-xs text-indigo-600 font-medium hover:underline">
-                                                        {{ __('common.view') }}
-                                                    </a>
-                                                </td>
-                                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-5 py-3">
+                                    <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
+                                                                            {{ $booking->reference_code }}
+                                                                        </code>
+                                </td>
+                                <td class="px-5 py-3 hidden md:table-cell">
+                                    <p class="font-medium text-gray-900">
+                                        {{ $booking->customer?->name }}
+                                    </p>
+                                </td>
+                                <td class="px-5 py-3 hidden lg:table-cell text-gray-600">
+                                    {{ $booking->vehicle?->full_name }}
+                                </td>
+                                <td class="px-5 py-3 hidden lg:table-cell text-gray-500 text-xs">
+                                    {{ $booking->pickup_date->format('M d, Y') }}
+                                </td>
+                                <td class="px-5 py-3">
+                                    @php
+                                        $statusColors = [
+                                            'pending' => 'bg-yellow-50 text-yellow-700',
+                                            'confirmed' => 'bg-blue-50 text-blue-700',
+                                            'active' => 'bg-green-50 text-green-700',
+                                            'completed' => 'bg-gray-100 text-gray-600',
+                                            'cancelled' => 'bg-red-50 text-red-700',
+                                        ];
+                                    @endphp
+                                    <span
+                                        class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                                                                     {{ $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                        {{ ucfirst($booking->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3 font-semibold text-gray-900">
+                                    AFN {{ number_format($booking->total_amount) }}
+                                </td>
+                                <td class="px-5 py-3 text-right">
+                                    <a href="{{ route('admin.bookings.show', $booking) }}"
+                                        class="text-xs text-indigo-600 font-medium hover:underline">
+                                        {{ __('common.view') }}
+                                    </a>
+                                </td>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-5 py-8 text-center text-sm text-gray-400">

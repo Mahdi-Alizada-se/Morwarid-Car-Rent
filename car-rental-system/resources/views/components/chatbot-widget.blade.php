@@ -183,13 +183,10 @@
             healthTimer: null,
 
             async init() {
-                let stored = localStorage.getItem('chatbot_session_id');
-                if (!stored) {
-                    stored = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-                    localStorage.setItem('chatbot_session_id', stored);
-                }
+                // Always create a fresh session — no persistent history across page loads
+                const stored = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                localStorage.setItem('chatbot_session_id', stored);
                 this.sessionId = stored;
-                await this.loadHistory();
                 await this.checkHealth();
                 this.healthTimer = setInterval(() => this.checkHealth(), 60000);
             },
