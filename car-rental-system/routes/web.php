@@ -119,6 +119,9 @@ Route::middleware('auth')->group(function () {
             Route::post('payments/counter', [\App\Http\Controllers\Admin\PaymentController::class, 'counterPayment'])
                 ->name('payments.counter');
 
+
+
+
             // Chat
             Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])
                 ->name('chat.index');
@@ -144,6 +147,12 @@ Route::middleware('auth')->group(function () {
                 ->name('users.verify-license');
             Route::get('users/{user}/license', [\App\Http\Controllers\Admin\UserController::class, 'showLicense'])
                 ->name('users.license');
+
+            Route::patch(
+                '/bookings/{booking}/mark-fee-paid',
+                [\App\Http\Controllers\Admin\BookingController::class, 'markFeePaid']
+            )
+                ->name('admin.bookings.mark-fee-paid');
 
         });
 
@@ -213,3 +222,10 @@ Route::get('/about', function () {
 Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
+
+
+// Stripe Payment
+Route::post('/stripe/create-payment-intent', [\App\Http\Controllers\Customer\StripeController::class, 'createPaymentIntent'])
+    ->name('stripe.create-intent');
+Route::post('/stripe/confirm-payment', [\App\Http\Controllers\Customer\StripeController::class, 'confirmPayment'])
+    ->name('stripe.confirm');

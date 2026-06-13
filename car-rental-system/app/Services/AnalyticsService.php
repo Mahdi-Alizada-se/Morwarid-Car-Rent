@@ -51,7 +51,16 @@ class AnalyticsService
                     ->sum('amount'),
 
                 // Alerts
-                'pending_receipts' => Payment::where('status', 'receipt_uploaded')
+                'pending_receipts' => Payment::whereIn('status', ['receipt_uploaded', 'pending'])
+                    ->whereHas('booking', fn($q) => $q->whereNotIn('status', ['cancelled', 'completed']))
+                    ->count(),
+
+                'pending_cash' => Payment::where('status', 'pending')
+                    ->where('method', 'cash')
+                    ->whereHas('booking', fn($q) => $q->whereNotIn('status', ['cancelled', 'completed']))
+                    ->count(),
+
+                'pending_bank_transfer' => Payment::where('status', 'receipt_uploaded')
                     ->whereHas('booking', fn($q) => $q->whereNotIn('status', ['cancelled', 'completed']))
                     ->count(),
                 'unread_chats' => Message::where('is_read', false)

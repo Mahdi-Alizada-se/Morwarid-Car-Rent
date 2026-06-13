@@ -11,13 +11,22 @@
             <p class="text-gray-500 mt-1 text-sm">{{ __('bookings.booking_history') }}</p>
         </div>
 
-        @if($bookings->isEmpty())
+        @if(session('success'))
+            <div class="mb-4 flex items-start gap-3 px-4 py-3 bg-green-50 border
+                            border-green-200 text-green-800 rounded-xl text-sm">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ session('success') }}
+            </div>
+        @endif
 
-            {{-- Empty State --}}
+        @if($bookings->isEmpty())
             <div class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
                 <svg class="w-14 h-14 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0
+                              00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <p class="font-semibold text-gray-600 text-lg">{{ __('bookings.no_bookings') }}</p>
                 <p class="text-sm text-gray-400 mt-2">{{ __('bookings.no_bookings_desc') }}</p>
@@ -31,6 +40,16 @@
 
             <div class="space-y-4">
                 @foreach($bookings as $booking)
+                    @php
+                        $isExpired = $booking->return_date->isPast()
+                            && !in_array($booking->status, ['cancelled', 'completed']);
+                        $hasFee = $booking->hasCancellationFee();
+                        $feeDesc = $booking->getCancellationFeeDescription();
+                        $confirmMsg = $hasFee
+                            ? "⚠️ Cancellation Fee Warning!\n\n{$feeDesc}\n\nAre you sure you want to cancel?"
+                            : "Are you sure you want to cancel this booking? This is free.";
+                    @endphp
+
                     <div class="bg-white rounded-2xl border border-gray-200 p-5
                                         hover:shadow-sm transition-shadow">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -43,9 +62,23 @@
                                         alt="{{ $booking->vehicle?->full_name }}">
                                 @else
                                     <div class="w-20 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13H8M2 9L4 10L5.27064 6.18807C5.53292 5.40125 5.66405
+                                                              5.00784 5.90729 4.71698C6.12208 4.46013 6.39792 4.26132 6.70951
+                                                              4.13878C7.06236 4 7.47705 4 8.30643 4H15.6936C16.523 4 16.9376 4
+                                                              17.2905 4.13878C17.6021 4.26132 17.8779 4.46013 18.0927
+                                                              4.71698C18.3359 5.00784 18.4671 5.40125 18.7294 6.18807L20 10L22
+                                                              9M16 13H19M6.8 10H17.2C18.8802 10 19.7202 10 20.362 10.327C20.9265
+                                                              10.6146 21.3854 11.0735 21.673 11.638C22 12.2798 22 13.1198 22
+                                                              14.8V17.5C22 17.9647 22 18.197 21.9616 18.3902C21.8038 19.1836
+                                                              21.1836 19.8038 20.3902 19.9616C20.197 20 19.9647 20 19.5 20H19C17.8954
+                                                              20 17 19.1046 17 18C17 17.7239 16.7761 17.5 16.5 17.5H7.5C7.22386
+                                                              17.5 7 17.7239 7 18C7 19.1046 6.10457 20 5 20H4.5C4.03534 20 3.80302
+                                                              20 3.60982 19.9616C2.81644 19.8038 2.19624 19.1836 2.03843
+                                                              18.3902C2 18.197 2 17.9647 2 17.5V14.8C2 13.1198 2 12.2798 2.32698
+                                                              11.638C2.6146 11.0735 3.07354 10.6146 3.63803 10.327C4.27976 10
+                                                              5.11984 10 6.8 10Z" />
                                         </svg>
                                     </div>
                                 @endif
@@ -74,17 +107,25 @@
                                         ];
                                         $color = $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-600';
                                     @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
-                                                         text-xs font-semibold {{ $color }}">
-                                        {{ ucfirst($booking->status) }}
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        @if($isExpired)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
+                                                                     text-xs font-semibold bg-gray-100 text-gray-500">
+                                                Expired
+                                            </span>
+                                        @endif
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
+                                                             text-xs font-semibold {{ $color }}">
+                                            {{ ucfirst($booking->status) }}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div class="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
                                     <span class="flex items-center gap-1.5">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0
+                                                          00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         {{ $booking->pickup_date->format('M d, Y') }}
                                         → {{ $booking->return_date->format('M d, Y') }}
@@ -93,6 +134,24 @@
                                         AFN {{ number_format($booking->total_amount) }}
                                     </span>
                                 </div>
+
+                                {{-- Cancellation fee warning --}}
+                                @if($booking->canBeCancelled() && $hasFee)
+                                    <div class="mt-2 text-xs text-orange-600 font-medium">
+                                        ⚠️ {{ $feeDesc }}
+                                    </div>
+                                @endif
+
+                                {{-- Cancellation fee paid --}}
+                                @if($booking->status === 'cancelled' && $booking->cancellation_fee > 0)
+                                        <div class="mt-2 text-xs font-medium
+                                                                {{ $booking->cancellation_fee_paid
+                                    ? 'text-green-600'
+                                    : 'text-red-600' }}">
+                                            Cancellation fee: AFN {{ number_format($booking->cancellation_fee) }}
+                                            — {{ $booking->cancellation_fee_paid ? '✓ Paid' : '⚠️ Unpaid — please contact us' }}
+                                        </div>
+                                @endif
                             </div>
 
                             {{-- Actions --}}
@@ -109,8 +168,9 @@
                                                                border border-gray-200 rounded-lg hover:bg-gray-50
                                                                transition-colors flex items-center gap-1">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2
+                                                              0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2
+                                                              2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                         </svg>
                                         Print
                                     </button>
@@ -124,27 +184,28 @@
                                     </a>
                                 @endif
 
+                                {{-- Cancel Button — only if cancellable and not expired --}}
                                 @if($booking->canBeCancelled())
-                                    <form method="POST" action="{{ route('customer.bookings.cancel', $booking) }}"
-                                        onsubmit="return confirm('{{ __('bookings.cancel_confirm') }}')">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="px-3 py-1.5 text-xs font-medium text-red-600
-                                                                   border border-red-200 rounded-lg hover:bg-red-50
-                                                                   transition-colors">
-                                            {{ __('common.cancel') }}
-                                        </button>
-                                    </form>
+                                        <form method="POST" action="{{ route('customer.bookings.cancel', $booking) }}"
+                                            onsubmit="return confirm('{{ addslashes($confirmMsg) }}')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="px-3 py-1.5 text-xs font-medium rounded-lg
+                                                                       transition-colors
+                                                                       {{ $hasFee
+                                    ? 'text-orange-600 border border-orange-200 hover:bg-orange-50'
+                                    : 'text-red-600 border border-red-200 hover:bg-red-50' }}">
+                                                {{ $hasFee ? '⚠️ Cancel (Fee applies)' : 'Cancel' }}
+                                            </button>
+                                        </form>
                                 @endif
 
                             </div>
-
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            {{-- Pagination --}}
             @if($bookings->hasPages())
                 <div class="mt-6">
                     {{ $bookings->links() }}

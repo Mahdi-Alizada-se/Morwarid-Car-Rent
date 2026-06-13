@@ -26,19 +26,26 @@ class PaymentController extends Controller
         $query = Payment::with(['booking.customer', 'booking.vehicle'])
             ->latest();
 
+        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
+        // Filter by method
         if ($request->filled('method')) {
             $query->where('method', $request->method);
         }
 
         $payments = $query->paginate(15)->withQueryString();
 
-        $needsReviewCount = Payment::where('status', Payment::STATUS_RECEIPT_UPLOADED)->count();
+        $needsReviewCount = Payment::where('status', 'receipt_uploaded')->count();
+        $pendingCount = Payment::where('status', 'pending')->count();
 
-        return view('admin.payments.index', compact('payments', 'needsReviewCount'));
+        return view('admin.payments.index', compact(
+            'payments',
+            'needsReviewCount',
+            'pendingCount'
+        ));
     }
 
     // ─── Show ─────────────────────────────────────────────────────────────────

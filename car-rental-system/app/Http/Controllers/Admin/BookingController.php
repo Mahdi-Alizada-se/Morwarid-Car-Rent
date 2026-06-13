@@ -52,6 +52,14 @@ class BookingController extends Controller
         return view('admin.bookings.index', compact('bookings'));
     }
 
+
+
+    public function markFeePaid(Booking $booking): RedirectResponse
+    {
+        $booking->update(['cancellation_fee_paid' => true]);
+
+        return back()->with('success', 'Cancellation fee marked as paid.');
+    }
     // ─── Show ─────────────────────────────────────────────────────────────────
 
     public function show(Booking $booking): View

@@ -9,67 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
-/**
- * @property int $id
- * @property string $reference_code
- * @property int $customer_id
- * @property int $vehicle_id
- * @property \Illuminate\Support\Carbon $pickup_date
- * @property \Illuminate\Support\Carbon $return_date
- * @property \Illuminate\Support\Carbon|null $actual_return_date
- * @property string|null $pickup_location
- * @property string|null $return_location
- * @property string $status
- * @property numeric $total_amount
- * @property string $currency
- * @property string|null $payment_method
- * @property string|null $notes
- * @property \Illuminate\Support\Carbon|null $cancelled_at
- * @property string|null $cancellation_reason
- * @property numeric|null $cancellation_fee
- * @property bool $cancellation_fee_paid
- * @property \Illuminate\Support\Carbon|null $booked_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $customer
- * @property-read int $duration_in_days
- * @property-read \App\Models\Payment|null $latestPayment
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VehicleLocation> $locations
- * @property-read int|null $locations_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $payments
- * @property-read int|null $payments_count
- * @property-read \App\Models\Vehicle|null $vehicle
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereActualReturnDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereBookedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationFee($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationFeePaid($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancellationReason($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCancelledAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCurrency($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereCustomerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereNotes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePaymentMethod($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePickupDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePickupLocation($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReferenceCode($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReturnDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereReturnLocation($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereTotalAmount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereVehicleId($value)
- * @mixin \Eloquent
- */
 class Booking extends Model
 {
     use HasFactory;
 
-    // ─── Status Constants ─────────────────────────────────────────────────────────
+    // ─── Status Constants ─────────────────────────────────────────────────────
 
     const STATUS_PENDING = 'pending';
     const STATUS_CONFIRMED = 'confirmed';
@@ -101,10 +45,11 @@ class Booking extends Model
         'cancelled_at',
         'cancellation_reason',
         'payment_method',
-        'cancellation_fee',        // ← ADD
-        'cancellation_fee_paid',   // ← ADD
-        'booked_at',               // ← ADD
+        'cancellation_fee',
+        'cancellation_fee_paid',
+        'booked_at',
     ];
+
     protected function casts(): array
     {
         return [
@@ -112,14 +57,14 @@ class Booking extends Model
             'return_date' => 'datetime',
             'actual_return_date' => 'datetime',
             'cancelled_at' => 'datetime',
-            'booked_at' => 'datetime',       // ← ADD
+            'booked_at' => 'datetime',
             'total_amount' => 'decimal:2',
-            'cancellation_fee' => 'decimal:2',      // ← ADD
-            'cancellation_fee_paid' => 'boolean',        // ← ADD
+            'cancellation_fee' => 'decimal:2',
+            'cancellation_fee_paid' => 'boolean',
         ];
     }
 
-    // ─── Auto Reference Code ──────────────────────────────────────────────────────
+    // ─── Auto Reference Code ──────────────────────────────────────────────────
 
     protected static function booted(): void
     {
@@ -133,60 +78,109 @@ class Booking extends Model
     public static function generateReferenceCode(): string
     {
         do {
-            $code = 'BK-' . strtoupper(Str::random(8));
+            $code = 'CR-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
         } while (static::where('reference_code', $code)->exists());
 
         return $code;
     }
 
-    // ─── Business Logic ───────────────────────────────────────────────────────────
+    // ─── Cancellation Logic ───────────────────────────────────────────────────
 
+    /**
+     * Can this booking be cancelled?
+     * Rules:
+     * - Cannot cancel if already cancelled
+     * - Cannot cancel if completed
+     * - Cannot cancel if return date has passed (expired)
+     */
     public function canBeCancelled(): bool
     {
-        // Always cancellable — fee may apply after 5 hours
+        if (in_array($this->status, ['cancelled', 'completed'])) {
+            return false;
+        }
+
+        // Cannot cancel expired bookings
+        if ($this->return_date->isPast()) {
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Is there a cancellation fee?
+     * Rules:
+     * - Pending bookings: FREE if within 2 hours of booking
+     * - Confirmed bookings: 1 day rate fee if after 2 hours
+     * - Active bookings: charge for days already used
+     */
     public function hasCancellationFee(): bool
     {
-        $reference = $this->booked_at ?? $this->created_at;
+        if (!$this->canBeCancelled())
+            return false;
 
-        return $reference
-            && now()->diffInHours($reference) > 5
-            && $this->status !== 'cancelled';
+        // Pending within 2 hours = free
+        if ($this->status === 'pending') {
+            $reference = $this->booked_at ?? $this->created_at;
+            return now()->diffInHours($reference) > 2;
+        }
+
+        // Confirmed or active = always has fee
+        return in_array($this->status, ['confirmed', 'active']);
     }
 
+    /**
+     * Calculate cancellation fee amount:
+     * - Pending (after 2h): 1 day rate
+     * - Confirmed (after 2h): 1 day rate
+     * - Active (rental started): days used × daily rate
+     */
     public function getCancellationFeeAmount(): float
     {
-        $rule = $this->vehicle
+        if (!$this->hasCancellationFee())
+            return 0.0;
+
+        $dailyRate = $this->vehicle
                 ?->pricingRules()
             ->where('type', 'daily')
             ->where('is_active', true)
-            ->first();
+            ->first()
+                ?->base_rate ?? 0;
 
-        return $rule ? (float) $rule->base_rate : 0.0;
+        if ($this->status === 'active') {
+            // Charge for days already used
+            $daysUsed = max(1, (int) $this->pickup_date->diffInDays(now()));
+            return (float) ($daysUsed * $dailyRate);
+        }
+
+        // Confirmed or pending after 2h = 1 day fee
+        return (float) $dailyRate;
     }
 
-    // public function hasCancellationFee(): bool
-    // {
-    //     if (!$this->booked_at) {
-    //         return false;
-    //     }
+    /**
+     * Get human readable cancellation fee description
+     */
+    public function getCancellationFeeDescription(): string
+    {
+        if (!$this->hasCancellationFee()) {
+            return 'Free cancellation';
+        }
 
-    //     return (now()->diffInHours($this->booked_at) > 5)
-    //         && $this->status !== 'cancelled';
-    // }
+        $dailyRate = $this->vehicle
+                ?->pricingRules()
+            ->where('type', 'daily')
+            ->where('is_active', true)
+            ->first()
+                ?->base_rate ?? 0;
 
-    // public function getCancellationFeeAmount(): float
-    // {
-    //     $rule = $this->vehicle
-    //             ?->pricingRules()
-    //         ->where('type', 'daily')
-    //         ->where('is_active', true)
-    //         ->first();
+        if ($this->status === 'active') {
+            $daysUsed = max(1, (int) $this->pickup_date->diffInDays(now()));
+            return "Cancellation fee: AFN " . number_format($daysUsed * $dailyRate)
+                . " ({$daysUsed} day(s) used × AFN " . number_format($dailyRate) . "/day)";
+        }
 
-    //     return $rule ? (float) $rule->base_rate : 0.0;
-    // }
+        return "Cancellation fee: AFN " . number_format($dailyRate) . " (1 day rate)";
+    }
 
     public function cancel(string $reason = null): bool
     {
@@ -194,10 +188,14 @@ class Booking extends Model
             return false;
         }
 
+        $fee = $this->getCancellationFeeAmount();
+
         $this->update([
             'status' => self::STATUS_CANCELLED,
             'cancelled_at' => now(),
             'cancellation_reason' => $reason,
+            'cancellation_fee' => $fee,
+            'cancellation_fee_paid' => false,
         ]);
 
         // Free the vehicle
@@ -211,7 +209,7 @@ class Booking extends Model
         return (int) $this->pickup_date->diffInDays($this->return_date) ?: 1;
     }
 
-    // ─── Relationships ───────────────────────────────────────────────────────────
+    // ─── Relationships ────────────────────────────────────────────────────────
 
     public function customer(): BelongsTo
     {
