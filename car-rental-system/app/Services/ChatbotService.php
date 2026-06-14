@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ChatbotService
 {
     private const CACHE_TTL = 3600;
-    private const MAX_MESSAGES = 18;
+    private const MAX_MESSAGES = 10;
     private const CACHE_PREFIX = 'chatbot:';
 
     private string $ollamaHost;
@@ -20,7 +20,7 @@ class ChatbotService
     public function __construct()
     {
         $this->ollamaHost = env('OLLAMA_HOST', 'http://127.0.0.1:11434');
-        $this->ollamaModel = env('OLLAMA_MODEL', 'llama3.2:1b');
+        $this->ollamaModel = env('OLLAMA_MODEL', 'llama3.2:3b');
     }
 
     // ─── System Message ───────────────────────────────────────────────────────
@@ -37,50 +37,28 @@ class ChatbotService
 
     private function buildSystemPrompt(): string
     {
-        $today = Carbon::now()->format('l, F j Y');
+        $today = Carbon::now()->format('l, F j, Y');
         $isLoggedIn = auth()->check();
 
         // ── Guest user — strict prompt, no vehicle info ──
         if (!$isLoggedIn) {
             return 'You are a receptionist for Morwarid Car Rental in Kabul, Afghanistan.' . "\n"
-                . 'The visitor is NOT logged in to the system.' . "\n\n"
-
-                . 'STRICT RULES — follow exactly:' . "\n"
-                . '1. You do NOT know which vehicles are available. NEVER mention any car names or models.' . "\n"
-                . '2. NEVER invent, guess, or suggest any vehicle names or brands.' . "\n"
-                . '3. If asked about vehicles, prices, or availability, say exactly:' . "\n"
+                . 'The visitor is NOT logged in.' . "\n\n"
+                . 'RULES:' . "\n"
+                . '1. Never mention any car names/models.' . "\n"
+                . '2. If asked about vehicles, prices, or availability, say exactly:' . "\n"
                 . '   "I can only show vehicle details to registered customers. Please login or create an account to see our full fleet and book a vehicle."' . "\n"
-                . '4. You CAN answer questions about registration requirements.' . "\n"
-                . '5. You CAN answer general questions about the company location, phone, hours.' . "\n\n"
-
-                . 'To create an account, the customer needs:' . "\n"
-                . '- Full name' . "\n"
-                . '- Email address' . "\n"
-                . '- Phone number (optional)' . "\n"
-                . '- Password (minimum 8 characters)' . "\n"
-                . '- Driver\'s License Number' . "\n"
-                . '- Driver\'s License Photo (JPG, PNG or PDF, max 5MB)' . "\n"
-                . '- Must be at least 21 years old' . "\n\n"
-
-                . 'Company info:' . "\n"
-                . '- Location: Dasht-e-Barchi, Kabul, Afghanistan' . "\n"
-                . '- Phone: +93 730 751 894' . "\n"
-                . '- Working hours: 8:00 AM - 8:00 PM (Saturday to Thursday)' . "\n\n"
-
-                . 'Always guide them to login or register at the website.' . "\n"
-                . 'Be warm and friendly.' . "\n"
-                . 'Default language: English.' . "\n"
-                . 'If customer writes in Dari respond in Dari.' . "\n"
-                . 'If customer writes in Pashto respond in Pashto.' . "\n"
-                . 'NEVER respond in Urdu or Arabic.' . "\n"
-                . 'Today is: ' . $today . "\n";
+                . '3. You CAN answer registration requirements and general company info.' . "\n\n"
+                . 'To register, customer needs: full name, email, phone (optional), password (8+ chars), driver license number + photo, must be 21+.' . "\n\n"
+                . 'Company: Dasht-e-Barchi, Kabul, Afghanistan | Phone: +93 730 751 894 | Hours: 8AM-8PM (Sat-Thu).' . "\n\n"
+                . 'Be warm and friendly. Default language: English. Reply in Dari if asked in Dari, Pashto if asked in Pashto. Never use Urdu or Arabic.' . "\n"
+                . 'Today: ' . $today . "\n";
         }
 
         // ── Logged in user — full prompt with all vehicle data ──
         $user = auth()->user();
         $userName = $user->name;
 
-        // Load all vehicles
         $vehicles = \App\Models\Vehicle::with([
             'category',
             'pricingRules' => fn($q) => $q->where('is_active', true),
@@ -88,162 +66,101 @@ class ChatbotService
             ->whereNull('deleted_at')
             ->get();
 
-        $availableVehicles = '';
-        $bookedVehicles = '';
-        $maintenanceVehicles = '';
+        $bookings = \App\Models\Booking::with('vehicle')
+            ->whereIn('status', ['confirmed', 'active', 'pending'])
+            ->where('return_date', '>=', now()->startOfDay())
+            ->orderBy('pickup_date')
+            ->get()
+            ->groupBy('vehicle_id');
+
+        $vehicleLines = '';
 
         foreach ($vehicles as $v) {
+            if ($v->status === 'maintenance') {
+                continue; // skip maintenance vehicles entirely — never suggest them
+            }
+
             $dailyRule = $v->pricingRules->where('type', 'daily')->first();
-            $weeklyRule = $v->pricingRules->where('type', 'weekly')->first();
-            $monthlyRule = $v->pricingRules->where('type', 'monthly')->first();
-
-            $dailyRate = $dailyRule ? number_format($dailyRule->base_rate) . ' AFN/day' : 'N/A';
-            $weeklyRate = $weeklyRule ? number_format($weeklyRule->base_rate) . ' AFN/week' : '';
-            $monthlyRate = $monthlyRule ? number_format($monthlyRule->base_rate) . ' AFN/month' : '';
-
-            $pricing = $dailyRate;
-            if ($weeklyRate)
-                $pricing .= ' | ' . $weeklyRate;
-            if ($monthlyRate)
-                $pricing .= ' | ' . $monthlyRate;
+            $dailyRate = $dailyRule ? number_format($dailyRule->base_rate) : 'N/A';
 
             $category = $v->category ? $v->category->name : 'General';
 
-            $line = '• ' . $v->full_name . ' (' . $v->year . ')' . "\n"
-                . '  - Category: ' . $category . "\n"
-                . '  - Color: ' . $v->color . "\n"
-                . '  - Seats: ' . $v->seats . "\n"
-                . '  - Fuel: ' . ucfirst($v->fuel_type) . "\n"
-                . '  - Transmission: ' . ucfirst($v->transmission) . "\n"
-                . '  - Pricing: ' . $pricing . "\n"
-                . '  - Plate: ' . $v->license_plate . "\n";
-
-            if ($v->features && count($v->features) > 0) {
-                $line .= '  - Features: ' . implode(', ', $v->features) . "\n";
-            }
-
-            if ($v->description) {
-                $line .= '  - Description: ' . $v->description . "\n";
-            }
-
-            if ($v->status === 'available') {
-                $availableVehicles .= $line . "\n";
-            } elseif (in_array($v->status, ['booked', 'active'])) {
-                $bookedVehicles .= $line . "\n";
+            // Reserved date ranges for this vehicle
+            $vehicleBookings = $bookings->get($v->id, collect());
+            if ($vehicleBookings->isNotEmpty()) {
+                $ranges = $vehicleBookings->map(function ($b) {
+                    return $b->pickup_date->format('M d') . '-' . $b->return_date->format('M d');
+                })->implode(', ');
             } else {
-                $maintenanceVehicles .= $line . "\n";
+                $ranges = 'none';
             }
+
+            // Compact single-line format
+            $vehicleLines .= sprintf(
+                "- %s | %s | %s seats | %s | %s | %s AFN/day | Reserved: %s\n",
+                $v->full_name . ' (' . $v->year . ')',
+                $category,
+                $v->seats,
+                ucfirst($v->fuel_type) . '/' . ucfirst($v->transmission),
+                $v->license_plate,
+                $dailyRate,
+                $ranges
+            );
         }
 
-        if (empty($availableVehicles))
-            $availableVehicles = 'None currently available.';
-        if (empty($bookedVehicles))
-            $bookedVehicles = 'None currently booked.';
-        if (empty($maintenanceVehicles))
-            $maintenanceVehicles = 'None under maintenance.';
-
-        // Load upcoming bookings
-        $bookings = \App\Models\Booking::with('vehicle')
-            ->whereIn('status', ['confirmed', 'active', 'pending'])
-            ->where('return_date', '>=', now())
-            ->get();
-
-        $bookedDatesInfo = '';
-        foreach ($bookings as $b) {
-            if ($b->vehicle) {
-                $bookedDatesInfo .= '• ' . $b->vehicle->full_name
-                    . ': booked from ' . $b->pickup_date->format('M d, Y')
-                    . ' to ' . $b->return_date->format('M d, Y') . "\n";
-            }
+        if (empty($vehicleLines)) {
+            $vehicleLines = 'No vehicles in fleet.';
         }
 
-        if (empty($bookedDatesInfo)) {
-            $bookedDatesInfo = 'No upcoming bookings — all available vehicles are free.';
-        }
-
-        // Load this customer's own bookings
+        // This customer's own bookings (compact)
         $myBookings = \App\Models\Booking::with('vehicle')
             ->where('customer_id', $user->id)
             ->latest()
-            ->take(5)
+            ->take(3)
             ->get();
 
         $myBookingsInfo = '';
         foreach ($myBookings as $b) {
-            $myBookingsInfo .= '• ' . ($b->vehicle ? $b->vehicle->full_name : 'Unknown')
-                . ' | ' . $b->pickup_date->format('M d, Y')
-                . ' to ' . $b->return_date->format('M d, Y')
-                . ' | Status: ' . ucfirst($b->status)
-                . ' | Reference: ' . $b->reference_code . "\n";
+            $myBookingsInfo .= '- ' . ($b->vehicle ? $b->vehicle->full_name : 'Unknown')
+                . ' | ' . $b->pickup_date->format('M d') . '-' . $b->return_date->format('M d, Y')
+                . ' | ' . ucfirst($b->status)
+                . ' | Ref: ' . $b->reference_code . "\n";
         }
 
         if (empty($myBookingsInfo)) {
-            $myBookingsInfo = 'No bookings yet.';
+            $myBookingsInfo = 'None.';
         }
 
-        return 'You are an intelligent AI assistant for Morwarid Car Rental, Kabul, Afghanistan.' . "\n"
-            . 'You are talking to a LOGGED IN customer named: ' . $userName . "\n"
-            . 'Help them choose the best vehicle, check availability, and guide them through booking.' . "\n\n"
+        return 'You are an AI assistant for Morwarid Car Rental, Kabul, Afghanistan.' . "\n"
+            . 'Customer: ' . $userName . ' (' . $user->email . ')' . "\n"
+            . 'Today: ' . $today . "\n\n"
 
-            . '=== CUSTOMER INFORMATION ===' . "\n"
-            . '- Name: ' . $userName . "\n"
-            . '- Email: ' . $user->email . "\n\n"
+            . '=== CUSTOMER\'S BOOKINGS ===' . "\n"
+            . $myBookingsInfo . "\n"
 
-            . '=== CUSTOMER\'S OWN BOOKINGS ===' . "\n"
-            . $myBookingsInfo . "\n\n"
+            . '=== COMPANY INFO ===' . "\n"
+            . 'Location: Dasht-e-Barchi, Kabul | Phone: +93 730 751 894 | Hours: 8AM-8PM (Sat-Thu)' . "\n"
+            . 'Payment: Cash, Bank Transfer, Card (Visa/Mastercard) | Fuel: Full-to-Full' . "\n"
+            . 'Free cancellation up to 2h before pickup. Security deposit required at pickup.' . "\n\n"
 
-            . '=== COMPANY INFORMATION ===' . "\n"
-            . '- Name: Morwarid Car Rental' . "\n"
-            . '- Location: Dasht-e-Barchi, Kabul, Afghanistan' . "\n"
-            . '- Phone: +93 730 751 894' . "\n"
-            . '- Working hours: 8:00 AM - 8:00 PM (Saturday to Thursday)' . "\n"
-            . '- Payment: Cash, Bank Transfer, Mastercard' . "\n"
-            . '- Fuel policy: Full to Full' . "\n"
-            . '- Free cancellation: up to 2 hours before pickup' . "\n"
-            . '- Security deposit: required at pickup (refundable)' . "\n\n"
+            . '=== FLEET (each line: Name | Category | Seats | Fuel/Transmission | Plate | Daily Rate | Reserved dates) ===' . "\n"
+            . $vehicleLines . "\n"
 
-            . '=== AVAILABLE VEHICLES (ONLY suggest these) ===' . "\n"
-            . $availableVehicles . "\n"
+            . '=== AVAILABILITY RULES ===' . "\n"
+            . '- "Reserved: none" = available on ANY date.' . "\n"
+            . '- "Reserved: Jun 13-Jun 14" means booked ONLY during that range — available on all other dates.' . "\n"
+            . '- For "is X available on [date]" or "which cars are free on [date]", check each vehicle\'s Reserved field against that date. If the date is not inside any reserved range, it IS available.' . "\n"
+            . '- Never suggest a vehicle not listed in the fleet above.' . "\n\n"
 
-            . '=== BOOKED VEHICLES (NOT available — do NOT suggest these) ===' . "\n"
-            . $bookedVehicles . "\n"
+            . '=== RECOMMENDING A VEHICLE ===' . "\n"
+            . 'Ask: passengers count, pickup/return dates, budget (AFN), purpose, fuel/transmission preference.' . "\n"
+            . 'Recommend the best match that is free for those dates. Calculate total = daily rate x days.' . "\n\n"
 
-            . '=== VEHICLES UNDER MAINTENANCE (NOT available — do NOT suggest these) ===' . "\n"
-            . $maintenanceVehicles . "\n"
+            . '=== BOOKING STEPS ===' . "\n"
+            . '1. Go to Vehicles page 2. Click vehicle 3. Select dates 4. Choose payment 5. Confirm Booking.' . "\n"
+            . 'Cash: pay within 5h or auto-cancelled. Bank transfer: confirmed in 2-4h. Card: instant.' . "\n\n"
 
-            . '=== UPCOMING BOOKED DATE RANGES ===' . "\n"
-            . $bookedDatesInfo . "\n\n"
-
-            . '=== HOW TO RECOMMEND A VEHICLE ===' . "\n"
-            . 'Ask the customer:' . "\n"
-            . '1. How many passengers?' . "\n"
-            . '2. What pickup and return dates?' . "\n"
-            . '3. What is their budget in AFN?' . "\n"
-            . '4. Purpose? (city driving, off-road, family trip, luxury)' . "\n"
-            . '5. Fuel and transmission preference?' . "\n\n"
-            . 'Then recommend the BEST matching vehicle FROM THE AVAILABLE LIST ABOVE ONLY.' . "\n"
-            . 'Calculate the exact total cost: daily rate x number of days.' . "\n"
-            . 'NEVER mention any vehicle not in the AVAILABLE VEHICLES list.' . "\n"
-            . 'NEVER invent or guess vehicle names or models.' . "\n"
-            . 'NEVER recommend a booked or maintenance vehicle.' . "\n\n"
-
-            . '=== BOOKING PROCESS ===' . "\n"
-            . '1. Go to Vehicles page on the website' . "\n"
-            . '2. Click on the vehicle' . "\n"
-            . '3. Select pickup and return dates' . "\n"
-            . '4. Choose payment method' . "\n"
-            . '5. Click Confirm Booking' . "\n"
-            . '6. Cash: pay within 5 hours or booking is auto-cancelled' . "\n"
-            . '7. Bank Transfer: admin confirms within 2-4 hours' . "\n"
-            . '8. Mastercard: instantly confirmed' . "\n\n"
-
-            . '=== LANGUAGE RULES ===' . "\n"
-            . '- Default: English' . "\n"
-            . '- If customer writes in Dari: respond in Dari' . "\n"
-            . '- If customer writes in Pashto: respond in Pashto' . "\n"
-            . '- NEVER respond in Urdu or Arabic' . "\n\n"
-
-            . 'Today is: ' . $today . "\n";
+            . 'LANGUAGE: Default English. Reply in Dari if asked in Dari, Pashto if asked in Pashto. Never use Urdu or Arabic.' . "\n";
     }
 
     // ─── Get History ──────────────────────────────────────────────────────────
@@ -297,14 +214,16 @@ class ChatbotService
 
         try {
             $response = Http::withOptions(['stream' => true])
-                ->timeout(120)
+                ->timeout(240)
                 ->post($this->ollamaHost . '/api/chat', [
                     'model' => $this->ollamaModel,
                     'messages' => $messages,
                     'stream' => true,
+                    'keep_alive' => '30m',
                     'options' => [
-                        'temperature' => 0.4,
-                        'num_predict' => 1024,
+                        'temperature' => 0.3,
+                        'num_predict' => 500,
+                        'num_ctx' => 4096,
                     ],
                 ]);
 

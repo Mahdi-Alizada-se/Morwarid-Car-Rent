@@ -15,6 +15,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+    {{-- Persian/Pashto Font --}}
+    @if(in_array(app()->getLocale(), ['fa', 'ps']))
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet">
+    @endif
+
     <style>
         [x-cloak] {
             display: none !important;
@@ -22,9 +30,47 @@
 
         @if(in_array(app()->getLocale(), ['fa', 'ps']))
             body {
-                font-family: 'Tahoma', 'Arial', sans-serif;
+                font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif;
                 direction: rtl;
                 text-align: right;
+            }
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            p,
+            span,
+            a,
+            button,
+            input,
+            textarea,
+            select,
+            label {
+                font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
+            }
+
+            .font-mono {
+                direction: ltr;
+                display: inline-block;
+            }
+
+            /* Fix sidebar RTL */
+            .space-x-2>*+* {
+                margin-right: 0.5rem;
+                margin-left: 0;
+            }
+
+            .space-x-3>*+* {
+                margin-right: 0.75rem;
+                margin-left: 0;
+            }
+
+            .space-x-4>*+* {
+                margin-right: 1rem;
+                margin-left: 0;
             }
 
         @endif
@@ -214,7 +260,7 @@
                     <span class="flex-1">{{ __('common.nav_chat') }}</span>
                     @if($totalUnreadMessages > 0)
                         <span class="chat-nav-badge w-5 h-5 bg-red-500 text-white text-xs font-bold
-                                         rounded-full flex items-center justify-center flex-shrink-0">
+                                             rounded-full flex items-center justify-center flex-shrink-0">
                             {{ $totalUnreadMessages > 9 ? '9+' : $totalUnreadMessages }}
                         </span>
                     @endif
@@ -361,7 +407,7 @@
             <div class="px-4 lg:px-6 pt-4">
                 @if(session('success'))
                     <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                    border-green-200 text-green-800 rounded-lg text-sm">
+                                        border-green-200 text-green-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -372,7 +418,7 @@
                 @endif
                 @if(session('error'))
                     <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                    border-red-200 text-red-800 rounded-lg text-sm">
+                                        border-red-200 text-red-800 rounded-lg text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
