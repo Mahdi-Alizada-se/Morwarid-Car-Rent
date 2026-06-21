@@ -171,6 +171,10 @@ Route::middleware('auth')->group(function () {
             // Users
             Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])
                 ->name('users.index');
+            Route::get('users/{user}/edit', [\App\Http\Controllers\Admin\UserController::class, 'edit'])
+                ->name('users.edit');
+            Route::put('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])
+                ->name('users.update');
             Route::post('users/{user}/verify-license', [\App\Http\Controllers\Admin\UserController::class, 'verifyLicense'])
                 ->name('users.verify-license');
             Route::get('users/{user}/license', [\App\Http\Controllers\Admin\UserController::class, 'showLicense'])
@@ -185,6 +189,12 @@ Route::middleware('auth')->group(function () {
                 ->name('profile-requests.approve');
             Route::post('profile-requests/{profileChangeRequest}/reject', [\App\Http\Controllers\Admin\ProfileChangeController::class, 'reject'])
                 ->name('profile-requests.reject');
+
+            // Admin's own account settings (email + password)
+            Route::get('settings', [\App\Http\Controllers\Admin\AccountController::class, 'edit'])
+                ->name('settings.edit');
+            Route::put('settings', [\App\Http\Controllers\Admin\AccountController::class, 'update'])
+                ->name('settings.update');
 
         });
 
@@ -224,6 +234,8 @@ Route::middleware('auth')->group(function () {
                 ->name('profile.edit');
             Route::post('/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'update'])
                 ->name('profile.update');
+            Route::put('/profile/password', [\App\Http\Controllers\Customer\ProfileController::class, 'updatePassword'])
+                ->name('profile.password');
 
         });
 

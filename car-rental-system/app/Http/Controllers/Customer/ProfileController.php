@@ -7,6 +7,7 @@ use App\Models\ProfileChangeRequest;
 use App\Services\ProfileChangeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -60,5 +61,35 @@ class ProfileController extends Controller
         return redirect()
             ->route('customer.profile.edit')
             ->with('success', __('profile.request_submitted'));
+    }
+
+    // ─── Update Password (instant, no admin approval) ───────────────────────
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+            ],
+        ], [
+            'current_password.current_password' => __('profile.current_password_incorrect'),
+            'password.regex' => __('profile.password_requirements'),
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()
+            ->route('customer.profile.edit')
+            ->with('success', __('profile.password_updated'));
     }
 }

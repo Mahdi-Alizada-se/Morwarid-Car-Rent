@@ -27,4 +27,12 @@ return [
     'already_pending' => 'تاسو دمخه یوه تمه لرونکې غوښتنه لرئ.',
     'request_submitted' => 'ستاسو بدلونونه د مدیر تایید لپاره ولیږل شول.',
     'new_license_photo_note' => 'یوازې که غواړئ اوسنی د جواز عکس بدل کړئ اپلوډ یې کړئ.',
+    'change_password' => 'پاسورډ بدلول',
+    'current_password' => 'اوسنی پاسورډ',
+    'new_password' => 'نوی پاسورډ',
+    'confirm_new_password' => 'د نوي پاسورډ تایید',
+    'current_password_incorrect' => 'اوسنی پاسورډ غلط دی.',
+    'password_requirements' => 'پاسورډ باید یو لوی توری، یو کوچنی توری او یو عدد ولري.',
+    'password_updated' => 'ستاسو پاسورډ په بریالیتوب سره تازه شو.',
+    'password_change_note' => 'د پاسورډ بدلون سمدلاسه پلي کیږي او د مدیر تایید ته اړتیا نلري.',
 ];

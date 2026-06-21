@@ -230,4 +230,11 @@ return [
     'requirements' => 'Requirements',
     'requirements_desc' => 'Valid driver\'s license, must be 21+, security deposit required',
     'need_help' => 'Need Help?',
+    'driver_license_number' => 'Driver\'s License Number',
+    'license_placeholder' => 'e.g. KBL-123456',
+    'driver_license_photo' => 'Driver\'s License Photo',
+    'click_to_upload_license' => 'Click to upload license photo',
+    'license_file_types' => 'JPG, PNG or PDF — max 5MB',
+    'license_photo_help' => 'Clear photo of front of license. JPG, PNG or PDF. Max 5MB.',
+    'profile_photo' => 'Profile Photo',
 ];

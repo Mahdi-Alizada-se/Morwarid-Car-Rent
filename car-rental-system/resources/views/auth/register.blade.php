@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="w-full max-w-md">
+        <div class="w-full max-w-md" x-data="registerForm()">
 
             {{-- Logo --}}
             <div class="flex items-center justify-center mx-auto mb-4">
@@ -22,7 +22,7 @@
                 {{-- Errors --}}
                 @if($errors->any())
                     <div class="mb-5 flex items-start gap-3 px-4 py-3 bg-red-50
-                                    border border-red-200 text-red-800 rounded-xl text-sm">
+                                        border border-red-200 text-red-800 rounded-xl text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -38,7 +38,7 @@
 
                 {{-- Form --}}
                 <form method="POST" action="{{ route('register.store') }}" enctype="multipart/form-data" class="space-y-5"
-                    x-on:submit="localStorage.removeItem('chatbot_session_id')">
+                    @submit="localStorage.removeItem('chatbot_session_id'); if (!isFormValid()) { $event.preventDefault(); touchAll(); }">
 
                     {{-- Full Name --}}
                     <div>
@@ -46,11 +46,22 @@
                             {{ __('common.full_name') }}
                             <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="name" name="name" value="{{ old('name') }}" autofocus autocomplete="name"
-                            placeholder="{{ __('common.full_name_placeholder') }}" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
+                        <div class="relative">
+                            <input type="text" id="name" name="name" x-model="name" @input="touched.name = true"
+                                value="{{ old('name') }}" autofocus autocomplete="name"
+                                placeholder="{{ __('common.full_name_placeholder') }}" class="w-full text-sm border rounded-xl px-4 py-2.5 pr-10
                                       focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                      focus:border-transparent
-                                      @error('name') border-red-400 bg-red-50 @enderror">
+                                      focus:border-transparent transition-colors"
+                                :class="touched.name ? (errors.name ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50') : 'border-gray-200'">
+                            <template x-if="touched.name && !errors.name && name.length > 0">
+                                <svg class="w-5 h-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
+                                    stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </template>
+                        </div>
+                        <p class="text-xs text-red-600 mt-1" x-show="touched.name && errors.name" x-text="errors.name"
+                            x-cloak></p>
                         @error('name')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -62,11 +73,21 @@
                             {{ __('common.email') }}
                             <span class="text-red-500">*</span>
                         </label>
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" autocomplete="email"
-                            placeholder="you@example.com" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
+                        <div class="relative">
+                            <input type="email" id="email" name="email" x-model="email" @input="touched.email = true"
+                                value="{{ old('email') }}" autocomplete="email" placeholder="you@example.com" class="w-full text-sm border rounded-xl px-4 py-2.5 pr-10
                                       focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                      focus:border-transparent
-                                      @error('email') border-red-400 bg-red-50 @enderror">
+                                      focus:border-transparent transition-colors"
+                                :class="touched.email ? (errors.email ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50') : 'border-gray-200'">
+                            <template x-if="touched.email && !errors.email && email.length > 0">
+                                <svg class="w-5 h-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
+                                    stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </template>
+                        </div>
+                        <p class="text-xs text-red-600 mt-1" x-show="touched.email && errors.email" x-text="errors.email"
+                            x-cloak></p>
                         @error('email')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -80,11 +101,13 @@
                                 ({{ __('common.optional') }})
                             </span>
                         </label>
-                        <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="+93 700 000 000"
-                            dir="ltr" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                      focus:border-transparent
-                                      @error('phone') border-red-400 bg-red-50 @enderror">
+                        <input type="text" id="phone" name="phone" x-model="phone" @input="touched.phone = true"
+                            value="{{ old('phone') }}" placeholder="+93 700 000 000" dir="ltr" class="w-full text-sm border rounded-xl px-4 py-2.5
+                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                  focus:border-transparent transition-colors"
+                            :class="touched.phone ? (errors.phone ? 'border-red-400 bg-red-50' : (phone.length > 0 ? 'border-green-400 bg-green-50' : 'border-gray-200')) : 'border-gray-200'">
+                        <p class="text-xs text-red-600 mt-1" x-show="touched.phone && errors.phone" x-text="errors.phone"
+                            x-cloak></p>
                         @error('phone')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -96,11 +119,22 @@
                             {{ __('common.driver_license_number') }}
                             <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="driver_license_number" name="driver_license_number"
-                            value="{{ old('driver_license_number') }}" required
-                            placeholder="{{ __('common.license_placeholder') }}" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                      @error('driver_license_number') border-red-400 bg-red-50 @enderror">
+                        <div class="relative">
+                            <input type="text" id="driver_license_number" name="driver_license_number"
+                                x-model="licenseNumber" @input="touched.licenseNumber = true"
+                                value="{{ old('driver_license_number') }}" required
+                                placeholder="{{ __('common.license_placeholder') }}" class="w-full text-sm border rounded-xl px-4 py-2.5 pr-10
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                :class="touched.licenseNumber ? (errors.licenseNumber ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50') : 'border-gray-200'">
+                            <template x-if="touched.licenseNumber && !errors.licenseNumber && licenseNumber.length > 0">
+                                <svg class="w-5 h-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
+                                    stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </template>
+                        </div>
+                        <p class="text-xs text-red-600 mt-1" x-show="touched.licenseNumber && errors.licenseNumber"
+                            x-text="errors.licenseNumber" x-cloak></p>
                         @error('driver_license_number')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -182,11 +216,12 @@
                         </label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" id="password" name="password"
-                                autocomplete="new-password" placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl
-                                          px-4 py-2.5 pr-12
-                                          focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                          focus:border-transparent
-                                          @error('password') border-red-400 bg-red-50 @enderror">
+                                x-model="password" @input="touched.password = true" autocomplete="new-password"
+                                placeholder="••••••••" class="w-full text-sm border rounded-xl
+                                      px-4 py-2.5 pr-12
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      focus:border-transparent transition-colors"
+                                :class="touched.password ? (errors.password ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50') : 'border-gray-200'">
 
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2
                                            text-gray-400 hover:text-gray-600 transition-colors">
@@ -210,6 +245,21 @@
                                 </svg>
                             </button>
                         </div>
+
+                        {{-- Password strength meter --}}
+                        <div class="flex gap-1 mt-1.5" x-show="password.length > 0" x-cloak>
+                            <div class="h-1 flex-1 rounded-full transition-colors"
+                                :class="passwordStrength() >= 1 ? 'bg-red-400' : 'bg-gray-200'"></div>
+                            <div class="h-1 flex-1 rounded-full transition-colors"
+                                :class="passwordStrength() >= 2 ? 'bg-orange-400' : 'bg-gray-200'"></div>
+                            <div class="h-1 flex-1 rounded-full transition-colors"
+                                :class="passwordStrength() >= 3 ? 'bg-yellow-400' : 'bg-gray-200'"></div>
+                            <div class="h-1 flex-1 rounded-full transition-colors"
+                                :class="passwordStrength() >= 4 ? 'bg-green-500' : 'bg-gray-200'"></div>
+                        </div>
+
+                        <p class="text-xs text-red-600 mt-1" x-show="touched.password && errors.password"
+                            x-text="errors.password" x-cloak></p>
                         @error('password')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -223,10 +273,13 @@
                         </label>
                         <div class="relative">
                             <input :type="showConfirm ? 'text' : 'password'" id="password_confirmation"
-                                name="password_confirmation" autocomplete="new-password" placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl
-                                          px-4 py-2.5 pr-12
-                                          focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                          focus:border-transparent">
+                                name="password_confirmation" x-model="passwordConfirmation"
+                                @input="touched.passwordConfirmation = true" autocomplete="new-password"
+                                placeholder="••••••••" class="w-full text-sm border rounded-xl
+                                      px-4 py-2.5 pr-12
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      focus:border-transparent transition-colors"
+                                :class="touched.passwordConfirmation ? (errors.passwordConfirmation ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50') : 'border-gray-200'">
 
                             <button type="button" @click="showConfirm = !showConfirm" class="absolute right-3 top-1/2 -translate-y-1/2
                                            text-gray-400 hover:text-gray-600 transition-colors">
@@ -250,6 +303,9 @@
                                 </svg>
                             </button>
                         </div>
+                        <p class="text-xs text-red-600 mt-1"
+                            x-show="touched.passwordConfirmation && errors.passwordConfirmation"
+                            x-text="errors.passwordConfirmation" x-cloak></p>
                     </div>
 
                     {{-- Avatar --}}
@@ -265,8 +321,9 @@
                     </div>
 
                     {{-- Submit --}}
-                    <button type="submit" class="w-full py-2.5 bg-indigo-600 text-white text-sm font-semibold
-                                   rounded-xl hover:bg-indigo-700 transition-colors">
+                    <button type="submit" class="w-full py-2.5 text-white text-sm font-semibold
+                                   rounded-xl transition-colors"
+                        :class="isFormValid() ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'">
                         {{ __('common.create_account') }}
                     </button>
 
@@ -323,4 +380,110 @@
 
         </div>
     </div>
+
+    <script>
+        function registerForm() {
+            return {
+                name: '{{ old('name') }}',
+                email: '{{ old('email') }}',
+                phone: '{{ old('phone') }}',
+                licenseNumber: '{{ old('driver_license_number') }}',
+                password: '',
+                passwordConfirmation: '',
+
+                touched: {
+                    name: false,
+                    email: false,
+                    phone: false,
+                    licenseNumber: false,
+                    password: false,
+                    passwordConfirmation: false,
+                },
+
+                get errors() {
+                    const e = {};
+
+                    if (this.name.length > 0) {
+                        if (!/^[\p{L}\s]+$/u.test(this.name)) {
+                            e.name = 'Name may only contain letters and spaces.';
+                        } else if (this.name.trim().length < 3) {
+                            e.name = 'Name must be at least 3 characters.';
+                        } else if (this.name.length > 32) {
+                            e.name = 'Name may not exceed 32 characters.';
+                        }
+                    } else if (this.touched.name) {
+                        e.name = 'Name is required.';
+                    }
+
+                    if (this.email.length > 0) {
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+                            e.email = 'Please enter a valid email address.';
+                        }
+                    } else if (this.touched.email) {
+                        e.email = 'Email is required.';
+                    }
+
+                    if (this.phone.length > 0 && !/^\+?[0-9\s\-]{7,20}$/.test(this.phone)) {
+                        e.phone = 'Please enter a valid phone number.';
+                    }
+
+                    if (this.licenseNumber.length > 0) {
+                        if (!/^[A-Za-z0-9\-]+$/.test(this.licenseNumber)) {
+                            e.licenseNumber = 'Only letters, numbers, and hyphens allowed.';
+                        } else if (this.licenseNumber.length < 4) {
+                            e.licenseNumber = 'License number must be at least 4 characters.';
+                        } else if (this.licenseNumber.length > 30) {
+                            e.licenseNumber = 'License number may not exceed 30 characters.';
+                        }
+                    } else if (this.touched.licenseNumber) {
+                        e.licenseNumber = 'License number is required.';
+                    }
+
+                    if (this.password.length > 0) {
+                        if (this.password.length < 8) {
+                            e.password = 'Password must be at least 8 characters.';
+                        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(this.password)) {
+                            e.password = 'Password needs an uppercase letter, a lowercase letter, and a number.';
+                        } else if (this.password.length > 64) {
+                            e.password = 'Password may not exceed 64 characters.';
+                        }
+                    } else if (this.touched.password) {
+                        e.password = 'Password is required.';
+                    }
+
+                    if (this.passwordConfirmation.length > 0) {
+                        if (this.passwordConfirmation !== this.password) {
+                            e.passwordConfirmation = 'Passwords do not match.';
+                        }
+                    } else if (this.touched.passwordConfirmation) {
+                        e.passwordConfirmation = 'Please confirm your password.';
+                    }
+
+                    return e;
+                },
+
+                passwordStrength() {
+                    let score = 0;
+                    if (this.password.length >= 8) score++;
+                    if (/[a-z]/.test(this.password) && /[A-Z]/.test(this.password)) score++;
+                    if (/\d/.test(this.password)) score++;
+                    if (/[^A-Za-z0-9]/.test(this.password)) score++;
+                    return score;
+                },
+
+                isFormValid() {
+                    return this.name.length > 0
+                        && this.email.length > 0
+                        && this.licenseNumber.length > 0
+                        && this.password.length > 0
+                        && this.passwordConfirmation.length > 0
+                        && Object.keys(this.errors).length === 0;
+                },
+
+                touchAll() {
+                    Object.keys(this.touched).forEach(k => this.touched[k] = true);
+                },
+            };
+        }
+    </script>
 @endsection

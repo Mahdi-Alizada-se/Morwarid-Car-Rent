@@ -23,14 +23,60 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'driver_license_number' => ['required', 'string', 'max:100'],
-            'driver_license_image' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:32',
+                'regex:/^[\pL\s]+$/u', // letters (any language) and spaces only
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email:rfc,dns',
+                'max:255',
+                'unique:users,email',
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'regex:/^\+?[0-9\s\-]{7,20}$/',
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', // at least 1 lowercase, 1 uppercase, 1 digit
+            ],
+            'driver_license_number' => [
+                'required',
+                'string',
+                'min:4',
+                'max:30',
+                'regex:/^[A-Za-z0-9\-]+$/', // letters, numbers, hyphens only
+            ],
+            'driver_license_image' => [
+                'required',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:5120',
+            ],
+            'avatar' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
+        ], [
+            'name.regex' => 'The name field may only contain letters and spaces.',
+            'name.min' => 'The name field must be at least 3 characters.',
+            'name.max' => 'The name field may not be greater than 32 characters.',
+            'phone.regex' => 'Please enter a valid phone number.',
+            'password.regex' => 'The password must contain at least one uppercase letter, one lowercase letter, and one number.',
+            'driver_license_number.regex' => 'The license number may only contain letters, numbers, and hyphens.',
         ]);
 
         // Store the license image
@@ -45,12 +91,12 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'phone' => $request->phone,
+            'name' => trim($validated['name']),
+            'email' => strtolower(trim($validated['email'])),
+            'password' => Hash::make($validated['password']),
+            'phone' => $validated['phone'] ?? null,
             'role' => 'customer',
-            'driver_license_number' => $request->driver_license_number,
+            'driver_license_number' => strtoupper(trim($validated['driver_license_number'])),
             'driver_license_image' => $licensePath,
             'avatar' => $avatarPath,
         ]);
@@ -73,14 +119,19 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): RedirectResponse
     {
+        $request->ensureIsNotRateLimited();
+
         $credentials = $request->only('email', 'password');
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->recordFailedAttempt();
+
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => 'The provided credentials do not match our records.']);
         }
 
+        $request->clearRateLimit();
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

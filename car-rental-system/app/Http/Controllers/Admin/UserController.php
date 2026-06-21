@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\LicenseVerifiedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -38,6 +39,52 @@ class UserController extends Controller
         $users = $query->paginate(20)->withQueryString();
 
         return view('admin.users.index', compact('users'));
+    }
+
+    // ─── Edit ─────────────────────────────────────────────────────────────────
+
+    public function edit(User $user): View
+    {
+        if ($user->role !== 'customer') {
+            abort(403, 'Only customer accounts can be edited here.');
+        }
+
+        return view('admin.users.edit', compact('user'));
+    }
+
+    // ─── Update ───────────────────────────────────────────────────────────────
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        if ($user->role !== 'customer') {
+            abort(403, 'Only customer accounts can be edited here.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'driver_license_number' => ['nullable', 'string', 'max:50'],
+            'driver_license_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:5120'],
+            'driver_license_verified' => ['nullable', 'boolean'],
+        ]);
+
+        if ($request->hasFile('driver_license_image')) {
+            if ($user->driver_license_image) {
+                Storage::disk('public')->delete($user->driver_license_image);
+            }
+            $validated['driver_license_image'] = $request->file('driver_license_image')->store('licenses', 'public');
+        }
+
+        $validated['driver_license_verified'] = $request->boolean('driver_license_verified');
+
+        $user->update($validated);
+
+        Cache::flush();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', $user->name . "'s information has been updated.");
     }
 
     // ─── Verify License ───────────────────────────────────────────────────────

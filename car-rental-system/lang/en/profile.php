@@ -27,4 +27,12 @@ return [
     'already_pending' => 'You already have a pending change request.',
     'request_submitted' => 'Your changes have been submitted for admin approval.',
     'new_license_photo_note' => 'Upload only if you want to change your current license photo.',
+    'change_password' => 'Change Password',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'confirm_new_password' => 'Confirm New Password',
+    'current_password_incorrect' => 'The current password is incorrect.',
+    'password_requirements' => 'Password needs an uppercase letter, a lowercase letter, and a number.',
+    'password_updated' => 'Your password has been updated successfully.',
+    'password_change_note' => 'Password changes apply immediately and do not require admin approval.',
 ];
