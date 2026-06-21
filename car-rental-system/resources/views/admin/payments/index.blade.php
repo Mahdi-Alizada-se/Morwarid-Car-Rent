@@ -17,16 +17,16 @@
             <div class="flex items-center gap-2">
                 @if($needsReviewCount > 0)
                     <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50
-                                             border border-orange-200 text-orange-700 text-sm
-                                             font-semibold rounded-xl">
+                                                                     border border-orange-200 text-orange-700 text-sm
+                                                                     font-semibold rounded-xl">
                         <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                         {{ $needsReviewCount }} {{ __('payments.needs_review') }}
                     </span>
                 @endif
                 @if($pendingCount > 0)
                     <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-50
-                                             border border-yellow-200 text-yellow-700 text-sm
-                                             font-semibold rounded-xl">
+                                                                     border border-yellow-200 text-yellow-700 text-sm
+                                                                     font-semibold rounded-xl">
                         <span class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
                         {{ $pendingCount }} Cash Pending
                     </span>
@@ -43,12 +43,12 @@
                     'paid' => __('common.confirmed'),
                     'rejected' => __('common.cancelled'),
                     'pending' => __('common.pending') . ($pendingCount > 0 ? ' (' . $pendingCount . ')' : ''),
-                    'failed' => 'Failed',
+                    'failed' => __('common.failed'),
                 ];
             @endphp
             @foreach($tabs as $value => $label)
                 <a href="{{ route('admin.payments.index', array_merge(request()->query(), ['status' => $value])) }}" class="px-4 py-2 text-sm font-medium rounded-xl transition-all
-                                      {{ request('status', '') === $value
+                                                              {{ request('status', '') === $value
                 ? ($value === 'receipt_uploaded'
                     ? 'bg-orange-600 text-white'
                     : ($value === 'pending'
@@ -94,18 +94,19 @@
                             @php
                                 $method = strtolower($payment->method ?? 'cash');
 
+                                $isFa = app()->getLocale() === 'fa';
                                 $methodMap = [
-                                    'cash' => ['icon' => '💵', 'label' => 'Cash', 'color' => 'bg-green-50 text-green-700'],
-                                    'bank_transfer' => ['icon' => '🏦', 'label' => 'Bank Transfer', 'color' => 'bg-blue-50 text-blue-700'],
+                                    'cash' => ['icon' => '💵', 'label' => $isFa ? 'نقدی' : 'Cash', 'color' => 'bg-green-50 text-green-700'],
+                                    'bank_transfer' => ['icon' => '🏦', 'label' => $isFa ? 'انتقال بانکی' : 'Bank Transfer', 'color' => 'bg-blue-50 text-blue-700'],
                                     'visa' => ['icon' => '💳', 'label' => 'Visa', 'color' => 'bg-blue-50 text-blue-700'],
                                     'mastercard' => ['icon' => '💳', 'label' => 'Mastercard', 'color' => 'bg-orange-50 text-orange-700'],
                                     'amex' => ['icon' => '💳', 'label' => 'Amex', 'color' => 'bg-blue-50 text-blue-700'],
                                     'discover' => ['icon' => '💳', 'label' => 'Discover', 'color' => 'bg-orange-50 text-orange-700'],
                                     'unionpay' => ['icon' => '💳', 'label' => 'UnionPay', 'color' => 'bg-red-50 text-red-700'],
                                     'jcb' => ['icon' => '💳', 'label' => 'JCB', 'color' => 'bg-green-50 text-green-700'],
-                                    'online' => ['icon' => '💳', 'label' => 'Card', 'color' => 'bg-purple-50 text-purple-700'],
-                                    'card' => ['icon' => '💳', 'label' => 'Card', 'color' => 'bg-purple-50 text-purple-700'],
-                                    'counter' => ['icon' => '🏪', 'label' => 'Counter', 'color' => 'bg-gray-100 text-gray-600'],
+                                    'online' => ['icon' => '💳', 'label' => $isFa ? 'کارت' : 'Card', 'color' => 'bg-purple-50 text-purple-700'],
+                                    'card' => ['icon' => '💳', 'label' => $isFa ? 'کارت' : 'Card', 'color' => 'bg-purple-50 text-purple-700'],
+                                    'counter' => ['icon' => '🏪', 'label' => $isFa ? 'کانتر' : 'Counter', 'color' => 'bg-gray-100 text-gray-600'],
                                 ];
 
                                 $methodInfo = $methodMap[$method]
@@ -126,7 +127,7 @@
                                     'paid' => __('common.confirmed'),
                                     'rejected' => __('common.cancelled'),
                                     'refunded' => __('common.refunded'),
-                                    'failed' => 'Failed',
+                                    'failed' => __('common.failed'),
                                 ];
                             @endphp
 
@@ -134,8 +135,8 @@
 
                                 <td class="px-4 py-3">
                                     <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
-                                                    {{ $payment->booking?->reference_code }}
-                                                </code>
+                                                                            {{ $payment->booking?->reference_code }}
+                                                                        </code>
                                 </td>
 
                                 <td class="px-4 py-3">
@@ -149,8 +150,8 @@
 
                                 <td class="px-4 py-3 hidden md:table-cell">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1
-                                                             rounded-lg text-xs font-semibold
-                                                             {{ $methodInfo['color'] }}">
+                                                                                     rounded-lg text-xs font-semibold
+                                                                                     {{ $methodInfo['color'] }}">
                                         {{ $methodInfo['icon'] }} {{ $methodInfo['label'] }}
                                     </span>
                                 </td>
@@ -162,8 +163,8 @@
                                 <td class="px-4 py-3">
                                     <span
                                         class="inline-flex px-2.5 py-0.5 rounded-full
-                                                             text-xs font-semibold
-                                                             {{ $statusColors[$payment->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                                                                     text-xs font-semibold
+                                                                                     {{ $statusColors[$payment->status] ?? 'bg-gray-100 text-gray-600' }}">
                                         {{ $statusLabels[$payment->status] ?? ucfirst($payment->status) }}
                                     </span>
                                 </td>
@@ -175,32 +176,32 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.payments.show', $payment) }}" class="px-3 py-1.5 text-xs font-medium text-indigo-600
-                                                              border border-indigo-200 rounded-lg hover:bg-indigo-50
-                                                              transition-colors">
+                                                                                      border border-indigo-200 rounded-lg hover:bg-indigo-50
+                                                                                      transition-colors">
                                             {{ __('common.view') }}
                                         </a>
 
                                         {{-- Quick confirm and cancel for pending cash payments --}}
                                         @if($payment->status === 'pending' && $payment->method === 'cash')
-                                                        <form method="POST" action="{{ route('admin.payments.confirm', $payment) }}"
-                                                            onsubmit="return confirm('Confirm this cash payment?')">
-                                                            @csrf
-                                                            <button type="submit" class="px-3 py-1.5 text-xs font-medium text-green-600
-                                               border border-green-200 rounded-lg hover:bg-green-50
-                                               transition-colors">
-                                                                Confirm
-                                                            </button>
-                                                        </form>
-                                                        <form method="POST" action="{{ route('admin.payments.reject', $payment) }}"
-                                                            onsubmit="return confirm('Cancel this cash payment and booking?')">
-                                                            @csrf
-                                                            <input type="hidden" name="reason" value="Cancelled by admin">
-                                                            <button type="submit" class="px-3 py-1.5 text-xs font-medium text-red-600
-                                               border border-red-200 rounded-lg hover:bg-red-50
-                                               transition-colors">
-                                                                Cancel
-                                                            </button>
-                                                        </form>
+                                            <form method="POST" action="{{ route('admin.payments.confirm', $payment) }}"
+                                                onsubmit="return confirm('Confirm this cash payment?')">
+                                                @csrf
+                                                <button type="submit" class="px-3 py-1.5 text-xs font-medium text-green-600
+                                                                                   border border-green-200 rounded-lg hover:bg-green-50
+                                                                                   transition-colors">
+                                                    Confirm
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.payments.reject', $payment) }}"
+                                                onsubmit="return confirm('Cancel this cash payment and booking?')">
+                                                @csrf
+                                                <input type="hidden" name="reason" value="Cancelled by admin">
+                                                <button type="submit" class="px-3 py-1.5 text-xs font-medium text-red-600
+                                                                                   border border-red-200 rounded-lg hover:bg-red-50
+                                                                                   transition-colors">
+                                                    Cancel
+                                                </button>
+                                            </form>
                                         @endif
                                     </div>
                                 </td>
@@ -212,7 +213,7 @@
                                     <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0
-                                                          00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                                                  00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                     </svg>
                                     <p class="font-medium">{{ __('payments.no_payments') }}</p>
                                 </td>

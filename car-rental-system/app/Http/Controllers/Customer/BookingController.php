@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Exceptions\BookingConflictException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
@@ -10,6 +9,7 @@ use App\Models\Vehicle;
 use App\Services\BookingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BookingController extends Controller
@@ -33,6 +33,7 @@ class BookingController extends Controller
     }
 
     // ─── Store Booking ────────────────────────────────────────────────────────
+
     public function store(StoreBookingRequest $request): mixed
     {
         if (auth()->user()->role === 'admin') {
@@ -49,6 +50,9 @@ class BookingController extends Controller
             );
 
             $paymentMethod = $request->input('payment_method', 'cash');
+
+            // Clear chatbot cache so AI sees the new booking immediately
+            Cache::flush();
 
             // If Stripe — return JSON with booking ID for JS to handle
             if ($paymentMethod === 'mastercard' && $request->wantsJson()) {
@@ -67,12 +71,12 @@ class BookingController extends Controller
                     'notes' => 'Reference: ' . $request->input('bank_reference', '')
                         . ' | Sender: ' . $request->input('bank_sender_name', ''),
                 ]);
+
                 return redirect()
                     ->route('bookings.confirmed', $booking)
                     ->with('success', 'Booking received! Your bank transfer is under review.');
 
             } elseif ($paymentMethod === 'mastercard') {
-                // Fallback if not JSON request
                 return redirect()
                     ->route('bookings.confirmed', $booking)
                     ->with('success', 'Booking confirmed!');
@@ -84,8 +88,10 @@ class BookingController extends Controller
                     'status' => 'pending',
                     'user_id' => auth()->id(),
                 ]);
+
                 \App\Jobs\AutoCancelUnconfirmedBooking::dispatch($booking)
                     ->delay(now()->addHours(5));
+
                 return redirect()
                     ->route('bookings.confirmed', $booking)
                     ->with('success', 'Booking received! Please pay within 5 hours.');
@@ -98,6 +104,7 @@ class BookingController extends Controller
             return back()->withInput()->withErrors(['vehicle_id' => $e->getMessage()]);
         }
     }
+
     // ─── My Bookings List ─────────────────────────────────────────────────────
 
     public function index(Request $request): View
@@ -114,7 +121,6 @@ class BookingController extends Controller
 
     public function show(Booking $booking): View
     {
-        // Customer can only see their own bookings
         if ($booking->customer_id !== auth()->id()) {
             abort(403);
         }
@@ -145,6 +151,9 @@ class BookingController extends Controller
 
         $booking->cancel($request->reason ?? 'Cancelled by customer.');
 
+        // Clear chatbot cache so AI sees the cancellation immediately
+        Cache::flush();
+
         $message = $fee > 0
             ? "Booking cancelled. {$feeDesc}. Please contact us to settle the fee."
             : 'Booking cancelled successfully. No fee applied.';
@@ -154,12 +163,10 @@ class BookingController extends Controller
             ->with('success', $message);
     }
 
-
-    // ─── Confirmed Page ───────────────────────────────────────────────────────────
+    // ─── Confirmed Page ───────────────────────────────────────────────────────
 
     public function confirmed(Booking $booking): View
     {
-        // Check ownership — customer can only see their own, admin can see all
         if (auth()->id() !== $booking->customer_id && !auth()->user()->isAdmin()) {
             abort(403);
         }
@@ -180,7 +187,6 @@ class BookingController extends Controller
 
         return view('bookings.confirmed', compact('booking', 'dailyRate'));
     }
-
 
     // ─── Cash Pending Page ────────────────────────────────────────────────────
 

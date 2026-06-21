@@ -15,6 +15,7 @@ class BookingService
     public function __construct(
         private VehicleAvailabilityService $availability,
         private PricingCalculator $pricing,
+        private NotificationService $notifications,
     ) {
     }
 
@@ -60,6 +61,9 @@ class BookingService
 
             ]);
 
+            // Notify customer — booking received
+            $this->notifications->bookingCreated($booking);
+
             return $booking;
         });
     }
@@ -72,6 +76,9 @@ class BookingService
             $booking->update([
                 'status' => Booking::STATUS_CONFIRMED,
             ]);
+
+            // Notify customer — payment confirmed
+            $this->notifications->paymentConfirmed($booking);
         });
     }
 
@@ -154,6 +161,9 @@ class BookingService
                     new \App\Notifications\BookingCancelledNotification($booking)
                 );
             }
+
+            // Notify via our new in-app notification bell too
+            $this->notifications->bookingCancelled($booking);
         });
     }
 

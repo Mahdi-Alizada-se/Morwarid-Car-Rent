@@ -1,9 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+@php
+    $locale = app()->getLocale();
+    $isFa = $locale === 'fa';
+    $isPs = $locale === 'ps';
+    $isRtl = $isFa || $isPs;
+
+    function pdfT($en, $fa, $ps)
+    {
+        $l = app()->getLocale();
+        if ($l === 'fa')
+            return $fa;
+        if ($l === 'ps')
+            return $ps;
+        return $en;
+    }
+@endphp
+<html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
-    <title>Bookings Report — {{ config('app.name') }}</title>
+    <title>{{ pdfT('Bookings Report', 'گزارش رزروها', 'د بکینګونو راپور') }} — {{ config('app.name') }}</title>
     <style>
         * {
             margin: 0;
@@ -16,6 +32,9 @@
             font-size: 11px;
             color: #1f2937;
             background: #fff;
+            direction:
+                {{ $isRtl ? 'rtl' : 'ltr' }}
+            ;
         }
 
         .container {
@@ -90,7 +109,7 @@
         thead th {
             color: white;
             padding: 8px 10px;
-            text-align: left;
+            text-align: {{ $isRtl ? 'right' : 'left' }};
             font-weight: 600;
             font-size: 10px;
         }
@@ -160,18 +179,20 @@
         {{-- Header --}}
         <div class="header">
             <div class="company-name">{{ config('app.name') }}</div>
-            <div class="report-title">Bookings Report</div>
+            <div class="report-title">
+                {{ pdfT('Bookings Report', 'گزارش رزروها', 'د بکینګونو راپور') }}
+            </div>
             <div class="report-meta">
                 @if($from || $to)
-                    Period:
-                    {{ $from ? \Carbon\Carbon::parse($from)->format('M d, Y') : 'Beginning' }}
+                    {{ pdfT('Period:', 'دوره:', 'موده:') }}
+                    {{ $from ? \Carbon\Carbon::parse($from)->translatedFormat('M d, Y') : pdfT('Beginning', 'ابتدا', 'پیل') }}
                     →
-                    {{ $to ? \Carbon\Carbon::parse($to)->format('M d, Y') : 'Today' }}
+                    {{ $to ? \Carbon\Carbon::parse($to)->translatedFormat('M d, Y') : pdfT('Today', 'امروز', 'نن') }}
                     &nbsp;|&nbsp;
                 @endif
-                Generated: {{ $generatedAt }}
+                {{ pdfT('Generated:', 'تولید شده در:', 'جوړ شوی:') }} {{ $generatedAt }}
                 &nbsp;|&nbsp;
-                Total Records: {{ count($bookings) }}
+                {{ pdfT('Total Records:', 'مجموع رکوردها:', 'ټول ریکارډونه:') }} {{ count($bookings) }}
             </div>
         </div>
 
@@ -179,38 +200,44 @@
         <div class="summary">
             <div class="summary-card">
                 <div class="number">{{ count($bookings) }}</div>
-                <div class="label">Total Bookings</div>
+                <div class="label">{{ pdfT('Total Bookings', 'مجموع رزروها', 'ټول بکینګونه') }}</div>
             </div>
             <div class="summary-card">
                 <div class="number">AFN {{ number_format($totalRevenue) }}</div>
-                <div class="label">Total Revenue</div>
+                <div class="label">{{ pdfT('Total Revenue', 'مجموع درآمد', 'ټول عاید') }}</div>
             </div>
             <div class="summary-card">
-                <div class="number">
-                    {{ $bookings->where('status', 'completed')->count() }}
-                </div>
-                <div class="label">Completed</div>
+                <div class="number">{{ $bookings->where('status', 'completed')->count() }}</div>
+                <div class="label">{{ pdfT('Completed', 'تکمیل شده', 'بشپړ شوی') }}</div>
             </div>
             <div class="summary-card">
-                <div class="number">
-                    {{ $bookings->where('status', 'cancelled')->count() }}
-                </div>
-                <div class="label">Cancelled</div>
+                <div class="number">{{ $bookings->where('status', 'cancelled')->count() }}</div>
+                <div class="label">{{ pdfT('Cancelled', 'لغو شده', 'لغو شوی') }}</div>
             </div>
         </div>
 
         {{-- Table --}}
+        @php
+            $statusLabels = [
+                'pending' => pdfT('Pending', 'در انتظار', 'تمه'),
+                'confirmed' => pdfT('Confirmed', 'تأیید شده', 'تایید شوی'),
+                'active' => pdfT('Active', 'فعال', 'فعال'),
+                'completed' => pdfT('Completed', 'تکمیل شده', 'بشپړ شوی'),
+                'cancelled' => pdfT('Cancelled', 'لغو شده', 'لغو شوی'),
+            ];
+        @endphp
+
         <table>
             <thead>
                 <tr>
-                    <th>Reference</th>
-                    <th>Customer</th>
-                    <th>Vehicle</th>
-                    <th>Pickup</th>
-                    <th>Return</th>
-                    <th>Days</th>
-                    <th>Amount AFN</th>
-                    <th>Status</th>
+                    <th>{{ pdfT('Reference', 'کد رزرو', 'راجع') }}</th>
+                    <th>{{ pdfT('Customer', 'مشتری', 'پیرودونکی') }}</th>
+                    <th>{{ pdfT('Vehicle', 'موتر', 'موټر') }}</th>
+                    <th>{{ pdfT('Pickup', 'تحویل', 'تحویل') }}</th>
+                    <th>{{ pdfT('Return', 'بازگشت', 'بیرته راستنیدل') }}</th>
+                    <th>{{ pdfT('Days', 'روز', 'ورځې') }}</th>
+                    <th>{{ pdfT('Amount AFN', 'مبلغ (افغانی)', 'مقدار (افغانۍ)') }}</th>
+                    <th>{{ pdfT('Status', 'وضعیت', 'حالت') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -223,30 +250,39 @@
                         <td><strong>{{ $booking->reference_code }}</strong></td>
                         <td>{{ $booking->customer?->name ?? '—' }}</td>
                         <td>{{ $booking->vehicle?->full_name ?? '—' }}</td>
-                        <td>{{ $booking->pickup_date?->format('M d, Y') }}</td>
-                        <td>{{ $booking->return_date?->format('M d, Y') }}</td>
+                        <td>{{ $booking->pickup_date?->translatedFormat('M d, Y') }}</td>
+                        <td>{{ $booking->return_date?->translatedFormat('M d, Y') }}</td>
                         <td>{{ $days }}</td>
                         <td><strong>{{ number_format($booking->total_amount) }}</strong></td>
                         <td>
                             <span class="badge badge-{{ $booking->status }}">
-                                {{ ucfirst($booking->status) }}
+                                {{ $statusLabels[$booking->status] ?? ucfirst($booking->status) }}
                             </span>
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">
-                            No bookings found for selected criteria.
-                        </td>
-                    </tr>
+                                <tr>
+                                    <td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">
+                                        {{ pdfT(
+                        'No bookings found for selected criteria.',
+                        'هیچ رزروی برای معیارهای انتخابی یافت نشد.',
+                        'د ټاکل شویو معیارونو لپاره هیڅ بکینګ ونه موندل شو.'
+                    ) }}
+                                    </td>
+                                </tr>
                 @endforelse
             </tbody>
         </table>
 
         {{-- Footer --}}
         <div class="footer">
-            {{ config('app.name') }} · Kabul, Afghanistan · info@carrental.com · +93 700 000 000<br>
-            This report was automatically generated on {{ $generatedAt }}
+            {{ config('app.name') }} · {{ pdfT('Kabul, Afghanistan', 'کابل، افغانستان', 'کابل، افغانستان') }}
+            · info@carrental.com · +93 730 751 894<br>
+            {{ pdfT(
+    'This report was automatically generated on ' . $generatedAt,
+    'این گزارش به صورت خودکار در تاریخ ' . $generatedAt . ' تولید شده است.',
+    'دا راپور په اتومات ډول د ' . $generatedAt . ' نیټه جوړ شوی دی.'
+) }}
         </div>
 
     </div>

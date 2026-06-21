@@ -6,30 +6,83 @@
 @endsection
 
 @section('content')
+    @php
+        $locale = app()->getLocale();
+        $isFa = $locale === 'fa';
+        $isPs = $locale === 'ps';
+
+        if (!function_exists('repT')) {
+            function repT($en, $fa, $ps)
+            {
+                $l = app()->getLocale();
+                if ($l === 'fa')
+                    return $fa;
+                if ($l === 'ps')
+                    return $ps;
+                return $en;
+            }
+        }
+
+        $statusLabels = [
+            'pending' => __('common.pending'),
+            'confirmed' => __('common.confirmed'),
+            'active' => __('common.active'),
+            'completed' => __('common.completed'),
+            'cancelled' => __('common.cancelled'),
+        ];
+
+        $methodLabels = [
+            'cash' => repT('Cash', 'نقدی', 'نغده'),
+            'online' => repT('Online', 'آنلاین', 'آنلاین'),
+            'bank_transfer' => repT('Bank Transfer', 'انتقال بانکی', 'د بانک لیږد'),
+            'counter' => repT('Counter', 'کانتر', 'کانتر'),
+            'visa' => 'Visa',
+            'mastercard' => 'Mastercard',
+            'amex' => 'Amex',
+            'card' => repT('Card', 'کارت', 'کارت'),
+        ];
+
+        $payStatusLabels = [
+            'paid' => __('common.paid'),
+            'pending' => __('common.pending'),
+            'receipt_uploaded' => __('payments.needs_review'),
+            'failed' => __('common.failed'),
+            'rejected' => __('common.cancelled'),
+        ];
+    @endphp
+
     <div class="space-y-5">
 
-        {{-- ─── Header ──────────────────────────────────────────────────────────── --}}
+        {{-- ─── Header ────────────────────────────────────────────────────────── --}}
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">Booking Reports</h2>
-                <p class="text-sm text-gray-500 mt-0.5">Full booking records with customer and payment details</p>
+                <h2 class="text-xl font-bold text-gray-900">
+                    {{ repT('Booking Reports', 'گزارش رزروها', 'د بکینګونو راپورونه') }}
+                </h2>
+                <p class="text-sm text-gray-500 mt-0.5">
+                    {{ repT(
+        'Full booking records with customer and payment details',
+        'سوابق کامل رزرو با جزئیات مشتری و پرداخت',
+        'د پیرودونکي او تادیې توضیحاتو سره بشپړ بکینګ ریکارډونه'
+    ) }}
+                </p>
             </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('admin.reports.csv', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm
                           font-semibold rounded-lg hover:bg-green-700 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1
+                              0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Export CSV
+                    {{ repT('Export CSV', 'خروجی CSV', 'CSV صادرول') }}
                 </a>
                 <a href="{{ route('admin.reports.pdf', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm
                           font-semibold rounded-lg hover:bg-red-700 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0
+                              0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    Export PDF
+                    {{ repT('Export PDF', 'خروجی PDF', 'PDF صادرول') }}
                 </a>
             </div>
         </div>
@@ -41,7 +94,7 @@
                 {{-- Date From --}}
                 <div class="flex flex-col gap-1">
                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        From
+                        {{ repT('From', 'از تاریخ', 'له') }}
                     </label>
                     <input type="date" name="from" value="{{ $from }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -50,7 +103,7 @@
                 {{-- Date To --}}
                 <div class="flex flex-col gap-1">
                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        To
+                        {{ repT('To', 'تا تاریخ', 'تر') }}
                     </label>
                     <input type="date" name="to" value="{{ $to }}" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -59,16 +112,16 @@
                 {{-- Status --}}
                 <div class="flex flex-col gap-1">
                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Status
+                        {{ repT('Status', 'وضعیت', 'حالت') }}
                     </label>
                     <select name="status" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>
-                            All Statuses
+                            {{ repT('All Statuses', 'همه وضعیت‌ها', 'ټول حالتونه') }}
                         </option>
                         @foreach(['pending', 'confirmed', 'active', 'completed', 'cancelled'] as $s)
                             <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
-                                {{ ucfirst($s) }}
+                                {{ $statusLabels[$s] ?? ucfirst($s) }}
                             </option>
                         @endforeach
                     </select>
@@ -77,24 +130,24 @@
                 {{-- Payment Method --}}
                 <div class="flex flex-col gap-1">
                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Payment Method
+                        {{ repT('Payment Method', 'روش پرداخت', 'د تادیې طریقه') }}
                     </label>
                     <select name="payment_method" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="all" {{ request('payment_method', 'all') === 'all' ? 'selected' : '' }}>
-                            All Methods
+                            {{ repT('All Methods', 'همه روش‌ها', 'ټولې طریقې') }}
                         </option>
                         <option value="cash" {{ request('payment_method') === 'cash' ? 'selected' : '' }}>
-                            Cash
+                            {{ repT('Cash', 'نقدی', 'نغده') }}
                         </option>
                         <option value="online" {{ request('payment_method') === 'online' ? 'selected' : '' }}>
-                            Online
+                            {{ repT('Online', 'آنلاین', 'آنلاین') }}
                         </option>
                         <option value="bank_transfer" {{ request('payment_method') === 'bank_transfer' ? 'selected' : '' }}>
-                            Bank Transfer
+                            {{ repT('Bank Transfer', 'انتقال بانکی', 'د بانک لیږد') }}
                         </option>
                         <option value="counter" {{ request('payment_method') === 'counter' ? 'selected' : '' }}>
-                            Counter
+                            {{ repT('Counter', 'کانتر', 'کانتر') }}
                         </option>
                     </select>
                 </div>
@@ -102,7 +155,7 @@
                 {{-- Search --}}
                 <div class="flex flex-col gap-1 flex-1 min-w-48">
                     <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        Search
+                        {{ repT('Search', 'جستجو', 'لټون') }}
                     </label>
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
@@ -111,7 +164,8 @@
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input type="text" name="search" value="{{ request('search') }}"
-                            placeholder="Customer name or reference..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg
+                            placeholder="{{ repT('Customer name or reference...', 'نام مشتری یا کد رزرو...', 'د پیرودونکي نوم یا راجع...') }}"
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg
                                       focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
@@ -120,76 +174,82 @@
                 <div class="flex gap-2">
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold
                                    rounded-lg hover:bg-indigo-700 transition-colors">
-                        Apply
+                        {{ repT('Apply', 'اعمال', 'پلي کول') }}
                     </button>
                     <a href="{{ route('admin.reports') }}" class="px-4 py-2 text-sm text-gray-600 border border-gray-200
                               rounded-lg hover:bg-gray-50 transition-colors">
-                        Reset
+                        {{ repT('Reset', 'بازنشانی', 'بیا تنظیم') }}
                     </a>
                 </div>
 
             </form>
         </div>
 
-        {{-- ─── Summary Row ─────────────────────────────────────────────────────── --}}
+        {{-- ─── Summary Row ──────────────────────────────────────────────────────── --}}
         <div class="grid grid-cols-3 gap-4">
             <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
-                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Bookings</p>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    {{ repT('Total Bookings', 'مجموع رزروها', 'ټول بکینګونه') }}
+                </p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $bookings->total() }}</p>
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
-                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Revenue</p>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    {{ repT('Total Revenue', 'مجموع درآمد', 'ټول عاید') }}
+                </p>
                 <p class="text-2xl font-bold text-green-600 mt-1">
                     AFN {{ number_format($totalRevenue, 0) }}
                 </p>
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
-                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Confirmed</p>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    {{ repT('Confirmed', 'تأیید شده', 'تایید شوی') }}
+                </p>
                 <p class="text-2xl font-bold text-blue-600 mt-1">{{ $confirmedCount }}</p>
             </div>
         </div>
 
-        {{-- ─── Table ───────────────────────────────────────────────────────────── --}}
+        {{-- ─── Table ────────────────────────────────────────────────────────────── --}}
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-max">
                     <thead>
                         <tr class="border-b border-gray-200 bg-gray-50">
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Reference
+                                {{ repT('Reference', 'کد رزرو', 'راجع') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Customer
+                                {{ repT('Customer', 'مشتری', 'پیرودونکی') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Phone
+                                {{ repT('Phone', 'تلفن', 'تلیفون') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                License No.
+                                {{ repT('License No.', 'شماره گواهینامه', 'د جواز شمیره') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Vehicle
+                                {{ repT('Vehicle', 'موتر', 'موټر') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Pickup
+                                {{ repT('Pickup', 'تحویل', 'تحویل') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Return
+                                {{ repT('Return', 'بازگشت', 'بیرته راستنیدل') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Days
+                                {{ repT('Days', 'روز', 'ورځې') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Total AFN
+                                {{ repT('Total AFN', 'مجموع (افغانی)', 'ټول (افغانۍ)') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Payment
+                                {{ repT('Payment', 'پرداخت', 'تادیه') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Status
+                                {{ repT('Status', 'وضعیت', 'حالت') }}
                             </th>
                             <th class="text-left font-semibold text-gray-500 px-4 py-3 text-xs uppercase tracking-wide">
-                                Created
+                                {{ repT('Created', 'تاریخ ثبت', 'جوړیدو نیټه') }}
                             </th>
                         </tr>
                     </thead>
@@ -212,6 +272,9 @@
                                     'online' => 'bg-blue-50 text-blue-700',
                                     'bank_transfer' => 'bg-purple-50 text-purple-700',
                                     'counter' => 'bg-gray-100 text-gray-600',
+                                    'visa' => 'bg-blue-50 text-blue-700',
+                                    'mastercard' => 'bg-orange-50 text-orange-700',
+                                    'card' => 'bg-purple-50 text-purple-700',
                                 ];
 
                                 $payStatusColors = [
@@ -244,7 +307,7 @@
                                 </td>
 
                                 {{-- Phone --}}
-                                <td class="px-4 py-3 text-gray-600 text-xs">
+                                <td class="px-4 py-3 text-gray-600 text-xs" dir="ltr">
                                     {{ $booking->customer?->phone ?? '—' }}
                                 </td>
 
@@ -271,7 +334,7 @@
 
                                 {{-- Pickup --}}
                                 <td class="px-4 py-3 text-xs text-gray-600">
-                                    {{ $booking->pickup_date?->format('M d, Y') }}
+                                    {{ $booking->pickup_date?->translatedFormat('M d, Y') }}
                                     <span class="block text-gray-400">
                                         {{ $booking->pickup_date?->format('H:i') }}
                                     </span>
@@ -279,7 +342,7 @@
 
                                 {{-- Return --}}
                                 <td class="px-4 py-3 text-xs text-gray-600">
-                                    {{ $booking->return_date?->format('M d, Y') }}
+                                    {{ $booking->return_date?->translatedFormat('M d, Y') }}
                                     <span class="block text-gray-400">
                                         {{ $booking->return_date?->format('H:i') }}
                                     </span>
@@ -303,16 +366,18 @@
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full
                                                              text-xs font-semibold
                                                              {{ $methodColors[$payment->method] ?? 'bg-gray-100 text-gray-600' }}">
-                                            {{ ucfirst(str_replace('_', ' ', $payment->method)) }}
+                                            {{ $methodLabels[$payment->method] ?? ucfirst(str_replace('_', ' ', $payment->method)) }}
                                         </span>
                                         <span
                                             class="block mt-1 inline-flex items-center px-2 py-0.5
                                                              rounded-full text-xs font-semibold
                                                              {{ $payStatusColors[$payment->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                            {{ ucfirst(str_replace('_', ' ', $payment->status)) }}
+                                            {{ $payStatusLabels[$payment->status] ?? ucfirst(str_replace('_', ' ', $payment->status)) }}
                                         </span>
                                     @else
-                                        <span class="text-gray-400 text-xs">No payment</span>
+                                        <span class="text-gray-400 text-xs">
+                                            {{ repT('No payment', 'پرداختی نیست', 'تادیه نشته') }}
+                                        </span>
                                     @endif
                                 </td>
 
@@ -321,13 +386,13 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full
                                                      text-xs font-semibold
                                                      {{ $statusColors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                        {{ ucfirst($booking->status) }}
+                                        {{ $statusLabels[$booking->status] ?? ucfirst($booking->status) }}
                                     </span>
                                 </td>
 
                                 {{-- Created --}}
                                 <td class="px-4 py-3 text-xs text-gray-500">
-                                    {{ $booking->created_at->format('M d, Y') }}
+                                    {{ $booking->created_at->translatedFormat('M d, Y') }}
                                     <span class="block text-gray-400">
                                         {{ $booking->created_at->format('H:i') }}
                                     </span>
@@ -335,16 +400,22 @@
 
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="12" class="px-4 py-12 text-center text-gray-400">
-                                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                    </svg>
-                                    <p class="font-medium">No bookings found for the selected filters.</p>
-                                </td>
-                            </tr>
+                                            <tr>
+                                                <td colspan="12" class="px-4 py-12 text-center text-gray-400">
+                                                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9
+                                                                  5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                    </svg>
+                                                    <p class="font-medium">
+                                                        {{ repT(
+                                'No bookings found for the selected filters.',
+                                'هیچ رزروی برای فیلترهای انتخابی یافت نشد.',
+                                'د ټاکل شویو چاڼونو لپاره هیڅ بکینګ ونه موندل شو.'
+                            ) }}
+                                                    </p>
+                                                </td>
+                                            </tr>
                         @endforelse
                     </tbody>
                 </table>

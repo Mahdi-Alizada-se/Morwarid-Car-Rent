@@ -23,7 +23,7 @@ class ChatbotController extends Controller
 
         return response()->json([
             'status' => $isRunning ? 'online' : 'offline',
-            'model' => env('OLLAMA_MODEL', 'llama3.2:1b'),
+            'model' => env('OLLAMA_MODEL', 'llama3.2:3b'),
             'host' => env('OLLAMA_HOST', 'http://127.0.0.1:11434'),
             'online' => $isRunning,
         ]);
@@ -41,7 +41,6 @@ class ChatbotController extends Controller
         $userMessage = trim($request->message);
         $sessionId = $request->session_id;
 
-        // Always use Ollama — no hardcoded FAQ answers
         return $this->streamOllamaAnswer($sessionId, $userMessage);
     }
 
@@ -51,7 +50,6 @@ class ChatbotController extends Controller
     {
         $messages = $this->chatbot->getHistory($sessionId);
 
-        // Filter out system messages
         $filtered = array_filter($messages, fn($m) => $m['role'] !== 'system');
         $filtered = array_slice(array_values($filtered), -10);
 
@@ -75,6 +73,11 @@ class ChatbotController extends Controller
     {
         return response()->stream(function () use ($sessionId, $userMessage) {
 
+            // Prevent output buffering issues on first message
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
             $generator = $this->chatbot->streamChat($sessionId, $userMessage);
 
             foreach ($generator as $chunk) {
@@ -85,25 +88,20 @@ class ChatbotController extends Controller
                 ]);
 
                 echo "data: {$data}\n\n";
-
-                if (ob_get_level() > 0)
-                    ob_flush();
                 flush();
             }
 
             // Final done signal
             $done = json_encode(['done' => true, 'source' => 'ai']);
             echo "data: {$done}\n\n";
-
-            if (ob_get_level() > 0)
-                ob_flush();
             flush();
 
         }, 200, [
             'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'X-Accel-Buffering' => 'no',
             'Connection' => 'keep-alive',
+            'Pragma' => 'no-cache',
         ]);
     }
 }

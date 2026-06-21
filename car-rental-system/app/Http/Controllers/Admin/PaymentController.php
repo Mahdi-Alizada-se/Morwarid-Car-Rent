@@ -5,17 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Services\NotificationService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Cache;
 
 class PaymentController extends Controller
 {
     public function __construct(
         private PaymentService $paymentService,
+        private NotificationService $notifications,
     ) {
     }
 
@@ -26,18 +28,15 @@ class PaymentController extends Controller
         $query = Payment::with(['booking.customer', 'booking.vehicle'])
             ->latest();
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by method
         if ($request->filled('method')) {
             $query->where('method', $request->method);
         }
 
         $payments = $query->paginate(15)->withQueryString();
-
         $needsReviewCount = Payment::where('status', 'receipt_uploaded')->count();
         $pendingCount = Payment::where('status', 'pending')->count();
 
@@ -78,8 +77,13 @@ class PaymentController extends Controller
         // Also confirm the booking
         $payment->booking?->update(['status' => 'confirmed']);
 
-        // Clear dashboard cache so counts update immediately
-        Cache::forget('analytics:dashboard_stats');
+        // Notify customer — payment confirmed (notification bell)
+        if ($payment->booking) {
+            $this->notifications->paymentConfirmed($payment->booking);
+        }
+
+        // Clear all caches so chatbot and dashboard get fresh data
+        Cache::flush();
 
         return redirect()
             ->route('admin.payments.show', $payment)
@@ -96,8 +100,8 @@ class PaymentController extends Controller
 
         $this->paymentService->rejectReceipt($payment, $request->reason);
 
-        // Clear dashboard cache
-        Cache::forget('analytics:dashboard_stats');
+        // Clear all caches so chatbot and dashboard get fresh data
+        Cache::flush();
 
         return redirect()
             ->route('admin.payments.show', $payment)
@@ -115,10 +119,14 @@ class PaymentController extends Controller
         $booking = Booking::findOrFail($request->booking_id);
         $payment = $this->paymentService->recordCounterPayment($booking, auth()->user());
 
+        // Notify customer — payment confirmed (notification bell)
+        $this->notifications->paymentConfirmed($booking);
+
+        // Clear all caches so chatbot and dashboard get fresh data
+        Cache::flush();
+
         return redirect()
             ->route('admin.payments.show', $payment)
             ->with('success', 'Counter payment recorded and booking confirmed.');
     }
 }
-
-

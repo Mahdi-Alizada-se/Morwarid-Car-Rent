@@ -24,4 +24,63 @@ return [
     'days' => 'ورځې',
     'total' => 'ټول',
     'actions' => 'کړنې',
+
+    // ─── Vehicles Index Page ──────────────────────────────────────────────────
+    'available_vehicles' => 'شته موټرونه',
+    'browse_subtitle' => 'زموږ د کیفیت لرونکو موټرونو څخه غوره کړئ',
+    'all_transmissions' => 'ټول ګیربکسونه',
+    'all_categories' => 'ټولې کټاګورۍ',
+    'all_statuses' => 'ټول حالتونه',
+    'search_placeholder' => 'د برانډ، ماډل له مخې ولټوئ...',
+    'not_available' => 'شتون نلري',
+    'try_different_filters' => 'مختلف چاڼونه وازماوئ',
+    'fully_available' => 'د راتلونکو ۹۰ ورځو لپاره بشپړ شتون لري',
+
+    // ─── Fuel Types ───────────────────────────────────────────────────────────
+    'petrol' => 'پطرول',
+    'diesel' => 'ډیزل',
+    'electric' => 'بریښنایی',
+    'hybrid' => 'هایبرید',
+
+    // ─── Transmission ─────────────────────────────────────────────────────────
+    'automatic' => 'اتومات',
+    'manual' => 'لاسي',
+
+    // ─── Vehicle Show Page ────────────────────────────────────────────────────
+    'specifications' => 'ځانګړتیاوې',
+    'features' => 'ځانګړنې',
+    'about_vehicle' => 'د دې موټر په اړه',
+    'availability' => 'شتون',
+    'book_this_vehicle' => 'دا موټر بکینګ کړئ',
+    'login_to_book' => 'د بکینګ لپاره ننوځئ',
+    'no_account' => 'حساب نلرئ؟',
+    'pickup_date' => 'د اخیستو نیټه',
+    'select_date' => 'نیټه وټاکئ',
+    'currently_booked' => 'اوس مهال بکینګ شوی',
+    'under_maintenance' => 'تر ترمیم لاندې',
+    'calculation' => 'محاسبه',
+    'not_available_dates' => 'د ټاکل شویو نیټو لپاره شتون نلري',
+    'pricing_options' => 'د نرخونو انتخابونه',
+    'daily' => 'ورځنی',
+    'weekly' => 'اونیز',
+    'monthly' => 'میاشتنی',
+    'plate' => 'پلیټ',
+    'per_day' => 'هره ورځ',
+
+    // ─── Colors ───────────────────────────────────────────────────────────────
+    'color_black' => 'تور',
+    'color_white' => 'سپین',
+    'color_silver' => 'سپینروپی',
+    'color_gray' => 'خړ',
+    'color_red' => 'سور',
+    'color_blue' => 'نیلي',
+    'color_green' => 'شین',
+    'color_yellow' => 'ژیړ',
+    'color_orange' => 'نارنجي',
+    'color_brown' => 'نسواري',
+    'color_gold' => 'سرتلایی',
+    'color_beige' => 'کرمي',
+    'color_steel' => 'فولادي',
+    'color_pearl' => 'مرغلرین',
+    'color_maroon' => 'زرشکي',
 ];

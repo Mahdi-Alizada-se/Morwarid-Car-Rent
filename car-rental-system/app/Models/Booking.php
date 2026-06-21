@@ -162,24 +162,16 @@ class Booking extends Model
      */
     public function getCancellationFeeDescription(): string
     {
-        if (!$this->hasCancellationFee()) {
-            return 'Free cancellation';
-        }
-
-        $dailyRate = $this->vehicle
-                ?->pricingRules()
-            ->where('type', 'daily')
-            ->where('is_active', true)
-            ->first()
-                ?->base_rate ?? 0;
-
         if ($this->status === 'active') {
-            $daysUsed = max(1, (int) $this->pickup_date->diffInDays(now()));
-            return "Cancellation fee: AFN " . number_format($daysUsed * $dailyRate)
-                . " ({$daysUsed} day(s) used × AFN " . number_format($dailyRate) . "/day)";
+            $daysUsed = max(1, $this->pickup_date->diffInDays(now()));
+            return __('bookings.cancellation_fee') . ': AFN '
+                . number_format($this->getCancellationFeeAmount())
+                . ' (' . $daysUsed . ' ' . __('bookings.day_rate') . ')';
         }
 
-        return "Cancellation fee: AFN " . number_format($dailyRate) . " (1 day rate)";
+        return __('bookings.cancellation_fee') . ': AFN '
+            . number_format($this->getCancellationFeeAmount())
+            . ' (' . __('bookings.one_day_rate') . ')';
     }
 
     public function cancel(string $reason = null): bool

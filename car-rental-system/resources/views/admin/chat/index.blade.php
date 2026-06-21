@@ -18,20 +18,28 @@
 @endpush
 
 @section('content')
+    @php
+        $isFa = app()->getLocale() === 'fa';
+        $totalUnread = $rooms->sum('unread_count');
+    @endphp
+
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden chat-layout flex" x-data="adminChat()"
         x-init="init()">
 
-        {{-- ─── Left Sidebar ─────────────────────────────────────────────────── --}}
+        {{-- ─── Left Sidebar ──────────────────────────────────────────────────── --}}
         <div class="w-80 border-r border-gray-200 flex flex-col flex-shrink-0 h-full">
 
             {{-- Header --}}
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-gray-900">Messages</h3>
-                    @php $totalUnread = $rooms->sum('unread_count'); @endphp
+                    <h3 class="font-bold text-gray-900">
+                        {{ $isFa ? 'پیام‌ها' : 'Messages' }}
+                    </h3>
                     <p class="total-unread-text text-xs mt-0.5
                               {{ $totalUnread > 0 ? 'text-orange-600 font-semibold' : 'text-gray-400' }}">
-                        {{ $totalUnread > 0 ? $totalUnread . ' unread' : 'All caught up' }}
+                        {{ $totalUnread > 0
+        ? $totalUnread . ($isFa ? ' پیام خوانده نشده' : ' unread')
+        : ($isFa ? 'همه خوانده شده' : 'All caught up') }}
                     </p>
                 </div>
                 @if($totalUnread > 0)
@@ -50,7 +58,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <input type="text" x-model="search" placeholder="Search customers..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200
+                    <input type="text" x-model="search"
+                        placeholder="{{ $isFa ? 'جستجوی مشتری...' : 'Search customers...' }}" class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200
                                   rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                 </div>
             </div>
@@ -67,8 +76,6 @@
 
                             <div class="flex items-start justify-between gap-2">
                                 <div class="flex items-center gap-2.5 min-w-0">
-
-                                    {{-- Avatar --}}
                                     @if($room->customer->avatar)
                                         <img src="{{ asset('storage/' . $room->customer->avatar) }}"
                                             class="w-10 h-10 rounded-full object-cover flex-shrink-0">
@@ -87,13 +94,13 @@
                                                 {{ $room->customer->name }}
                                             </p>
                                             <span class="w-2 h-2 rounded-full flex-shrink-0
-                                                    {{ $room->customer->last_seen_at &&
+                                                            {{ $room->customer->last_seen_at &&
                     $room->customer->last_seen_at->gt(now()->subMinutes(2))
                     ? 'bg-green-500' : 'bg-gray-300' }}">
                                             </span>
                                         </div>
                                         <p class="text-xs text-gray-400 truncate">
-                                            {{ \Illuminate\Support\Str::limit($room->lastMessage?->body ?? 'No messages yet', 35) }}
+                                            {{ \Illuminate\Support\Str::limit($room->lastMessage?->body ?? ($isFa ? 'هنوز پیامی نیست' : 'No messages yet'), 35) }}
                                         </p>
                                     </div>
                                 </div>
@@ -116,13 +123,13 @@
                         </div>
                 @empty
                     <div class="px-4 py-8 text-center text-gray-400 text-sm">
-                        No conversations yet.
+                        {{ $isFa ? 'هنوز مکالمه‌ای وجود ندارد.' : 'No conversations yet.' }}
                     </div>
                 @endforelse
             </div>
         </div>
 
-        {{-- ─── Right: Message Area ──────────────────────────────────────────── --}}
+        {{-- ─── Right: Message Area ────────────────────────────────────────────── --}}
         <div class="flex-1 flex flex-col h-full min-w-0">
 
             {{-- Empty State --}}
@@ -140,8 +147,12 @@
                               A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373
                               3.746 2.25 5.14 2.25 6.741v6.018z" />
                     </svg>
-                    <p class="font-semibold text-gray-500 text-lg">Select a conversation</p>
-                    <p class="text-sm mt-1">Choose a customer from the left panel</p>
+                    <p class="font-semibold text-gray-500 text-lg">
+                        {{ $isFa ? 'یک مکالمه را انتخاب کنید' : 'Select a conversation' }}
+                    </p>
+                    <p class="text-sm mt-1">
+                        {{ $isFa ? 'یک مشتری را از پنل سمت چپ انتخاب کنید' : 'Choose a customer from the left panel' }}
+                    </p>
                 </div>
             </div>
 
@@ -156,7 +167,9 @@
                     </div>
                     <div>
                         <p class="font-bold text-gray-900" x-text="selectedRoomName"></p>
-                        <p class="text-xs text-green-500 font-medium">● Active</p>
+                        <p class="text-xs text-green-500 font-medium">
+                            ● {{ $isFa ? 'فعال' : 'Active' }}
+                        </p>
                     </div>
                 </div>
 
@@ -175,7 +188,7 @@
 
                     <template x-if="!isLoading && messages.length === 0">
                         <div class="text-center text-gray-400 text-sm py-8">
-                            No messages yet. Start the conversation!
+                            {{ $isFa ? 'هنوز پیامی نیست. مکالمه را شروع کنید!' : 'No messages yet. Start the conversation!' }}
                         </div>
                     </template>
 
@@ -195,18 +208,23 @@
 
                 {{-- Input Area --}}
                 <div class="border-t border-gray-200 p-3 bg-white flex-shrink-0">
-                    <textarea x-model="newMessage" rows="2" :placeholder="'Reply to ' + selectedRoomName + '...'" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm
+                    <textarea x-model="newMessage" rows="2"
+                        :placeholder="'{{ $isFa ? 'پاسخ به' : 'Reply to' }} ' + selectedRoomName + '...'" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm
                                      resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         @keydown.enter.prevent="if (!$event.shiftKey) sendMessage()">
                     </textarea>
                     <div class="flex justify-between items-center mt-2">
                         <p class="text-xs text-gray-400">
-                            Enter to send · Shift+Enter for new line
+                            {{ $isFa
+        ? 'Enter برای ارسال · Shift+Enter برای خط جدید'
+        : 'Enter to send · Shift+Enter for new line' }}
                         </p>
                         <button @click="sendMessage()" :disabled="sending || !newMessage.trim()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2
                                        rounded-xl text-sm font-medium transition-colors
                                        disabled:opacity-40 disabled:cursor-not-allowed">
-                            <span x-show="!sending">Send Reply</span>
+                            <span x-show="!sending">
+                                {{ $isFa ? 'ارسال پاسخ' : 'Send Reply' }}
+                            </span>
                             <span x-show="sending" class="flex items-center gap-1">
                                 <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
@@ -214,7 +232,7 @@
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                                 </svg>
-                                Sending...
+                                {{ $isFa ? 'در حال ارسال...' : 'Sending...' }}
                             </span>
                         </button>
                     </div>
@@ -239,6 +257,7 @@
                 search: '',
                 csrfToken: '{{ csrf_token() }}',
                 roomIds: @json($rooms->pluck('id')),
+                isFa:             {{ $isFa ? 'true' : 'false' }},
 
                 init() {
                     this.roomIds.forEach(roomId => {
@@ -247,7 +266,6 @@
                                 const msg = event.message;
 
                                 if (this.selectedRoomId === roomId) {
-                                    // Panel open — add message, no badge needed
                                     const exists = this.messages.find(m => m.id === msg.id);
                                     if (!exists) {
                                         this.messages.push({
@@ -260,7 +278,6 @@
                                         this.$nextTick(() => this.scrollToBottom());
                                     }
                                 } else {
-                                    // Different room — show badge on that room
                                     if (!msg.is_admin) {
                                         this.incrementRoomBadge(roomId);
                                     }
@@ -269,20 +286,16 @@
                     });
                 },
 
-                // ─── Add +1 to a room badge when new message arrives ─────────────────
-
                 incrementRoomBadge(roomId) {
                     const roomEl = document.querySelector(`[data-room-id="${roomId}"]`);
                     if (!roomEl) return;
 
-                    // Make name bold
                     const nameEl = roomEl.querySelector('.room-name');
                     if (nameEl) {
                         nameEl.classList.add('font-bold');
                         nameEl.classList.remove('font-medium');
                     }
 
-                    // Update or create badge
                     let badge = roomEl.querySelector('.unread-badge');
                     if (badge) {
                         badge.textContent = (parseInt(badge.textContent) || 0) + 1;
@@ -296,20 +309,14 @@
                         }
                     }
 
-                    // Update header total
                     this.updateTotalBadge(1);
-
-                    // Update nav badge
                     this.updateNavBadge(1);
                 },
-
-                // ─── Update total unread in sidebar header ────────────────────────────
 
                 updateTotalBadge(delta) {
                     const textEl = document.querySelector('.total-unread-text');
                     const badgeEl = document.querySelector('.total-unread-badge');
 
-                    // Count all current badges
                     let total = 0;
                     document.querySelectorAll('.unread-badge').forEach(b => {
                         total += parseInt(b.textContent) || 0;
@@ -317,10 +324,10 @@
 
                     if (textEl) {
                         if (total > 0) {
-                            textEl.textContent = total + ' unread';
+                            textEl.textContent = total + (this.isFa ? ' پیام خوانده نشده' : ' unread');
                             textEl.className = 'total-unread-text text-xs mt-0.5 text-orange-600 font-semibold';
                         } else {
-                            textEl.textContent = 'All caught up';
+                            textEl.textContent = this.isFa ? 'همه خوانده شده' : 'All caught up';
                             textEl.className = 'total-unread-text text-xs mt-0.5 text-gray-400';
                         }
                     }
@@ -334,8 +341,6 @@
                         }
                     }
                 },
-
-                // ─── Update nav sidebar badge ─────────────────────────────────────────
 
                 updateNavBadge(delta) {
                     const navBadge = document.querySelector('.chat-nav-badge');
@@ -351,15 +356,12 @@
                     }
                 },
 
-                // ─── Select Room ──────────────────────────────────────────────────────
-
                 async selectRoom(roomId, roomName) {
                     this.selectedRoomId = roomId;
                     this.selectedRoomName = roomName;
                     this.messages = [];
                     this.isLoading = true;
 
-                    // Get badge count before removing
                     const roomEl = document.querySelector(`[data-room-id="${roomId}"]`);
                     let badgeCount = 0;
 
@@ -376,15 +378,12 @@
                         }
                     }
 
-                    // Update header total
                     this.updateTotalBadge(0);
 
-                    // Update nav badge
                     if (badgeCount > 0) {
                         this.updateNavBadge(-badgeCount);
                     }
 
-                    // Load messages
                     try {
                         const res = await fetch('/api/v1/chat/rooms/' + roomId + '/messages', {
                             headers: {
@@ -410,7 +409,6 @@
                     this.isLoading = false;
                     this.$nextTick(() => this.scrollToBottom());
 
-                    // Mark as read in backend
                     fetch('/api/v1/chat/rooms/' + roomId + '/read', {
                         method: 'POST',
                         headers: {
@@ -420,8 +418,6 @@
                         credentials: 'include',
                     }).catch(() => { });
                 },
-
-                // ─── Send Message ─────────────────────────────────────────────────────
 
                 async sendMessage() {
                     if (!this.newMessage.trim() || !this.selectedRoomId || this.sending) return;
@@ -449,12 +445,12 @@
                             this.$nextTick(() => this.scrollToBottom());
                         } else {
                             this.newMessage = text;
-                            alert('Failed to send. Please try again.');
+                            alert(this.isFa ? 'ارسال ناموفق بود. دوباره تلاش کنید.' : 'Failed to send. Please try again.');
                         }
 
                     } catch (e) {
                         this.newMessage = text;
-                        alert('Failed to send message. Please try again.');
+                        alert(this.isFa ? 'ارسال پیام ناموفق بود. دوباره تلاش کنید.' : 'Failed to send message. Please try again.');
                     }
 
                     this.sending = false;

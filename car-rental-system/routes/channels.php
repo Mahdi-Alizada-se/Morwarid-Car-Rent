@@ -32,3 +32,7 @@ Broadcast::channel('gps.{vehicleId}', function ($user, $vehicleId) {
         ->where('status', 'active')
         ->exists();
 });
+
+Broadcast::channel('notifications.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});

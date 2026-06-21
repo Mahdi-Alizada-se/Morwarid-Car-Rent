@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\SocialAuthController;
@@ -15,13 +16,11 @@ Broadcast::routes(['middleware' => ['web', 'auth']]);
 Route::match(['GET', 'POST'], '/webhooks/traccar', [\App\Http\Controllers\Webhooks\TraccarWebhookController::class, 'handle'])
     ->name('webhooks.traccar');
 
-// ─── GPS Tracker Route (no auth — runs on Samsung phone in car) ───────────────
-
+// ─── GPS Tracker Route ────────────────────────────────────────────────────────
 Route::get('/track/{vehicle}/{token}', [\App\Http\Controllers\GpsTrackerController::class, 'track'])
     ->name('gps.tracker');
 
 // ─── Guest Routes ─────────────────────────────────────────────────────────────
-
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.store');
@@ -37,16 +36,51 @@ Route::middleware('guest')->group(function () {
         ->where('provider', 'google|facebook');
 });
 
-// ─── Public Vehicle Routes ────────────────────────────────────────────────────
-
+// ─── Public Routes ────────────────────────────────────────────────────────────
 Route::get('/vehicles', [\App\Http\Controllers\Customer\VehicleController::class, 'index'])
     ->name('vehicles.index');
 
 Route::get('/vehicles/{vehicle}', [\App\Http\Controllers\Customer\VehicleController::class, 'show'])
     ->name('vehicles.show');
 
-// ─── Authenticated Routes ─────────────────────────────────────────────────────
+Route::get('/how-it-works', function () {
+    return view('how-it-works');
+})->name('how-it-works');
 
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
+
+// ─── Root Redirect ────────────────────────────────────────────────────────────
+Route::get('/', fn() => redirect()->route('vehicles.index'));
+
+// ─── Language Switcher ────────────────────────────────────────────────────────
+Route::post('/language/switch', function () {
+    $locale = request('locale');
+    $supported = ['en', 'fa', 'ps'];
+
+    if (in_array($locale, $supported)) {
+        session(['locale' => $locale]);
+
+        if (auth()->check()) {
+            auth()->user()->update(['locale' => $locale]);
+        }
+    }
+
+    return redirect()->back();
+})->name('language.switch');
+
+// ─── Stripe Payment ───────────────────────────────────────────────────────────
+Route::post('/stripe/create-payment-intent', [\App\Http\Controllers\Customer\StripeController::class, 'createPaymentIntent'])
+    ->name('stripe.create-intent');
+Route::post('/stripe/confirm-payment', [\App\Http\Controllers\Customer\StripeController::class, 'confirmPayment'])
+    ->name('stripe.confirm');
+
+// ─── Authenticated Routes ─────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -58,16 +92,13 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Booking confirmed — accessible by both customer and admin
     Route::get('/bookings/{booking}/confirmed', [\App\Http\Controllers\Customer\BookingController::class, 'confirmed'])
         ->name('bookings.confirmed');
 
-    // Cash pending page — accessible by customer
     Route::get('/bookings/{booking}/cash-pending', [\App\Http\Controllers\Customer\BookingController::class, 'cashPending'])
         ->name('bookings.cash-pending');
 
     // ─── Admin Area ───────────────────────────────────────────────────────────
-
     Route::middleware('ensure.admin')
         ->prefix('admin')
         ->name('admin.')
@@ -76,8 +107,6 @@ Route::middleware('auth')->group(function () {
             // Dashboard
             Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])
                 ->name('dashboard');
-
-            // Dashboard API endpoints
             Route::get('/api/stats', [\App\Http\Controllers\Admin\DashboardController::class, 'stats']);
             Route::get('/api/charts/revenue', [\App\Http\Controllers\Admin\DashboardController::class, 'revenueChart']);
             Route::get('/api/charts/bookings', [\App\Http\Controllers\Admin\DashboardController::class, 'bookingsChart']);
@@ -106,6 +135,8 @@ Route::middleware('auth')->group(function () {
                 ->name('bookings.update-status');
             Route::get('bookings/calendar', [\App\Http\Controllers\Admin\BookingController::class, 'calendarData'])
                 ->name('bookings.calendar');
+            Route::patch('bookings/{booking}/mark-fee-paid', [\App\Http\Controllers\Admin\BookingController::class, 'markFeePaid'])
+                ->name('bookings.mark-fee-paid');
 
             // Payments
             Route::get('payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])
@@ -118,9 +149,6 @@ Route::middleware('auth')->group(function () {
                 ->name('payments.reject');
             Route::post('payments/counter', [\App\Http\Controllers\Admin\PaymentController::class, 'counterPayment'])
                 ->name('payments.counter');
-
-
-
 
             // Chat
             Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])
@@ -148,16 +176,19 @@ Route::middleware('auth')->group(function () {
             Route::get('users/{user}/license', [\App\Http\Controllers\Admin\UserController::class, 'showLicense'])
                 ->name('users.license');
 
-            Route::patch(
-                '/bookings/{booking}/mark-fee-paid',
-                [\App\Http\Controllers\Admin\BookingController::class, 'markFeePaid']
-            )
-                ->name('admin.bookings.mark-fee-paid');
+            // Profile Change Requests
+            Route::get('profile-requests', [\App\Http\Controllers\Admin\ProfileChangeController::class, 'index'])
+                ->name('profile-requests.index');
+            Route::get('profile-requests/{profileChangeRequest}', [\App\Http\Controllers\Admin\ProfileChangeController::class, 'show'])
+                ->name('profile-requests.show');
+            Route::post('profile-requests/{profileChangeRequest}/approve', [\App\Http\Controllers\Admin\ProfileChangeController::class, 'approve'])
+                ->name('profile-requests.approve');
+            Route::post('profile-requests/{profileChangeRequest}/reject', [\App\Http\Controllers\Admin\ProfileChangeController::class, 'reject'])
+                ->name('profile-requests.reject');
 
         });
 
     // ─── Customer Area ────────────────────────────────────────────────────────
-
     Route::middleware('ensure.customer')
         ->name('customer.')
         ->group(function () {
@@ -188,44 +219,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/payments/{booking}/online/confirm', [\App\Http\Controllers\Customer\PaymentController::class, 'onlineConfirm'])
                 ->name('payments.online.confirm');
 
+            // Profile
+            Route::get('/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'edit'])
+                ->name('profile.edit');
+            Route::post('/profile', [\App\Http\Controllers\Customer\ProfileController::class, 'update'])
+                ->name('profile.update');
+
         });
 
 });
-
-// ─── Language Switcher ────────────────────────────────────────────────────────
-
-Route::post('/language/switch', function () {
-    $locale = request('locale');
-    $supported = ['en', 'fa'];
-
-    if (in_array($locale, $supported)) {
-        session(['locale' => $locale]);
-
-        if (auth()->check()) {
-            auth()->user()->update(['locale' => $locale]);
-        }
-    }
-
-    return redirect()->back();
-})->name('language.switch');
-
-// ─── Root Redirect ────────────────────────────────────────────────────────────
-
-Route::get('/', fn() => redirect()->route('vehicles.index'));
-
-
-// About & Contact pages
-Route::get('/about', function () {
-    return view('pages.about');
-})->name('about');
-
-Route::get('/contact', function () {
-    return view('pages.contact');
-})->name('contact');
-
-
-// Stripe Payment
-Route::post('/stripe/create-payment-intent', [\App\Http\Controllers\Customer\StripeController::class, 'createPaymentIntent'])
-    ->name('stripe.create-intent');
-Route::post('/stripe/confirm-payment', [\App\Http\Controllers\Customer\StripeController::class, 'confirmPayment'])
-    ->name('stripe.confirm');

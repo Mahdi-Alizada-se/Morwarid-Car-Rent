@@ -1,8 +1,25 @@
 @extends('layouts.admin')
 
-@section('page-title', 'GPS Tracking')
+@php
+    $locale = app()->getLocale();
+    if (!function_exists('gpsT')) {
+        function gpsT($en, $fa, $ps)
+        {
+            $l = app()->getLocale();
+            if ($l === 'fa')
+                return $fa;
+            if ($l === 'ps')
+                return $ps;
+            return $en;
+        }
+    }
+@endphp
+
+@section('page-title', gpsT('GPS Tracking', 'ردیابی GPS', 'GPS ردیابی'))
 @section('breadcrumb')
-    <span class="text-gray-900 font-medium">GPS Tracking</span>
+    <span class="text-gray-900 font-medium">
+        {{ gpsT('GPS Tracking', 'ردیابی GPS', 'GPS ردیابی') }}
+    </span>
 @endsection
 
 @push('styles')
@@ -81,9 +98,17 @@
         {{-- Header --}}
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">GPS Tracking</h2>
+                <h2 class="text-xl font-bold text-gray-900">
+                    {{ gpsT('GPS Tracking', 'ردیابی GPS', 'GPS ردیابی') }}
+                </h2>
                 <p class="text-sm text-gray-500 mt-0.5">
-                    {{ $trackedVehicles->count() }} vehicle{{ $trackedVehicles->count() !== 1 ? 's' : '' }} tracked
+                    @if($locale === 'fa')
+                        {{ $trackedVehicles->count() }} موتر ردیابی می‌شود
+                    @elseif($locale === 'ps')
+                        {{ $trackedVehicles->count() }} موټر ردیابي کیږي
+                    @else
+                        {{ $trackedVehicles->count() }} vehicle{{ $trackedVehicles->count() !== 1 ? 's' : '' }} tracked
+                    @endif
                 </p>
             </div>
             @if(session('success'))
@@ -96,20 +121,29 @@
         {{-- Main Layout --}}
         <div class="flex gap-4 gps-layout">
 
-            {{-- ─── Left Sidebar ────────────────────────────────────────────────── --}}
+            {{-- ─── Left Sidebar ───────────────────────────────────────────────── --}}
             <div class="w-80 flex-shrink-0 bg-white rounded-xl border border-gray-200
-                                    flex flex-col overflow-hidden">
+                        flex flex-col overflow-hidden">
 
                 {{-- Sidebar Header --}}
                 <div class="p-4 border-b border-gray-100 flex-shrink-0">
-                    <h2 class="font-bold text-gray-800 text-lg">GPS Tracking</h2>
+                    <h2 class="font-bold text-gray-800 text-lg">
+                        {{ gpsT('GPS Tracking', 'ردیابی GPS', 'GPS ردیابی') }}
+                    </h2>
                     <p class="text-sm text-gray-500 mt-1">
-                        {{ $trackedVehicles->count() }} vehicles tracked
+                        @if($locale === 'fa')
+                            {{ $trackedVehicles->count() }} موتر ردیابی می‌شود
+                        @elseif($locale === 'ps')
+                            {{ $trackedVehicles->count() }} موټر ردیابي کیږي
+                        @else
+                            {{ $trackedVehicles->count() }} vehicles tracked
+                        @endif
                     </p>
                     <a href="{{ route('admin.vehicles.index') }}" class="block w-full text-center bg-blue-600 text-white py-2.5
-                                          rounded-xl text-sm font-medium mt-3 hover:bg-blue-700
-                                          transition-colors">
-                        + Add GPS Tracker to Vehicle
+                              rounded-xl text-sm font-medium mt-3 hover:bg-blue-700
+                              transition-colors">
+                        +
+                        {{ gpsT('Add GPS Tracker to Vehicle', 'افزودن ردیاب GPS به موتر', 'موټر ته د GPS ردیاب اضافه کول') }}
                     </a>
                 </div>
 
@@ -118,15 +152,15 @@
                     <div class="flex items-center gap-4 text-xs text-gray-500">
                         <span class="flex items-center gap-1">
                             <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
-                            Moving
+                            {{ gpsT('Moving', 'در حرکت', 'حرکت کوي') }}
                         </span>
                         <span class="flex items-center gap-1">
                             <span class="w-3 h-3 rounded-full bg-orange-400 inline-block"></span>
-                            Stopped
+                            {{ gpsT('Stopped', 'متوقف', 'ودرول شوی') }}
                         </span>
                         <span class="flex items-center gap-1">
                             <span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>
-                            Offline
+                            {{ gpsT('Offline', 'آفلاین', 'آفلاین') }}
                         </span>
                     </div>
                 </div>
@@ -136,18 +170,17 @@
 
                     @forelse($trackedVehicles as $vehicle)
                                 <div class="px-4 py-3 border-b border-gray-50 cursor-pointer
-                                                                                                hover:bg-blue-50 transition-colors vehicle-list-item"
-                                    onclick="focusVehicle(
-                                                                                             {{ $vehicle->id }},
-                                                                                             {{ $vehicle->last_longitude ?? 69.2075 }},
-                                                                                             {{ $vehicle->last_latitude ?? 34.5553 }},
-                                                                                             event
-                                                                                         )">
+                                                hover:bg-blue-50 transition-colors vehicle-list-item" onclick="focusVehicle(
+                                             {{ $vehicle->id }},
+                                             {{ $vehicle->last_longitude ?? 69.2075 }},
+                                             {{ $vehicle->last_latitude ?? 34.5553 }},
+                                             event
+                                         )">
 
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="flex items-center gap-2 min-w-0">
                                             <div class="w-3 h-3 rounded-full flex-shrink-0 mt-1
-                                                                                                    {{ $vehicle->status_color === 'green'
+                                                            {{ $vehicle->status_color === 'green'
                         ? 'bg-green-500 animate-pulse'
                         : ($vehicle->status_color === 'orange'
                             ? 'bg-orange-400'
@@ -168,10 +201,12 @@
                                                     {{ $vehicle->last_speed }} km/h
                                                 </span>
                                             @else
-                                                <span class="text-xs text-gray-400">Stopped</span>
+                                                <span class="text-xs text-gray-400">
+                                                    {{ gpsT('Stopped', 'متوقف', 'ودرول شوی') }}
+                                                </span>
                                             @endif
                                             <p class="text-xs text-gray-400 mt-0.5" id="sidebar-time-{{ $vehicle->id }}">
-                                                {{ $vehicle->last_seen_at_human ?? 'Never' }}
+                                                {{ $vehicle->last_seen_at_human ?? gpsT('Never', 'هرگز', 'هیڅکله') }}
                                             </p>
                                         </div>
                                     </div>
@@ -185,11 +220,11 @@
                                     <div class="flex gap-3 mt-2 ml-5">
                                         <button onclick="event.stopPropagation(); showHistory({{ $vehicle->id }})"
                                             class="text-xs text-blue-600 hover:underline">
-                                            Trip History
+                                            {{ gpsT('Trip History', 'تاریخچه سفر', 'د سفر تاریخچه') }}
                                         </button>
                                         <a href="{{ route('admin.gps.setup', $vehicle) }}" onclick="event.stopPropagation()"
                                             class="text-xs text-gray-500 hover:underline">
-                                            Edit Tracker
+                                            {{ gpsT('Edit Tracker', 'ویرایش ردیاب', 'د ردیاب سمول') }}
                                         </a>
                                     </div>
                                 </div>
@@ -201,8 +236,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                             </svg>
-                            <p class="text-sm font-medium">No tracked vehicles</p>
-                            <p class="text-xs mt-1">Add a GPS tracker to a vehicle first</p>
+                            <p class="text-sm font-medium">
+                                {{ gpsT('No tracked vehicles', 'موتری ردیابی نمی‌شود', 'هیڅ ردیابی شوی موټر نشته') }}
+                            </p>
+                            <p class="text-xs mt-1">
+                                {{ gpsT('Add a GPS tracker to a vehicle first', 'ابتدا یک ردیاب GPS به موتر اضافه کنید', 'لومړی موټر ته GPS ردیاب اضافه کړئ') }}
+                            </p>
                         </div>
                     @endforelse
 
@@ -210,17 +249,22 @@
                     @if($unTrackedVehicles->count() > 0)
                         <div class="px-4 py-3 bg-yellow-50 border-t border-yellow-100">
                             <p class="text-xs font-semibold text-yellow-700 mb-2">
-                                {{ $unTrackedVehicles->count() }} VEHICLES WITHOUT TRACKER
+                                @if($locale === 'fa')
+                                    {{ $unTrackedVehicles->count() }} موتر بدون ردیاب
+                                @elseif($locale === 'ps')
+                                    {{ $unTrackedVehicles->count() }} موټر پرته له ردیاب
+                                @else
+                                    {{ $unTrackedVehicles->count() }} VEHICLES WITHOUT TRACKER
+                                @endif
                             </p>
                             @foreach($unTrackedVehicles as $v)
                                 <div class="flex items-center justify-between py-1.5">
                                     <span class="text-sm text-gray-600 truncate">
                                         {{ $v->brand }} {{ $v->model }}
                                     </span>
-                                    <a href="{{ route('admin.gps.setup', $v) }}"
-                                        class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1
-                                                                                  rounded-lg hover:bg-yellow-200 flex-shrink-0 ml-2">
-                                        Set Up
+                                    <a href="{{ route('admin.gps.setup', $v) }}" class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1
+                                                      rounded-lg hover:bg-yellow-200 flex-shrink-0 ml-2">
+                                        {{ gpsT('Set Up', 'راه‌اندازی', 'تنظیم کول') }}
                                     </a>
                                 </div>
                             @endforeach
@@ -232,12 +276,12 @@
                 {{-- Footer --}}
                 <div class="px-4 py-2 border-t border-gray-100 flex-shrink-0">
                     <p class="text-xs text-gray-400 text-center">
-                        Updates every 5 min via Traccar Client
+                        {{ gpsT('Updates every 5 min via Traccar Client', 'هر ۵ دقیقه از طریق Traccar Client بروزرسانی می‌شود', 'هر ۵ دقیقې کې د Traccar Client له لارې تازه کیږي') }}
                     </p>
                 </div>
             </div>
 
-            {{-- ─── Map ─────────────────────────────────────────────────────────── --}}
+            {{-- ─── Map ──────────────────────────────────────────────────────────── --}}
             <div class="flex-1 min-w-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                 <div id="map" style="height: calc(100vh - 160px);"></div>
             </div>
@@ -249,15 +293,16 @@
 
 @push('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-
     <script>
+        const locale = '{{ $locale }}';
+        const isFa = locale === 'fa';
+        const isPs = locale === 'ps';
 
-        // ─── Echo Setup ───────────────────────────────────────────────────────────────
-
-
-
-        // ─── Leaflet Map Setup ────────────────────────────────────────────────────────
+        function t(en, fa, ps) {
+            if (isFa) return fa;
+            if (isPs) return ps;
+            return en;
+        }
 
         const map = L.map('map', {
             center: [34.5553, 69.2075],
@@ -272,12 +317,8 @@
             maxZoom: 19,
         }).addTo(map);
 
-        // ─── Vehicle Data ─────────────────────────────────────────────────────────────
-
         const vehicles = @json($trackedVehicles);
         const markers = {};
-
-        // ─── Helpers ──────────────────────────────────────────────────────────────────
 
         function getMarkerColor(vehicle) {
             if (!vehicle.last_seen_at) return 'gray';
@@ -294,19 +335,19 @@
             return L.divIcon({
                 className: 'vehicle-marker',
                 html: `
-                            <div style="display:flex;flex-direction:column;align-items:center;">
-                                <div class="marker-inner marker-${color}">
-                                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
-                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3
-                                        12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55
-                                        0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13
-                                        6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5
-                                        1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                                    </svg>
-                                </div>
-                                ${speedBadge}
-                            </div>
-                        `,
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div class="marker-inner marker-${color}">
+                            <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3
+                                12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55
+                                0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13
+                                6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5
+                                1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                            </svg>
+                        </div>
+                        ${speedBadge}
+                    </div>
+                `,
                 iconSize: [40, 50],
                 iconAnchor: [20, 50],
                 popupAnchor: [0, -50],
@@ -320,36 +361,34 @@
             const mapsUrl = `https://www.google.com/maps?q=${v.last_latitude},${v.last_longitude}`;
 
             return `
-                        <div style="font-family:-apple-system,sans-serif;min-width:220px;">
-                            <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#111;">
-                                ${v.brand} ${v.model}
-                            </div>
-                            <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6B7280;">
-                                <span>🚗 ${v.license_plate || ''}</span>
-                                <span>⚡ <strong style="color:#111;">${speed} km/h</strong></span>
-                                ${v.last_address
+                <div style="font-family:-apple-system,sans-serif;min-width:220px;">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#111;">
+                        ${v.brand} ${v.model}
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6B7280;">
+                        <span>🚗 ${v.license_plate || ''}</span>
+                        <span>⚡ <strong style="color:#111;">${speed} km/h</strong></span>
+                        ${v.last_address
                     ? `<span>📍 ${v.last_address}</span>`
                     : `<span>📍 ${lat}, ${lng}</span>`}
-                                <span>🕐 ${v.last_seen_at_human || 'Never'}</span>
-                            </div>
-                            <div style="display:flex;gap:8px;margin-top:12px;">
-                                <a href="${mapsUrl}" target="_blank"
-                                   style="flex:1;text-align:center;background:#2563EB;color:white;
-                                          padding:6px 8px;border-radius:8px;font-size:11px;
-                                          text-decoration:none;font-weight:500;">
-                                   Google Maps
-                                </a>
-                                <button onclick="showHistory(${v.id})"
-                                   style="flex:1;background:#F3F4F6;color:#374151;padding:6px 8px;
-                                          border-radius:8px;font-size:11px;border:none;cursor:pointer;font-weight:500;">
-                                   Trip History
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                        <span>🕐 ${v.last_seen_at_human || t('Never', 'هرگز', 'هیڅکله')}</span>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:12px;">
+                        <a href="${mapsUrl}" target="_blank"
+                           style="flex:1;text-align:center;background:#2563EB;color:white;
+                                  padding:6px 8px;border-radius:8px;font-size:11px;
+                                  text-decoration:none;font-weight:500;">
+                           Google Maps
+                        </a>
+                        <button onclick="showHistory(${v.id})"
+                           style="flex:1;background:#F3F4F6;color:#374151;padding:6px 8px;
+                                  border-radius:8px;font-size:11px;border:none;cursor:pointer;font-weight:500;">
+                           ${t('Trip History', 'تاریخچه سفر', 'د سفر تاریخچه')}
+                        </button>
+                    </div>
+                </div>
+            `;
         }
-
-        // ─── Place Initial Markers ────────────────────────────────────────────────────
 
         vehicles.forEach(v => {
             if (!v.last_latitude || !v.last_longitude) return;
@@ -363,14 +402,11 @@
             markers[v.id] = { marker, data: v };
         });
 
-        // Fit map to show all markers
         const markerKeys = Object.keys(markers);
         if (markerKeys.length > 0) {
             const group = L.featureGroup(markerKeys.map(k => markers[k].marker));
             map.fitBounds(group.getBounds().pad(0.3));
         }
-
-        // ─── Focus Vehicle From Sidebar ───────────────────────────────────────────────
 
         function focusVehicle(id, lng, lat, evt) {
             if (!lat || !lng) return;
@@ -386,8 +422,6 @@
             }
         }
 
-        // ─── Trip History ─────────────────────────────────────────────────────────────
-
         let historyLayer = null;
 
         async function showHistory(vehicleId) {
@@ -399,43 +433,41 @@
                 const points = data.data || [];
 
                 if (!points.length) {
-                    alert('No trip history found for the last 24 hours.');
+                    alert(t(
+                        'No trip history found for the last 24 hours.',
+                        'تاریخچه سفری برای ۲۴ ساعت گذشته یافت نشد.',
+                        'د تیرو ۲۴ ساعتونو لپاره د سفر تاریخچه ونه موندل شوه.'
+                    ));
                     return;
                 }
 
                 const coords = points.map(p => [p.lat, p.lng]);
                 historyLayer = L.layerGroup();
 
-                // Route line
                 L.polyline(coords, {
-                    color: '#3B82F6',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '8, 4',
+                    color: '#3B82F6', weight: 4, opacity: 0.8, dashArray: '8, 4',
                 }).addTo(historyLayer);
 
-                // Start marker
                 L.circleMarker(coords[0], {
                     radius: 8, color: '#fff', fillColor: '#22C55E',
                     fillOpacity: 1, weight: 3,
-                }).bindPopup('🟢 Trip Start: ' + points[0].recorded_at).addTo(historyLayer);
+                }).bindPopup(t('🟢 Trip Start: ', '🟢 شروع سفر: ', '🟢 د سفر پیل: ') + points[0].recorded_at)
+                    .addTo(historyLayer);
 
-                // End marker
                 L.circleMarker(coords[coords.length - 1], {
                     radius: 8, color: '#fff', fillColor: '#EF4444',
                     fillOpacity: 1, weight: 3,
-                }).bindPopup('🔴 Last Point: ' + points[points.length - 1].recorded_at).addTo(historyLayer);
+                }).bindPopup(t('🔴 Last Point: ', '🔴 آخرین نقطه: ', '🔴 وروستی ټکی: ') + points[points.length - 1].recorded_at)
+                    .addTo(historyLayer);
 
                 historyLayer.addTo(map);
                 map.fitBounds(L.polyline(coords).getBounds().pad(0.2));
 
             } catch (e) {
                 console.error('Failed to load history:', e);
-                alert('Failed to load trip history.');
+                alert(t('Failed to load trip history.', 'بارگذاری تاریخچه سفر ناموفق بود.', 'د سفر تاریخچه پورته کول ناکام شول.'));
             }
         }
-
-        // ─── Real-time Pusher Updates ─────────────────────────────────────────────────
 
         vehicles.forEach(v => {
             window.Echo.private('gps.' + v.id)
@@ -455,7 +487,7 @@
                                 last_latitude: lat,
                                 last_longitude: lng,
                                 last_speed: speed,
-                                last_seen_at_human: 'Just now',
+                                last_seen_at_human: t('Just now', 'همین الان', 'همدا اوس'),
                             })
                         );
                     } else {
@@ -470,7 +502,7 @@
                                 last_latitude: lat,
                                 last_longitude: lng,
                                 last_speed: speed,
-                                last_seen_at_human: 'Just now',
+                                last_seen_at_human: t('Just now', 'همین الان', 'همدا اوس'),
                                 license_plate: '',
                                 color: '',
                                 last_address: '',
@@ -479,9 +511,8 @@
                     }
 
                     const timeEl = document.getElementById('sidebar-time-' + data.vehicle_id);
-                    if (timeEl) timeEl.textContent = 'Just now';
+                    if (timeEl) timeEl.textContent = t('Just now', 'همین الان', 'همدا اوس');
                 });
         });
-
     </script>
 @endpush

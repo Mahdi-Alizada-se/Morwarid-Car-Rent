@@ -57,12 +57,10 @@ class VehicleController extends Controller
         return DB::transaction(function () use ($request) {
             $data = $request->validated();
 
-            // Parse features string to array
             if (!empty($data['features']) && is_string($data['features'])) {
                 $data['features'] = array_filter(array_map('trim', explode(',', $data['features'])));
             }
 
-            // Upload thumbnail
             if ($request->hasFile('thumbnail')) {
                 $data['thumbnail'] = $this->processAndStore($request->file('thumbnail'));
             }
@@ -70,7 +68,6 @@ class VehicleController extends Controller
             unset($data['images'], $data['pricing_rules']);
             $vehicle = Vehicle::create($data);
 
-            // Upload gallery images
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $image) {
                     $path = $this->processAndStore($image);
@@ -82,7 +79,6 @@ class VehicleController extends Controller
                 }
             }
 
-            // Save pricing rules
             if (!empty($request->pricing_rules)) {
                 foreach ($request->pricing_rules as $rule) {
                     if (empty($rule['base_rate'])) {
@@ -137,7 +133,6 @@ class VehicleController extends Controller
             unset($data['images'], $data['pricing_rules']);
             $vehicle->update($data);
 
-            // Replace gallery images if new ones uploaded
             if ($request->hasFile('images')) {
                 foreach ($vehicle->images as $img) {
                     Storage::disk('public')->delete($img->path);
@@ -153,7 +148,6 @@ class VehicleController extends Controller
                 }
             }
 
-            // Sync pricing rules
             if ($request->has('pricing_rules')) {
                 $vehicle->pricingRules()->delete();
                 foreach ($request->pricing_rules ?? [] as $rule) {
@@ -183,7 +177,7 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle): RedirectResponse
     {
-        $vehicle->delete(); // soft delete
+        $vehicle->delete();
 
         return redirect()
             ->route('admin.vehicles.index')
@@ -196,7 +190,6 @@ class VehicleController extends Controller
     {
         $newStatus = $vehicle->status === 'available' ? 'maintenance' : 'available';
 
-        // Don't toggle if vehicle is currently booked
         if ($vehicle->status === 'booked') {
             return back()->with('error', __('Cannot change status of a currently booked vehicle.'));
         }
@@ -210,17 +203,14 @@ class VehicleController extends Controller
 
     private function processAndStore($file): string
     {
-        // Create directory if it does not exist
         $directory = storage_path('app/public/vehicles');
         if (!file_exists($directory)) {
             mkdir($directory, 0775, true);
         }
 
-        // Get original extension
         $extension = strtolower($file->getClientOriginalExtension());
         $filename = 'vehicles/' . uniqid() . '.' . $extension;
 
-        // Save file directly without image processing
         Storage::disk('public')->putFileAs(
             'vehicles',
             $file,
@@ -230,9 +220,6 @@ class VehicleController extends Controller
         return $filename;
     }
 
-
-
-
     // ─── Show ─────────────────────────────────────────────────────────────────────
 
     public function show(Vehicle $vehicle): View
@@ -240,6 +227,7 @@ class VehicleController extends Controller
         $vehicle->load(['category', 'images', 'pricingRules']);
         return view('admin.vehicles.show', compact('vehicle'));
     }
+
     // ─── Regenerate Tracker Token ─────────────────────────────────────────────────
 
     public function regenerateToken(Vehicle $vehicle): RedirectResponse

@@ -57,6 +57,17 @@ Route::prefix('v1')->group(function () {
             ->name('api.v1.chat.read');
     });
 
+    // ─── Notification Routes (session auth — same pattern as chat) ────────────
+
+    Route::middleware('web', 'auth')->prefix('notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index'])
+            ->name('api.v1.notifications.index');
+        Route::post('/{notification}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markRead'])
+            ->name('api.v1.notifications.read');
+        Route::post('/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllRead'])
+            ->name('api.v1.notifications.read-all');
+    });
+
     // ─── Protected Routes (Sanctum) ───────────────────────────────────────────
 
     Route::middleware('auth:sanctum')->group(function () {

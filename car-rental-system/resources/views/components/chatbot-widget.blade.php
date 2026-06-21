@@ -1,5 +1,12 @@
 {{-- Chatbot Widget — Morwarid Car Rental AI Assistant --}}
-<div x-data="chatbotWidget()" x-init="init()" style="position:fixed;bottom:24px;right:96px;z-index:9998;">
+@php
+    $isRtl = in_array(app()->getLocale(), ['fa', 'ps']);
+    $locale = app()->getLocale();
+    $panelSide = $isRtl ? 'left:96px;right:auto;' : 'right:96px;left:auto;';
+    $chatSide = $isRtl ? 'left:0;right:auto;' : 'right:0;left:auto;';
+@endphp
+
+<div x-data="chatbotWidget()" x-init="init()" style="position:fixed;bottom:24px;{{ $panelSide }}z-index:9998;">
 
     {{-- ─── Floating Button ────────────────────────────────────────────────── --}}
     <div class="flex flex-col items-center">
@@ -27,7 +34,7 @@
 
     {{-- ─── Chat Panel ─────────────────────────────────────────────────────── --}}
     <div :style="isOpen
-            ? 'display:flex;flex-direction:column;position:absolute;bottom:68px;right:0;width:360px;height:500px;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid #e5e7eb;overflow:hidden;'
+            ? 'display:flex;flex-direction:column;position:absolute;bottom:68px;{{ $chatSide }}width:360px;height:520px;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid #e5e7eb;overflow:hidden;direction:ltr;'
             : 'display:none;'">
 
         {{-- Header --}}
@@ -44,17 +51,24 @@
                           00-2.456 2.456z" />
                 </svg>
                 <div>
-                    <p style="color:white;font-weight:700;font-size:14px;margin:0;">AI Assistant</p>
+                    <p style="color:white;font-weight:700;font-size:14px;margin:0;">
+                        @if($locale === 'fa') دستیار هوش مصنوعی
+                        @elseif($locale === 'ps') د AI مرستیال
+                        @else AI Assistant
+                        @endif
+                    </p>
                     <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
                         <span
                             :style="`width:8px;height:8px;border-radius:50%;background:${isOnline ? '#4ade80' : '#f87171'}`"></span>
-                        <span style="color:rgba(255,255,255,0.8);font-size:11px;"
-                            x-text="isOnline ? 'Online' : 'Offline'"></span>
+                        <span style="color:rgba(255,255,255,0.8);font-size:11px;" x-text="isOnline
+                                ? '{{ $locale === 'fa' ? 'آنلاین' : ($locale === 'ps' ? 'آنلاین' : 'Online') }}'
+                                : '{{ $locale === 'fa' ? 'آفلاین' : ($locale === 'ps' ? 'آفلاین' : 'Offline') }}'">
+                        </span>
                     </div>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
-                <button @click="clearHistory()" title="New Chat" style="background:rgba(255,255,255,0.15);border:none;color:white;
+                <button @click="clearHistory()" title="{{ $locale === 'fa' ? 'چت جدید' : 'New Chat' }}" style="background:rgba(255,255,255,0.15);border:none;color:white;
                                width:30px;height:30px;border-radius:8px;cursor:pointer;
                                font-size:14px;display:flex;align-items:center;justify-content:center;">
                     🔄
@@ -68,24 +82,52 @@
         </div>
 
         {{-- Messages Area --}}
-        <div x-ref="messagesArea" style="width:100%;height:340px;overflow-y:auto;overflow-x:hidden;
+        <div x-ref="messagesArea" style="width:100%;height:360px;overflow-y:auto;overflow-x:hidden;
                     padding:16px;box-sizing:border-box;flex-shrink:0;">
 
             {{-- Welcome message --}}
             <template x-if="messages.length === 0">
                 <div style="background:#f5f3ff;border-radius:12px;padding:14px;
                             border-left:3px solid #8b5cf6;margin-bottom:12px;">
-                    <p style="font-size:13px;color:#1f2937;margin:0;line-height:1.6;">
-                        👋 <strong>Welcome to Morwarid Car Rental!</strong><br><br>
-                        I can help you with:<br>
-                        • 📋 Required documents<br>
-                        • 💰 Pricing and payment<br>
-                        • 📅 Booking and cancellation<br>
-                        • 🚗 Vehicle information<br>
-                        • ⛽ Fuel policy<br>
-                        • 🌍 Any general question<br><br>
-                        Ask me anything!
-                    </p>
+                    @if($locale === 'fa')
+                        <p
+                            style="font-size:13px;color:#1f2937;margin:0;line-height:1.8;direction:rtl;text-align:right;font-family:'Vazirmatn',Tahoma,Arial,sans-serif;">
+                            👋 <strong>خوش آمدید به مروارید کرایه خودرو!</strong><br><br>
+                            می‌توانم در موارد زیر کمک کنم:<br>
+                            • 📋 مدارک مورد نیاز<br>
+                            • 💰 قیمت‌ها و پرداخت<br>
+                            • 📅 رزرو و لغو<br>
+                            • 🚗 اطلاعات خودرو<br>
+                            • ⛽ سیاست سوخت<br>
+                            • 🌍 هر سوال دیگری<br><br>
+                            هر چیزی می‌خواهید بپرسید!
+                        </p>
+                    @elseif($locale === 'ps')
+                        <p
+                            style="font-size:13px;color:#1f2937;margin:0;line-height:1.8;direction:rtl;text-align:right;font-family:'Vazirmatn',Tahoma,Arial,sans-serif;">
+                            👋 <strong>مروارید کار کرایه ته ښه راغلاست!</strong><br><br>
+                            زه کولی شم د لاندې مواردو سره مرسته وکړم:<br>
+                            • 📋 اړین اسناد<br>
+                            • 💰 نرخونه او تادیه<br>
+                            • 📅 بکینګ او لغول<br>
+                            • 🚗 د موټر معلومات<br>
+                            • ⛽ د تیلو پالیسي<br>
+                            • 🌍 هر بل پوښتنه<br><br>
+                            راته پوښتنه وکړئ!
+                        </p>
+                    @else
+                        <p style="font-size:13px;color:#1f2937;margin:0;line-height:1.6;">
+                            👋 <strong>Welcome to Morwarid Car Rental!</strong><br><br>
+                            I can help you with:<br>
+                            • 📋 Required documents<br>
+                            • 💰 Pricing and payment<br>
+                            • 📅 Booking and cancellation<br>
+                            • 🚗 Vehicle information<br>
+                            • ⛽ Fuel policy<br>
+                            • 🌍 Any general question<br><br>
+                            Ask me anything!
+                        </p>
+                    @endif
                 </div>
             </template>
 
@@ -103,6 +145,9 @@
                         line-height:1.6;
                         word-break:break-word;
                         overflow-wrap:break-word;
+                        direction:auto;
+                        text-align:start;
+                        font-family:'Vazirmatn',Tahoma,system-ui,sans-serif;
                     `" x-html="renderMarkdown(msg.content)">
                     </div>
                 </div>
@@ -130,10 +175,14 @@
                     flex-shrink:0;background:white;min-height:80px;">
             <div style="display:flex;gap:8px;align-items:flex-end;">
                 <textarea x-model="inputText" @keydown.enter.prevent="if(!$event.shiftKey && !isLoading) sendMessage()"
-                    :disabled="isLoading" placeholder="Ask me anything..." rows="2" style="flex:1;border:1px solid #e5e7eb;border-radius:12px;
+                    :disabled="isLoading"
+                    placeholder="{{ $locale === 'fa' ? 'سوال خود را بنویسید...' : ($locale === 'ps' ? 'پوښتنه ولیکئ...' : 'Ask me anything...') }}"
+                    rows="2" style="flex:1;border:1px solid #e5e7eb;border-radius:12px;
                                  padding:8px 12px;font-size:13px;resize:none;
-                                 font-family:inherit;outline:none;line-height:1.4;
-                                 transition:border-color 0.2s;" @focus="$el.style.borderColor='#8b5cf6'"
+                                 font-family:'Vazirmatn',Tahoma,system-ui,sans-serif;
+                                 outline:none;line-height:1.4;
+                                 transition:border-color 0.2s;
+                                 direction:{{ $isRtl ? 'rtl' : 'ltr' }};" @focus="$el.style.borderColor='#8b5cf6'"
                     @blur="$el.style.borderColor='#e5e7eb'">
                 </textarea>
                 <button @click="sendMessage()" :disabled="!inputText.trim() || isLoading" :style="`
@@ -148,7 +197,13 @@
                 </button>
             </div>
             <p style="font-size:10px;color:#9ca3af;margin:5px 0 0;text-align:center;">
-                Enter to send · Shift+Enter for new line
+                @if($locale === 'fa')
+                    Enter برای ارسال · Shift+Enter برای خط جدید
+                @elseif($locale === 'ps')
+                    Enter لیږلو لپاره · Shift+Enter د نوې کرښې لپاره
+                @else
+                    Enter to send · Shift+Enter for new line
+                @endif
             </p>
         </div>
     </div>
@@ -183,7 +238,6 @@
             healthTimer: null,
 
             async init() {
-                // Always create a fresh session — no persistent history across page loads
                 const stored = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
                 localStorage.setItem('chatbot_session_id', stored);
                 this.sessionId = stored;
@@ -210,21 +264,6 @@
                 } catch (e) {
                     this.isOnline = false;
                 }
-            },
-
-            async loadHistory() {
-                try {
-                    const res = await fetch(`/api/v1/chatbot/history/${this.sessionId}`, {
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    const data = await res.json();
-                    if (data.messages && data.messages.length > 0) {
-                        this.messages = data.messages.map(m => ({
-                            role: m.role,
-                            content: m.content,
-                        }));
-                    }
-                } catch (e) { }
             },
 
             async sendMessage() {
@@ -286,7 +325,9 @@
 
                 } catch (e) {
                     console.error('Chatbot error:', e);
-                    this.messages[aiIndex].content = 'Sorry, something went wrong. Please try again.';
+                    this.messages[aiIndex].content = '{{ $locale === 'fa'
+    ? 'متأسفم، مشکلی پیش آمد. لطفاً دوباره تلاش کنید.'
+    : 'Sorry, something went wrong. Please try again.' }}';
                 }
 
                 this.isLoading = false;

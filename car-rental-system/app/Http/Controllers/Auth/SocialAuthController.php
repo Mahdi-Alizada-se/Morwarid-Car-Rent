@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -13,9 +14,6 @@ class SocialAuthController extends Controller
 {
     private const SUPPORTED_PROVIDERS = ['google', 'facebook'];
 
-    /**
-     * Redirect to the social provider's authentication page.
-     */
     public function redirect(string $provider): RedirectResponse
     {
         $this->validateProvider($provider);
@@ -23,18 +21,32 @@ class SocialAuthController extends Controller
         return Socialite::driver($provider)->redirect();
     }
 
-    /**
-     * Handle the callback from the social provider.
-     */
     public function callback(string $provider): RedirectResponse
     {
         $this->validateProvider($provider);
 
         try {
             $socialUser = Socialite::driver($provider)->user();
-        } catch (\Exception $e) {
+
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            Log::error('Social auth InvalidStateException: ' . $e->getMessage());
             return redirect()->route('login')
-                ->withErrors(['social' => 'Authentication failed. Please try again.']);
+                ->withErrors(['social' => 'Session expired. Please try again.']);
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            Log::error('Social auth ClientException: ' . $e->getMessage());
+            return redirect()->route('login')
+                ->withErrors(['social' => 'Could not connect to Google. Please try again.']);
+
+        } catch (\Exception $e) {
+            Log::error('Social auth Exception: ' . get_class($e) . ' — ' . $e->getMessage());
+            return redirect()->route('login')
+                ->withErrors(['social' => 'Authentication failed: ' . $e->getMessage()]);
+        }
+
+        if (!$socialUser->getEmail()) {
+            return redirect()->route('login')
+                ->withErrors(['social' => 'Could not get email from Google. Please try again.']);
         }
 
         // Find by social ID first, then by email
@@ -46,14 +58,12 @@ class SocialAuthController extends Controller
             $user = User::where('email', $socialUser->getEmail())->first();
 
             if ($user) {
-                // Link existing account to this social provider
                 $user->update([
                     'social_provider' => $provider,
                     'social_id' => $socialUser->getId(),
                     'avatar' => $user->avatar ?? $socialUser->getAvatar(),
                 ]);
             } else {
-                // Create new account
                 $user = User::create([
                     'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User',
                     'email' => $socialUser->getEmail(),
@@ -72,9 +82,6 @@ class SocialAuthController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    /**
-     * Abort if the provider is not supported.
-     */
     private function validateProvider(string $provider): void
     {
         if (!in_array($provider, self::SUPPORTED_PROVIDERS)) {

@@ -6,11 +6,24 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <script>
+        (function () {
+            const saved = localStorage.getItem('theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = saved ? saved === 'dark' : systemDark;
+            if (isDark) document.documentElement.classList.add('dark');
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name') }} — {{ __('common.admin_panel') }}</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        };
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -79,24 +92,25 @@
     @stack('styles')
 </head>
 
-<body class="h-full" x-data="{ sidebarOpen: false }">
+<body class="h-full bg-gray-50 dark:bg-gray-950 transition-colors" x-data="{ sidebarOpen: false }">
     <div class="min-h-screen flex">
 
         {{-- ─── Sidebar ──────────────────────────────────────────────────────────── --}}
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200
+        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
                   flex flex-col transform transition-transform duration-200
                   lg:translate-x-0 lg:static lg:inset-0" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
             {{-- Logo --}}
-            <div class="flex items-center gap-3 h-16 px-5 border-b border-gray-200 flex-shrink-0">
+            <div class="flex items-center gap-3 h-16 px-5 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                 <a href="/" class="flex items-center gap-2">
                     <div class="rounded-xl px-2 py-1" style="background-color: #4F46E5;">
                         <img src="{{ asset('images/logo.png') }}" alt="Morwarid Car Rental"
                             class="h-12 w-auto object-contain">
                     </div>
                     <div class="leading-tight">
-                        <span class="block text-base font-bold text-gray-800">Morwarid</span>
-                        <span class="block text-xs font-medium text-blue-600 -mt-0.5">Car Rental</span>
+                        <span class="block text-base font-bold text-gray-800 dark:text-gray-100">Morwarid</span>
+                        <span class="block text-xs font-medium text-blue-600 dark:text-blue-400 -mt-0.5">Car
+                            Rental</span>
                     </div>
                 </a>
             </div>
@@ -104,15 +118,16 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
-                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Main
+                <p class="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                    {{ app()->getLocale() === 'fa' ? 'منو' : (app()->getLocale() === 'ps' ? 'مینو' : 'Main') }}
                 </p>
 
                 {{-- Dashboard --}}
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.dashboard') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.dashboard')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0
@@ -127,10 +142,11 @@
                 </a>
 
                 {{-- Vehicles --}}
-                <a href="{{ route('admin.vehicles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.vehicles.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.vehicles.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 13H8M2 9L4 10L5.27064 6.18807C5.53292 5.40125 5.66405 5.00784
@@ -151,10 +167,11 @@
                 </a>
 
                 {{-- Bookings --}}
-                <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.bookings.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.bookings.*') && request('status') !== 'active'
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25
@@ -167,10 +184,11 @@
                 {{-- Active Rentals --}}
                 @php $activeRentalsCount = \App\Models\Booking::where('status', 'active')->count(); @endphp
                 <a href="{{ route('admin.bookings.index', ['status' => 'active']) }}" id="active-rentals-link"
-                    onclick="localStorage.setItem('active_rentals_seen', '{{ $activeRentalsCount }}')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                    onclick="localStorage.setItem('active_rentals_seen', '{{ $activeRentalsCount }}')"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
           {{ request()->routeIs('admin.bookings.*') && request('status') === 'active'
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20.5 7V13C20.5 16.7712 20.5 18.6569 19.3284 19.8284C18.1569 21
@@ -182,7 +200,9 @@
                  7 2.58579 7 2.29289 6.70711C2 6.41421 2 5.94281 2 5Z" />
                         <path d="M9.5 13.4L10.9286 15L14.5 11" />
                     </svg>
-                    <span class="flex-1">Active Rentals</span>
+                    <span class="flex-1">
+                        {{ app()->getLocale() === 'fa' ? 'اجاره‌های فعال' : (app()->getLocale() === 'ps' ? 'فعال کرایې' : 'Active Rentals') }}
+                    </span>
                     <span id="active-rentals-badge" class="hidden inline-flex items-center justify-center w-5 h-5
                  bg-green-500 text-white text-xs font-bold rounded-full">
                         {{ $activeRentalsCount }}
@@ -208,10 +228,11 @@
                 </script>
 
                 {{-- Payments --}}
-                <a href="{{ route('admin.payments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.payments.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.payments.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89
                              2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
@@ -220,10 +241,11 @@
                 </a>
 
                 {{-- Users --}}
-                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.users.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.users.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125
@@ -232,8 +254,38 @@
                           0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25
                           2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
-                    <span>Users</span>
+                    <span class="flex-1">
+                        {{ app()->getLocale() === 'fa' ? 'کاربران' : (app()->getLocale() === 'ps' ? 'کاروونکي' : 'Users') }}
+                    </span>
                 </a>
+
+
+                {{-- Profile Requests --}}
+@php $pendingProfileRequests = \App\Models\ProfileChangeRequest::where('status', 'pending')->count(); @endphp
+<a href="{{ route('admin.profile-requests.index') }}"
+    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+              {{ request()->routeIs('admin.profile-requests.*')
+? 'bg-blue-600 text-white font-medium shadow-sm'
+: 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424
+              48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75
+              0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668
+              2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0
+              0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0
+              1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+    </svg>
+    <span class="flex-1">
+        {{ app()->getLocale() === 'fa' ? 'درخواست‌های پروفایل' : (app()->getLocale() === 'ps' ? 'د پروفایل غوښتنې' : 'Profile Requests') }}
+    </span>
+    @if($pendingProfileRequests > 0)
+        <span class="w-5 h-5 bg-orange-500 text-white text-xs font-bold
+                     rounded-full flex items-center justify-center flex-shrink-0">
+            {{ $pendingProfileRequests > 9 ? '9+' : $pendingProfileRequests }}
+        </span>
+    @endif
+</a>
 
                 {{-- Chat --}}
                 @php
@@ -242,10 +294,11 @@
                         ->whereHas('sender', fn($q) => $q->where('role', 'customer'))
                         ->count();
                 @endphp
-                <a href="{{ route('admin.chat.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.chat.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.chat.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125
@@ -259,18 +312,20 @@
                     </svg>
                     <span class="flex-1">{{ __('common.nav_chat') }}</span>
                     @if($totalUnreadMessages > 0)
-                        <span class="chat-nav-badge w-5 h-5 bg-red-500 text-white text-xs font-bold
-                                             rounded-full flex items-center justify-center flex-shrink-0">
+                        <span
+                            class="chat-nav-badge w-5 h-5 bg-red-500 text-white text-xs font-bold
+                                                                             rounded-full flex items-center justify-center flex-shrink-0">
                             {{ $totalUnreadMessages > 9 ? '9+' : $totalUnreadMessages }}
                         </span>
                     @endif
                 </a>
 
                 {{-- GPS Tracking --}}
-                <a href="{{ route('admin.gps.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.gps.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.gps.*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -281,10 +336,11 @@
                 </a>
 
                 {{-- Reports --}}
-                <a href="{{ route('admin.reports') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                <a href="{{ route('admin.reports') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('admin.reports*')
     ? 'bg-blue-600 text-white font-medium shadow-sm'
-    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125
@@ -301,23 +357,24 @@
             </nav>
 
             {{-- User Info --}}
-            <div class="border-t border-gray-200 p-4">
+            <div class="border-t border-gray-200 dark:border-gray-800 p-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center
-                            text-blue-700 font-semibold text-sm flex-shrink-0">
+                    <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center
+                            text-blue-700 dark:text-blue-300 font-semibold text-sm flex-shrink-0">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                             {{ auth()->user()->name }}
                         </p>
-                        <p class="text-xs text-gray-500 truncate">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                             {{ __('common.administrator') }}
                         </p>
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors"
+                        <button type="submit"
+                            class="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                             title="{{ __('common.logout') }}">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
                                 viewBox="0 0 24 24">
@@ -339,11 +396,12 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
             {{-- Top Navbar --}}
-            <header class="h-16 bg-white border-b border-gray-200 flex items-center
+            <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center
                        gap-4 px-4 lg:px-6 flex-shrink-0">
 
                 {{-- Mobile menu toggle --}}
-                <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+                <button @click="sidebarOpen = true"
+                    class="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16" />
@@ -351,48 +409,76 @@
                 </button>
 
                 <div class="flex-1">
-                    <h1 class="text-lg font-semibold text-gray-900">
+                    <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         @yield('page-title', __('common.dashboard'))
                     </h1>
                 </div>
 
+                {{-- Theme Toggle --}}
+                <x-theme-toggle />
+
                 {{-- Language Switcher --}}
-                <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                    <form method="POST" action="{{ route('language.switch') }}">
-                        @csrf
-                        <input type="hidden" name="locale" value="en">
-                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                   {{ app()->getLocale() === 'en'
-    ? 'bg-white text-blue-600 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700' }}">
-                            EN
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('language.switch') }}">
-                        @csrf
-                        <input type="hidden" name="locale" value="fa">
-                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                   {{ app()->getLocale() === 'fa'
-    ? 'bg-white text-blue-600 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700' }}">
-                            FA
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('language.switch') }}">
-                        @csrf
-                        <input type="hidden" name="locale" value="ps">
-                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all
-                                   {{ app()->getLocale() === 'ps'
-    ? 'bg-white text-blue-600 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700' }}">
-                            PS
-                        </button>
-                    </form>
+                <div class="relative" x-data="{ langOpen: false }">
+                    <button @click="langOpen = !langOpen" class="flex items-center gap-1.5 px-3 py-1.5 text-white text-sm
+                   font-medium rounded-lg transition-colors" style="background-color: #4F46E5;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 64 64"
+                            fill="none" stroke="currentColor" stroke-width="3">
+                            <circle cx="32" cy="32" r="28" />
+                            <path d="M32 4 C32 4 20 18 20 32 C20 46 32 60 32 60" />
+                            <path d="M32 4 C32 4 44 18 44 32 C44 46 32 60 32 60" />
+                            <line x1="4" y1="32" x2="60" y2="32" />
+                            <line x1="8" y1="18" x2="56" y2="18" />
+                            <line x1="8" y1="46" x2="56" y2="46" />
+                        </svg>
+                        <span class="text-xs font-bold text-white uppercase">
+                            {{ app()->getLocale() }}
+                        </span>
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="langOpen" x-cloak @click.outside="langOpen = false" class="absolute right-0 mt-1 w-32 bg-white dark:bg-gray-800 rounded-xl shadow-lg
+                border border-gray-100 dark:border-gray-700 py-1 z-50">
+                        <form method="POST" action="{{ route('language.switch') }}">
+                            @csrf
+                            <input type="hidden" name="locale" value="en">
+                            <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                           hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                           {{ app()->getLocale() === 'en'
+    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+    : 'text-gray-700 dark:text-gray-300' }}">
+                                🇺🇸 English
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('language.switch') }}">
+                            @csrf
+                            <input type="hidden" name="locale" value="fa">
+                            <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                           hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                           {{ app()->getLocale() === 'fa'
+    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+    : 'text-gray-700 dark:text-gray-300' }}">
+                                🇦🇫 دری
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('language.switch') }}">
+                            @csrf
+                            <input type="hidden" name="locale" value="ps">
+                            <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-sm
+                           hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                           {{ app()->getLocale() === 'ps'
+    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+    : 'text-gray-700 dark:text-gray-300' }}">
+                                🇦🇫 پښتو
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 {{-- Breadcrumb --}}
-                <nav class="hidden md:flex items-center gap-2 text-sm text-gray-500">
-                    <a href="{{ route('admin.dashboard') }}" class="hover:text-gray-700">
+                <nav class="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="{{ route('admin.dashboard') }}" class="hover:text-gray-700 dark:hover:text-gray-200">
                         {{ __('common.admin_panel') }}
                     </a>
                     @hasSection('breadcrumb')
@@ -406,10 +492,11 @@
             {{-- Flash Messages --}}
             <div class="px-4 lg:px-6 pt-4">
                 @if(session('success'))
-                    <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 border
-                                        border-green-200 text-green-800 rounded-lg text-sm">
-                        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                    <div
+                        class="mb-4 flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/30 border
+                                                                        border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 rounded-lg text-sm">
+                        <svg class="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -417,9 +504,10 @@
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 border
-                                        border-red-200 text-red-800 rounded-lg text-sm">
-                        <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor"
+                    <div
+                        class="mb-4 flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-900/30 border
+                                                                        border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 rounded-lg text-sm">
+                        <svg class="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -38,7 +38,7 @@
                     </option>
                     <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>
                         {{ __('common.confirmed') }}</option>
-                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('bookings.active') }}
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('common.active') }}
                     </option>
                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>
                         {{ __('common.completed') }}</option>
@@ -73,96 +73,119 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-gray-200 bg-gray-50">
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('bookings.reference') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('common.customer') }}</th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3">
+                                {{ __('bookings.reference') }}
+                            </th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3">
+                                {{ __('common.customer') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
-                                {{ __('vehicles.vehicle') }}</th>
+                                {{ __('vehicles.vehicle') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('vehicles.pickup_date') }}</th>
+                                {{ __('vehicles.pickup_date') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
-                                {{ __('vehicles.return_date') }}</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">{{ __('vehicles.status') }}</th>
+                                {{ __('vehicles.return_date') }}
+                            </th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3">
+                                {{ __('vehicles.status') }}
+                            </th>
                             <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
-                                {{ __('vehicles.total') }}</th>
-                            <th class="text-right font-semibold text-gray-600 px-4 py-3">{{ __('vehicles.actions') }}</th>
+                                {{ __('vehicles.total') }}
+                            </th>
+                            <th class="text-right font-semibold text-gray-600 px-4 py-3">
+                                {{ __('vehicles.actions') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($bookings as $booking)
-                                <tr class="hover:bg-gray-50 transition-colors">
+                            @php
+                                $colors = [
+                                    'pending' => 'bg-yellow-50 text-yellow-700',
+                                    'confirmed' => 'bg-blue-50 text-blue-700',
+                                    'active' => 'bg-green-50 text-green-700',
+                                    'completed' => 'bg-gray-100 text-gray-600',
+                                    'cancelled' => 'bg-red-50 text-red-700',
+                                ];
 
-                                    <td class="px-4 py-3">
-                                        <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
-                                                {{ $booking->reference_code }}
-                                            </code>
-                                    </td>
+                                $statusLabels = [
+                                    'pending' => __('common.pending'),
+                                    'confirmed' => __('common.confirmed'),
+                                    'active' => __('common.active'),
+                                    'completed' => __('common.completed'),
+                                    'cancelled' => __('common.cancelled'),
+                                ];
+                            @endphp
 
-                                    <td class="px-4 py-3">
-                                        <p class="font-medium text-gray-900">{{ $booking->customer?->name }}</p>
-                                        <p class="text-xs text-gray-400">{{ $booking->customer?->email }}</p>
-                                    </td>
+                            <tr class="hover:bg-gray-50 transition-colors">
 
-                                    <td class="px-4 py-3 hidden md:table-cell">
-                                        <p class="text-gray-900">{{ $booking->vehicle?->full_name }}</p>
-                                        <p class="text-xs text-gray-400">{{ $booking->vehicle?->license_plate }}</p>
-                                    </td>
+                                <td class="px-4 py-3">
+                                    <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">
+                                            {{ $booking->reference_code }}
+                                        </code>
+                                </td>
 
-                                    <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
-                                        {{ $booking->pickup_date->format('M d, Y') }}
-                                    </td>
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900">{{ $booking->customer?->name }}</p>
+                                    <p class="text-xs text-gray-400">{{ $booking->customer?->email }}</p>
+                                </td>
 
-                                    <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
-                                        {{ $booking->return_date->format('M d, Y') }}
-                                    </td>
+                                <td class="px-4 py-3 hidden md:table-cell">
+                                    <p class="text-gray-900">{{ $booking->vehicle?->full_name }}</p>
+                                    <p class="text-xs text-gray-400">{{ $booking->vehicle?->license_plate }}</p>
+                                </td>
 
-                                    <td class="px-4 py-3">
-                                        @php
-                                            $colors = [
-                                                'pending' => 'bg-yellow-50 text-yellow-700',
-                                                'confirmed' => 'bg-blue-50 text-blue-700',
-                                                'active' => 'bg-green-50 text-green-700',
-                                                'completed' => 'bg-gray-100 text-gray-600',
-                                                'cancelled' => 'bg-red-50 text-red-700',
-                                            ];
-                                        @endphp
-                                        <div class="flex flex-col gap-1">
-                                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold
-                             {{ $colors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                                {{ ucfirst($booking->status) }}
-                                            </span>
-                                            @if($booking->status === 'cancelled' && $booking->cancellation_fee > 0)
-                                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold
-                                                         {{ $booking->cancellation_fee_paid
-                                                ? 'bg-green-50 text-green-700'
-                                                : 'bg-orange-50 text-orange-700' }}">
-                                                                        Fee: AFN {{ number_format($booking->cancellation_fee) }}
-                                                                        {{ $booking->cancellation_fee_paid ? '✓' : '⚠️' }}
-                                                                    </span>
-                                            @endif
-                                        </div>
-                                    </td>
+                                <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
+                                    {{ $booking->pickup_date->translatedFormat('M d, Y') }}
+                                </td>
 
-                                    <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-900">
-                                        AFN {{ number_format($booking->total_amount) }}
-                                    </td>
+                                <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
+                                    {{ $booking->return_date->translatedFormat('M d, Y') }}
+                                </td>
 
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('admin.bookings.show', $booking) }}" class="px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200
-                                                          rounded-lg hover:bg-indigo-50 transition-colors">
-                                                {{ __('common.view') }}
-                                            </a>
-                                        </div>
-                                    </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                                         {{ $colors[$booking->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                            {{ $statusLabels[$booking->status] ?? ucfirst($booking->status) }}
+                                        </span>
+                                        @if($booking->status === 'cancelled' && $booking->cancellation_fee > 0)
+                                                                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold
+                                                                                     {{ $booking->cancellation_fee_paid
+                                            ? 'bg-green-50 text-green-700'
+                                            : 'bg-orange-50 text-orange-700' }}">
+                                                                    {{ __('bookings.cancellation_fee') }}:
+                                                                    AFN {{ number_format($booking->cancellation_fee) }}
+                                                                    {{ $booking->cancellation_fee_paid ? '✓' : '⚠️' }}
+                                                                </span>
+                                        @endif
+                                    </div>
+                                </td>
 
-                                </tr>
+                                <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-900">
+                                    AFN {{ number_format($booking->total_amount) }}
+                                </td>
+
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.bookings.show', $booking) }}" class="px-3 py-1.5 text-xs font-medium text-indigo-600
+                                                      border border-indigo-200 rounded-lg hover:bg-indigo-50
+                                                      transition-colors">
+                                            {{ __('common.view') }}
+                                        </a>
+                                    </div>
+                                </td>
+
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="8" class="px-4 py-12 text-center text-gray-400">
                                     <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0
+                                                  00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <p class="font-medium">{{ __('bookings.no_bookings') }}</p>
                                 </td>

@@ -161,8 +161,15 @@ class AnalyticsService
                 $counts[] = Booking::where('status', $status)->count();
             }
 
+            $locale = app()->getLocale();
+            $labels = match ($locale) {
+                'fa' => ['در انتظار', 'تأیید شده', 'فعال', 'تکمیل شده', 'لغو شده'],
+                'ps' => ['تمه', 'تایید شوی', 'فعال', 'بشپړ شوی', 'لغو شوی'],
+                default => ['Pending', 'Confirmed', 'Active', 'Completed', 'Cancelled'],
+            };
+
             return [
-                'labels' => ['Pending', 'Confirmed', 'Active', 'Completed', 'Cancelled'],
+                'labels' => $labels,
                 'data' => $counts,
                 'colors' => [
                     '#F59E0B',

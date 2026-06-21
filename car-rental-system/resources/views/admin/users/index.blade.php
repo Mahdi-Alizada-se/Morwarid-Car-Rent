@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Users')
+@section('page-title', __('common.nav_users'))
 @section('breadcrumb')
-    <span class="text-gray-900 font-medium">Customers</span>
+    <span class="text-gray-900 font-medium">{{ __('common.customers') }}</span>
 @endsection
 
 @section('content')
@@ -11,8 +11,8 @@
         {{-- Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-xl font-bold text-gray-900">All Customers</h2>
-                <p class="text-sm text-gray-500 mt-0.5">Manage customer accounts and license verifications</p>
+                <h2 class="text-xl font-bold text-gray-900">{{ __('users.all_customers') }}</h2>
+                <p class="text-sm text-gray-500 mt-0.5">{{ __('users.manage_customers') }}</p>
             </div>
         </div>
 
@@ -38,34 +38,34 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name or email..."
-                        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="{{ __('users.search_placeholder') }}" class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg
                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <select name="license_status" class="text-sm border border-gray-200 rounded-lg px-3 py-2
                                focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="">All License Statuses</option>
+                    <option value="">{{ __('users.all_license_statuses') }}</option>
                     <option value="verified" {{ request('license_status') === 'verified' ? 'selected' : '' }}>
-                        ✓ Verified
+                        ✓ {{ __('users.verified') }}
                     </option>
                     <option value="pending" {{ request('license_status') === 'pending' ? 'selected' : '' }}>
-                        ⏳ Pending Review
+                        ⏳ {{ __('users.pending_review') }}
                     </option>
                     <option value="missing" {{ request('license_status') === 'missing' ? 'selected' : '' }}>
-                        ✗ Missing
+                        ✗ {{ __('users.missing') }}
                     </option>
                 </select>
 
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium
                                rounded-lg hover:bg-indigo-700 transition-colors">
-                    Filter
+                    {{ __('common.filter') }}
                 </button>
 
                 @if(request()->hasAny(['search', 'license_status']))
                     <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-sm text-gray-600 border border-gray-200
                                   rounded-lg hover:bg-gray-50 transition-colors">
-                        Clear
+                        {{ __('common.clear') }}
                     </a>
                 @endif
 
@@ -78,13 +78,24 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-gray-200 bg-gray-50">
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">Customer</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">Phone</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">License No.
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3">
+                                {{ __('common.customer') }}
                             </th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3">License Status</th>
-                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">Joined</th>
-                            <th class="text-right font-semibold text-gray-600 px-4 py-3">Bookings</th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
+                                {{ __('common.phone') }}
+                            </th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden lg:table-cell">
+                                {{ __('users.license_no') }}
+                            </th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3">
+                                {{ __('users.license_status') }}
+                            </th>
+                            <th class="text-left font-semibold text-gray-600 px-4 py-3 hidden md:table-cell">
+                                {{ __('users.joined') }}
+                            </th>
+                            <th class="text-right font-semibold text-gray-600 px-4 py-3">
+                                {{ __('common.nav_bookings') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -106,7 +117,7 @@
                                 </td>
 
                                 {{-- Phone --}}
-                                <td class="px-4 py-3 hidden md:table-cell text-gray-600">
+                                <td class="px-4 py-3 hidden md:table-cell text-gray-600" dir="ltr">
                                     {{ $user->phone ?? '—' }}
                                 </td>
 
@@ -124,60 +135,53 @@
                                 {{-- License Status --}}
                                 <td class="px-4 py-3">
                                     @if($user->driver_license_verified)
-
-                                        {{-- ✓ Verified --}}
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1
                                                              bg-green-50 text-green-700 text-xs font-semibold rounded-full">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                     d="M5 13l4 4L19 7" />
                                             </svg>
-                                            Verified
+                                            {{ __('users.verified') }}
                                         </span>
 
                                     @elseif($user->driver_license_image)
-
-                                        {{-- ⏳ Pending --}}
                                         <div class="space-y-1.5">
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                                  bg-orange-50 text-orange-700 text-xs font-semibold rounded-full">
-                                                ⏳ Pending Review
+                                                ⏳ {{ __('users.pending_review') }}
                                             </span>
                                             <div class="flex items-center gap-2">
                                                 <a href="{{ route('admin.users.license', $user) }}" target="_blank"
                                                     class="text-xs text-indigo-600 hover:underline font-medium">
-                                                    View License →
+                                                    {{ __('users.view_license') }} →
                                                 </a>
                                                 <form method="POST" action="{{ route('admin.users.verify-license', $user) }}"
-                                                    onsubmit="return confirm('Verify {{ addslashes($user->name) }}\'s license?')">
+                                                    onsubmit="return confirm('{{ __('users.verify_confirm', ['name' => addslashes($user->name)]) }}')">
                                                     @csrf
                                                     <button type="submit" class="px-2.5 py-1 bg-green-600 text-white text-xs
                                                                            font-semibold rounded-lg hover:bg-green-700
                                                                            transition-colors">
-                                                        ✓ Verify
+                                                        ✓ {{ __('users.verify') }}
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
 
                                     @else
-
-                                        {{-- ✗ Missing --}}
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1
                                                              bg-red-50 text-red-700 text-xs font-semibold rounded-full">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                     d="M6 18L18 6M6 6l12 12" />
                                             </svg>
-                                            Missing
+                                            {{ __('users.missing') }}
                                         </span>
-
                                     @endif
                                 </td>
 
                                 {{-- Joined --}}
                                 <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">
-                                    {{ $user->created_at->format('M d, Y') }}
+                                    {{ $user->created_at->translatedFormat('M d, Y') }}
                                 </td>
 
                                 {{-- Bookings --}}
@@ -193,10 +197,11 @@
                                 <td colspan="6" class="px-4 py-12 text-center text-gray-400">
                                     <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7
+                                                  20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002
+                                                  0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <p class="font-medium">No customers found.</p>
+                                    <p class="font-medium">{{ __('users.no_customers') }}</p>
                                 </td>
                             </tr>
                         @endforelse

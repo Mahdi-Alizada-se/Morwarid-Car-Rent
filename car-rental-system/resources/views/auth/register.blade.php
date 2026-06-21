@@ -22,7 +22,7 @@
                 {{-- Errors --}}
                 @if($errors->any())
                     <div class="mb-5 flex items-start gap-3 px-4 py-3 bg-red-50
-                                                    border border-red-200 text-red-800 rounded-xl text-sm">
+                                    border border-red-200 text-red-800 rounded-xl text-sm">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -48,9 +48,9 @@
                         </label>
                         <input type="text" id="name" name="name" value="{{ old('name') }}" autofocus autocomplete="name"
                             placeholder="{{ __('common.full_name_placeholder') }}" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                              focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                              focus:border-transparent
-                                              @error('name') border-red-400 bg-red-50 @enderror">
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      focus:border-transparent
+                                      @error('name') border-red-400 bg-red-50 @enderror">
                         @error('name')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -64,9 +64,9 @@
                         </label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" autocomplete="email"
                             placeholder="you@example.com" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                              focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                              focus:border-transparent
-                                              @error('email') border-red-400 bg-red-50 @enderror">
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      focus:border-transparent
+                                      @error('email') border-red-400 bg-red-50 @enderror">
                         @error('email')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -81,10 +81,10 @@
                             </span>
                         </label>
                         <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="+93 700 000 000"
-                            class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                              focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                              focus:border-transparent
-                                              @error('phone') border-red-400 bg-red-50 @enderror">
+                            dir="ltr" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      focus:border-transparent
+                                      @error('phone') border-red-400 bg-red-50 @enderror">
                         @error('phone')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -93,13 +93,14 @@
                     {{-- Driver License Number --}}
                     <div>
                         <label for="driver_license_number" class="block text-sm font-medium text-gray-700 mb-1.5">
-                            Driver's License Number
+                            {{ __('common.driver_license_number') }}
                             <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="driver_license_number" name="driver_license_number"
-                            value="{{ old('driver_license_number') }}" required placeholder="e.g. KBL-123456" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
-                                              focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                              @error('driver_license_number') border-red-400 bg-red-50 @enderror">
+                            value="{{ old('driver_license_number') }}" required
+                            placeholder="{{ __('common.license_placeholder') }}" class="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5
+                                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      @error('driver_license_number') border-red-400 bg-red-50 @enderror">
                         @error('driver_license_number')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -108,34 +109,38 @@
                     {{-- Driver License Photo --}}
                     <div x-data="{ preview: null, fileName: '' }">
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                            Driver's License Photo
+                            {{ __('common.driver_license_photo') }}
                             <span class="text-red-500">*</span>
                         </label>
 
                         <label class="block border-2 border-dashed border-gray-300 rounded-xl p-4
-                                              text-center cursor-pointer hover:border-indigo-400 transition-colors"
+                                      text-center cursor-pointer hover:border-indigo-400 transition-colors"
                             :class="fileName ? 'border-indigo-400 bg-indigo-50' : ''">
 
                             <input type="file" name="driver_license_image"
                                 accept="image/jpeg,image/png,image/jpg,application/pdf" required class="hidden" @change="
-                                               const f = $event.target.files[0];
-                                               if (f) {
-                                                   fileName = f.name;
-                                                   preview = f.type.startsWith('image/')
-                                                       ? URL.createObjectURL(f)
-                                                       : null;
-                                               }
-                                           ">
+                                       const f = $event.target.files[0];
+                                       if (f) {
+                                           fileName = f.name;
+                                           preview = f.type.startsWith('image/')
+                                               ? URL.createObjectURL(f)
+                                               : null;
+                                       }
+                                   ">
 
                             <template x-if="!fileName">
                                 <div>
                                     <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0
-                                                      011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                              011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
-                                    <p class="text-sm text-gray-500">Click to upload license photo</p>
-                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG or PDF — max 5MB</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ __('common.click_to_upload_license') }}
+                                    </p>
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        {{ __('common.license_file_types') }}
+                                    </p>
                                 </div>
                             </template>
 
@@ -152,8 +157,8 @@
                                     <svg class="w-8 h-8 text-indigo-500 mx-auto mb-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0
-                                                      012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0
-                                                      01.293.707V19a2 2 0 01-2 2z" />
+                                              012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0
+                                              01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     <p class="text-xs text-indigo-600 font-medium" x-text="fileName"></p>
                                 </div>
@@ -161,7 +166,7 @@
                         </label>
 
                         <p class="text-xs text-gray-400 mt-1">
-                            Clear photo of front of license. JPG, PNG or PDF. Max 5MB.
+                            {{ __('common.license_photo_help') }}
                         </p>
 
                         @error('driver_license_image')
@@ -178,30 +183,30 @@
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" id="password" name="password"
                                 autocomplete="new-password" placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl
-                                                  px-4 py-2.5 pr-12
-                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                  focus:border-transparent
-                                                  @error('password') border-red-400 bg-red-50 @enderror">
+                                          px-4 py-2.5 pr-12
+                                          focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                          focus:border-transparent
+                                          @error('password') border-red-400 bg-red-50 @enderror">
 
                             <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2
-                                                   text-gray-400 hover:text-gray-600 transition-colors">
+                                           text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor"
                                     stroke-width="1.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5
-                                                  12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0
-                                                  .639C20.577 16.49 16.64 19.5 12 19.5c-4.638
-                                                  0-8.573-3.007-9.963-7.178z" />
+                                          12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0
+                                          .639C20.577 16.49 16.64 19.5 12 19.5c-4.638
+                                          0-8.573-3.007-9.963-7.178z" />
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor"
                                     stroke-width="1.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338
-                                                  7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228
-                                                  6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065
-                                                  7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3
-                                                  3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0
-                                                  0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                          7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228
+                                          6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065
+                                          7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3
+                                          3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0
+                                          0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                                 </svg>
                             </button>
                         </div>
@@ -219,29 +224,29 @@
                         <div class="relative">
                             <input :type="showConfirm ? 'text' : 'password'" id="password_confirmation"
                                 name="password_confirmation" autocomplete="new-password" placeholder="••••••••" class="w-full text-sm border border-gray-200 rounded-xl
-                                                  px-4 py-2.5 pr-12
-                                                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                                                  focus:border-transparent">
+                                          px-4 py-2.5 pr-12
+                                          focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                          focus:border-transparent">
 
                             <button type="button" @click="showConfirm = !showConfirm" class="absolute right-3 top-1/2 -translate-y-1/2
-                                                   text-gray-400 hover:text-gray-600 transition-colors">
+                                           text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg x-show="!showConfirm" class="w-5 h-5" fill="none" stroke="currentColor"
                                     stroke-width="1.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5
-                                                  12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0
-                                                  .639C20.577 16.49 16.64 19.5 12 19.5c-4.638
-                                                  0-8.573-3.007-9.963-7.178z" />
+                                          12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0
+                                          .639C20.577 16.49 16.64 19.5 12 19.5c-4.638
+                                          0-8.573-3.007-9.963-7.178z" />
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <svg x-show="showConfirm" class="w-5 h-5" fill="none" stroke="currentColor"
                                     stroke-width="1.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338
-                                                  7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228
-                                                  6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065
-                                                  7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3
-                                                  3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0
-                                                  0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                          7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228
+                                          6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065
+                                          7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3
+                                          3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0
+                                          0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                                 </svg>
                             </button>
                         </div>
@@ -250,18 +255,18 @@
                     {{-- Avatar --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Profile Photo
-                            <span class="text-gray-400 text-xs">(optional)</span>
+                            {{ __('common.profile_photo') }}
+                            <span class="text-gray-400 text-xs">({{ __('common.optional') }})</span>
                         </label>
                         <input type="file" name="avatar" accept="image/*" class="block w-full text-sm text-gray-500
-                                              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                                              file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700
-                                              hover:file:bg-indigo-100">
+                                      file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                                      file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100">
                     </div>
 
                     {{-- Submit --}}
                     <button type="submit" class="w-full py-2.5 bg-indigo-600 text-white text-sm font-semibold
-                                           rounded-xl hover:bg-indigo-700 transition-colors">
+                                   rounded-xl hover:bg-indigo-700 transition-colors">
                         {{ __('common.create_account') }}
                     </button>
 
@@ -277,8 +282,8 @@
                 {{-- Social Login --}}
                 <div class="space-y-3">
                     <a href="{{ route('social.redirect', 'google') }}" class="flex items-center justify-center gap-3 w-full py-2.5
-                                      border border-gray-200 rounded-xl text-sm font-medium
-                                      text-gray-700 hover:bg-gray-50 transition-colors">
+                              border border-gray-200 rounded-xl text-sm font-medium
+                              text-gray-700 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04
                                           2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -293,8 +298,8 @@
                     </a>
 
                     <a href="{{ route('social.redirect', 'facebook') }}" class="flex items-center justify-center gap-3 w-full py-2.5
-                                      border border-gray-200 rounded-xl text-sm font-medium
-                                      text-gray-700 hover:bg-gray-50 transition-colors">
+                              border border-gray-200 rounded-xl text-sm font-medium
+                              text-gray-700 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388
                                              10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007

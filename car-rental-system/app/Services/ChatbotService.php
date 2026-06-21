@@ -38,24 +38,50 @@ class ChatbotService
     private function buildSystemPrompt(): string
     {
         $today = Carbon::now()->format('l, F j, Y');
+        $uiLocale = app()->getLocale();
+
+        // ── Language instruction in English so model understands it reliably ──
+        $languageInstruction = match ($uiLocale) {
+            'fa' => 'LANGUAGE RULE (MANDATORY): You MUST respond ONLY in Dari Persian language. '
+            . 'Dari Persian is spoken in Afghanistan and uses words like: سلام، چطور، می‌توانم، موتر، کرایه، امروز، ممنون. '
+            . 'Do NOT use Pashto words like: ښه راغلاست، تاسو، ځواب، کارونکی، ددې. '
+            . 'Do NOT respond in English, Pashto, Urdu, or Arabic. '
+            . 'ONLY Dari Persian (دری). '
+            . 'Correct Dari example: "سلام! چطور می‌توانم کمک کنم؟" '
+            . 'WRONG (Pashto - forbidden): "سلام، تاسو ته ښه راغلاست"',
+
+            'ps' => 'LANGUAGE RULE (MANDATORY): You MUST respond ONLY in Pashto language. '
+            . 'Pashto is spoken in Afghanistan/Pakistan and uses words like: ښه راغلاست، تاسو، کولی شم، موټر، کرایه. '
+            . 'Do NOT respond in Dari, English, Urdu, or Arabic. '
+            . 'ONLY Pashto (پښتو). '
+            . 'Correct Pashto example: "سلام! تاسو ته ښه راغلاست، زه څنګه مرسته کولی شم؟"',
+
+            default => 'LANGUAGE RULE: Respond in English by default. '
+            . 'If the customer writes in Dari Persian, respond in Dari. '
+            . 'If the customer writes in Pashto, respond in Pashto. '
+            . 'Never use Urdu or Arabic.',
+        };
+
         $isLoggedIn = auth()->check();
 
-        // ── Guest user — strict prompt, no vehicle info ──
+        // ── Guest prompt ──────────────────────────────────────────────────────
         if (!$isLoggedIn) {
-            return 'You are a receptionist for Morwarid Car Rental in Kabul, Afghanistan.' . "\n"
+            return $languageInstruction . "\n\n"
+                . 'You are a receptionist for Morwarid Car Rental in Kabul, Afghanistan.' . "\n"
                 . 'The visitor is NOT logged in.' . "\n\n"
                 . 'RULES:' . "\n"
                 . '1. Never mention any car names/models.' . "\n"
-                . '2. If asked about vehicles, prices, or availability, say exactly:' . "\n"
-                . '   "I can only show vehicle details to registered customers. Please login or create an account to see our full fleet and book a vehicle."' . "\n"
+                . '2. If asked about vehicles, prices, or availability say:' . "\n"
+                . ($uiLocale === 'fa'
+                    ? '   "من فقط می‌توانم جزئیات موترها را به مشتریان ثبت‌نام شده نشان دهم. لطفاً وارد شوید یا حساب کاربری بسازید."' . "\n"
+                    : '   "I can only show vehicle details to registered customers. Please login or create an account."' . "\n")
                 . '3. You CAN answer registration requirements and general company info.' . "\n\n"
-                . 'To register, customer needs: full name, email, phone (optional), password (8+ chars), driver license number + photo, must be 21+.' . "\n\n"
-                . 'Company: Dasht-e-Barchi, Kabul, Afghanistan | Phone: +93 730 751 894 | Hours: 8AM-8PM (Sat-Thu).' . "\n\n"
-                . 'Be warm and friendly. Default language: English. Reply in Dari if asked in Dari, Pashto if asked in Pashto. Never use Urdu or Arabic.' . "\n"
+                . 'To register: full name, email, phone (optional), password 8+ chars, driver license number + photo, must be 21+.' . "\n\n"
+                . 'Company: Dasht-e-Barchi, Kabul | Phone: +93 730 751 894 | Hours: 8AM-8PM Sat-Thu.' . "\n"
                 . 'Today: ' . $today . "\n";
         }
 
-        // ── Logged in user — full prompt with all vehicle data ──
+        // ── Logged-in user prompt ─────────────────────────────────────────────
         $user = auth()->user();
         $userName = $user->name;
 
@@ -64,103 +90,95 @@ class ChatbotService
             'pricingRules' => fn($q) => $q->where('is_active', true),
         ])
             ->whereNull('deleted_at')
+            ->where('status', '!=', 'maintenance')
             ->get();
 
-        $bookings = \App\Models\Booking::with('vehicle')
-            ->whereIn('status', ['confirmed', 'active', 'pending'])
+        $allBookings = \App\Models\Booking::whereIn('status', ['confirmed', 'active', 'pending'])
             ->where('return_date', '>=', now()->startOfDay())
             ->orderBy('pickup_date')
             ->get()
             ->groupBy('vehicle_id');
 
-        $vehicleLines = '';
-
+        $vehicleData = '';
         foreach ($vehicles as $v) {
-            if ($v->status === 'maintenance') {
-                continue; // skip maintenance vehicles entirely — never suggest them
-            }
-
             $dailyRule = $v->pricingRules->where('type', 'daily')->first();
-            $dailyRate = $dailyRule ? number_format($dailyRule->base_rate) : 'N/A';
-
+            $dailyRate = $dailyRule ? number_format($dailyRule->base_rate) : '0';
             $category = $v->category ? $v->category->name : 'General';
+            $fullName = $v->full_name;
 
-            // Reserved date ranges for this vehicle
-            $vehicleBookings = $bookings->get($v->id, collect());
-            if ($vehicleBookings->isNotEmpty()) {
-                $ranges = $vehicleBookings->map(function ($b) {
-                    return $b->pickup_date->format('M d') . '-' . $b->return_date->format('M d');
-                })->implode(', ');
-            } else {
-                $ranges = 'none';
+            $vehicleBookings = $allBookings->get($v->id, collect());
+            $ranges = [];
+            foreach ($vehicleBookings as $b) {
+                $ranges[] = $b->pickup_date->format('Y-m-d')
+                    . ' to '
+                    . $b->return_date->format('Y-m-d');
             }
 
-            // Compact single-line format
-            $vehicleLines .= sprintf(
-                "- %s | %s | %s seats | %s | %s | %s AFN/day | Reserved: %s\n",
-                $v->full_name . ' (' . $v->year . ')',
-                $category,
-                $v->seats,
-                ucfirst($v->fuel_type) . '/' . ucfirst($v->transmission),
-                $v->license_plate,
-                $dailyRate,
-                $ranges
-            );
+            $rangesText = empty($ranges) ? 'none' : implode(', ', $ranges);
+            $vehicleData .= '[' . $fullName . ']'
+                . ' category=' . $category
+                . ' seats=' . $v->seats
+                . ' fuel=' . $v->fuel_type
+                . ' transmission=' . $v->transmission
+                . ' price=' . $dailyRate . 'AFN/day'
+                . ' booked_dates=' . $rangesText
+                . "\n";
         }
 
-        if (empty($vehicleLines)) {
-            $vehicleLines = 'No vehicles in fleet.';
-        }
-
-        // This customer's own bookings (compact)
         $myBookings = \App\Models\Booking::with('vehicle')
             ->where('customer_id', $user->id)
             ->latest()
             ->take(3)
             ->get();
 
-        $myBookingsInfo = '';
+        $myBookingsText = '';
         foreach ($myBookings as $b) {
-            $myBookingsInfo .= '- ' . ($b->vehicle ? $b->vehicle->full_name : 'Unknown')
-                . ' | ' . $b->pickup_date->format('M d') . '-' . $b->return_date->format('M d, Y')
-                . ' | ' . ucfirst($b->status)
-                . ' | Ref: ' . $b->reference_code . "\n";
+            $myBookingsText .= '- ' . ($b->vehicle?->full_name ?? 'Unknown')
+                . ' from ' . $b->pickup_date->format('M d, Y')
+                . ' to ' . $b->return_date->format('M d, Y')
+                . ' [' . $b->status . ']' . "\n";
+        }
+        if (empty($myBookingsText)) {
+            $myBookingsText = 'No bookings yet.' . "\n";
         }
 
-        if (empty($myBookingsInfo)) {
-            $myBookingsInfo = 'None.';
-        }
+        $companyInfo = $uiLocale === 'fa'
+            ? 'موقعیت: دشت برچی، کابل | تلفن: 894 751 730 93+ | ساعات: ۸ صبح تا ۸ شب، شنبه تا پنجشنبه' . "\n"
+            . 'پرداخت: نقدی (ظرف ۵ ساعت)، انتقال بانکی (۲-۴ ساعت)، کارت/ویزا (فوری)' . "\n"
+            . 'سیاست سوخت: پر به پر | لغو رایگان تا ۲ ساعت قبل از تحویل | ودیعه امنیتی الزامی'
+            : 'Location: Dasht-e-Barchi, Kabul | Phone: +93 730 751 894 | Hours: 8AM-8PM Sat-Thu' . "\n"
+            . 'Payment: Cash (pay within 5h), Bank Transfer (confirmed 2-4h), Card/Visa/Mastercard (instant)' . "\n"
+            . 'Fuel policy: Full-to-Full | Free cancellation up to 2h before pickup | Security deposit required';
 
-        return 'You are an AI assistant for Morwarid Car Rental, Kabul, Afghanistan.' . "\n"
-            . 'Customer: ' . $userName . ' (' . $user->email . ')' . "\n"
+        return $languageInstruction . "\n\n"
+            . 'You are an AI assistant for Morwarid Car Rental, Kabul, Afghanistan.' . "\n"
+            . 'Customer name: ' . $userName . "\n"
+            . 'Customer email: ' . $user->email . "\n"
             . 'Today: ' . $today . "\n\n"
 
-            . '=== CUSTOMER\'S BOOKINGS ===' . "\n"
-            . $myBookingsInfo . "\n"
+            . '== COMPANY INFO ==' . "\n"
+            . $companyInfo . "\n\n"
 
-            . '=== COMPANY INFO ===' . "\n"
-            . 'Location: Dasht-e-Barchi, Kabul | Phone: +93 730 751 894 | Hours: 8AM-8PM (Sat-Thu)' . "\n"
-            . 'Payment: Cash, Bank Transfer, Card (Visa/Mastercard) | Fuel: Full-to-Full' . "\n"
-            . 'Free cancellation up to 2h before pickup. Security deposit required at pickup.' . "\n\n"
+            . '== CUSTOMER BOOKINGS ==' . "\n"
+            . $myBookingsText . "\n"
 
-            . '=== FLEET (each line: Name | Category | Seats | Fuel/Transmission | Plate | Daily Rate | Reserved dates) ===' . "\n"
-            . $vehicleLines . "\n"
+            . '== VEHICLE FLEET ==' . "\n"
+            . 'Format: [Full Name] category seats fuel transmission price booked_dates' . "\n"
+            . 'booked_dates shows when the vehicle is NOT available (YYYY-MM-DD to YYYY-MM-DD).' . "\n"
+            . 'If booked_dates=none, the vehicle is free on any date.' . "\n\n"
+            . $vehicleData . "\n"
 
-            . '=== AVAILABILITY RULES ===' . "\n"
-            . '- "Reserved: none" = available on ANY date.' . "\n"
-            . '- "Reserved: Jun 13-Jun 14" means booked ONLY during that range — available on all other dates.' . "\n"
-            . '- For "is X available on [date]" or "which cars are free on [date]", check each vehicle\'s Reserved field against that date. If the date is not inside any reserved range, it IS available.' . "\n"
-            . '- Never suggest a vehicle not listed in the fleet above.' . "\n\n"
+            . '== AVAILABILITY RULE ==' . "\n"
+            . 'AVAILABLE on date D = D does NOT fall within any booked_dates range.' . "\n"
+            . 'NOT AVAILABLE on date D = D falls within a booked_dates range (inclusive).' . "\n"
+            . 'Example: booked_dates=2026-06-15 to 2026-06-20 → NOT available Jun15-20. Available Jun21+.' . "\n\n"
 
-            . '=== RECOMMENDING A VEHICLE ===' . "\n"
-            . 'Ask: passengers count, pickup/return dates, budget (AFN), purpose, fuel/transmission preference.' . "\n"
-            . 'Recommend the best match that is free for those dates. Calculate total = daily rate x days.' . "\n\n"
-
-            . '=== BOOKING STEPS ===' . "\n"
-            . '1. Go to Vehicles page 2. Click vehicle 3. Select dates 4. Choose payment 5. Confirm Booking.' . "\n"
-            . 'Cash: pay within 5h or auto-cancelled. Bank transfer: confirmed in 2-4h. Card: instant.' . "\n\n"
-
-            . 'LANGUAGE: Default English. Reply in Dari if asked in Dari, Pashto if asked in Pashto. Never use Urdu or Arabic.' . "\n";
+            . '== RESPONSE RULES ==' . "\n"
+            . '- Be friendly and concise.' . "\n"
+            . '- Never show booked_dates, YYYY-MM-DD, or category= labels to customer.' . "\n"
+            . '- Always write vehicle names exactly as given in [brackets].' . "\n"
+            . '- Only calculate total cost when customer gives both pickup AND return dates.' . "\n"
+            . '- NEVER use Urdu or Arabic script.' . "\n";
     }
 
     // ─── Get History ──────────────────────────────────────────────────────────
@@ -202,7 +220,7 @@ class ChatbotService
     {
         $messages = $this->getHistory($sessionId);
 
-        // Always refresh system message with latest data
+        // Always refresh system message with latest data and current locale
         $messages[0] = $this->getSystemMessage();
 
         $messages[] = [
@@ -222,8 +240,8 @@ class ChatbotService
                     'keep_alive' => '30m',
                     'options' => [
                         'temperature' => 0.3,
-                        'num_predict' => 500,
-                        'num_ctx' => 4096,
+                        'num_predict' => 400,
+                        'num_ctx' => 3072,
                     ],
                 ]);
 
@@ -262,7 +280,10 @@ class ChatbotService
 
         } catch (\Exception $e) {
             Log::error('Ollama stream error: ' . $e->getMessage());
-            yield 'Sorry, I am having trouble right now. Please try again.';
+            $errorMsg = app()->getLocale() === 'fa'
+                ? 'متأسفم، مشکلی پیش آمد. لطفاً دوباره تلاش کنید.'
+                : 'Sorry, I am having trouble right now. Please try again.';
+            yield $errorMsg;
             return;
         }
 

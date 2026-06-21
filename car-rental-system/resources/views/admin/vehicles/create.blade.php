@@ -1,27 +1,43 @@
 @extends('layouts.admin')
 
-@section('page-title', __('Add Vehicle'))
+@section('page-title', __('common.nav_vehicles'))
 @section('breadcrumb')
     <a href="{{ route('admin.vehicles.index') }}" class="hover:text-gray-700">{{ __('common.nav_vehicles') }}</a>
     <span>/</span>
-    <span class="text-gray-900 font-medium">{{ __('Add New') }}</span>
+    <span class="text-gray-900 font-medium">
+        {{ app()->getLocale() === 'fa' ? 'افزودن جدید' : (app()->getLocale() === 'ps' ? 'نوی زیاتول' : 'Add New') }}
+    </span>
 @endsection
 
 @section('content')
+    @php
+        if (!function_exists('vehT')) {
+            function vehT($en, $fa, $ps)
+            {
+                $l = app()->getLocale();
+                if ($l === 'fa')
+                    return $fa;
+                if ($l === 'ps')
+                    return $ps;
+                return $en;
+            }
+        }
+    @endphp
+
     <div class="max-w-5xl" x-data="{
-                        images: [],
-                        rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
-                        addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
-                        removeRule(i) { this.rules.splice(i, 1) },
-                        handleImages(event) {
-                            this.images = [];
-                            Array.from(event.target.files).forEach(file => {
-                                const reader = new FileReader();
-                                reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
-                                reader.readAsDataURL(file);
-                            });
-                        }
-                     }">
+        images: [],
+        rules: [{ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }],
+        addRule() { this.rules.push({ type: 'daily', base_rate: '', currency: 'AFN', date_from: '', date_to: '', multiplier: '1.00', is_active: true }) },
+        removeRule(i) { this.rules.splice(i, 1) },
+        handleImages(event) {
+            this.images = [];
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => this.images.push({ url: e.target.result, name: file.name });
+                reader.readAsDataURL(file);
+            });
+        }
+    }">
 
         <form method="POST" action="{{ route('admin.vehicles.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
@@ -29,7 +45,9 @@
             {{-- Validation Errors --}}
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 rounded-xl p-4">
-                    <p class="text-sm font-semibold text-red-800 mb-2">{{ __('Please fix the following errors:') }}</p>
+                    <p class="text-sm font-semibold text-red-800 mb-2">
+                        {{ vehT('Please fix the following errors:', 'لطفاً خطاهای زیر را برطرف کنید:', 'مهرباني وکړئ لاندې غلطۍ سمې کړئ:') }}
+                    </p>
                     <ul class="list-disc list-inside space-y-1">
                         @foreach($errors->all() as $error)
                             <li class="text-sm text-red-700">{{ $error }}</li>
@@ -40,12 +58,15 @@
 
             {{-- ─── Basic Info ──────────────────────────────────────────────────── --}}
             <div class="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 class="font-semibold text-gray-900 mb-5">{{ __('Basic Information') }}</h3>
+                <h3 class="font-semibold text-gray-900 mb-5">
+                    {{ vehT('Basic Information', 'اطلاعات اساسی', 'بنسټیز معلومات') }}
+                </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Brand') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Brand', 'برند', 'برانډ') }} <span class="text-red-500">*</span>
+                        </label>
                         <input type="text" name="brand" value="{{ old('brand') }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('brand') border-red-400 @enderror"
                             placeholder="Toyota">
@@ -53,8 +74,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Model') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Model', 'مدل', 'ماډل') }} <span class="text-red-500">*</span>
+                        </label>
                         <input type="text" name="model" value="{{ old('model') }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('model') border-red-400 @enderror"
                             placeholder="Corolla">
@@ -62,8 +84,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Year') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Year', 'سال', 'کال') }} <span class="text-red-500">*</span>
+                        </label>
                         <input type="number" name="year" value="{{ old('year', date('Y')) }}" min="1990"
                             max="{{ date('Y') + 1 }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('year') border-red-400 @enderror">
@@ -71,11 +94,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Category') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Category', 'دسته‌بندی', 'کټاګورۍ') }} <span class="text-red-500">*</span>
+                        </label>
                         <select name="category_id"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('category_id') border-red-400 @enderror">
-                            <option value="">{{ __('Select category') }}</option>
+                            <option value="">{{ vehT('Select category', 'دسته را انتخاب کنید', 'کټاګورۍ وټاکئ') }}</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
                                     {{ $cat->name }}
@@ -86,8 +110,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('License Plate') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('License Plate', 'پلیت', 'پلیټ') }} <span class="text-red-500">*</span>
+                        </label>
                         <input type="text" name="license_plate" value="{{ old('license_plate') }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('license_plate') border-red-400 @enderror"
                             placeholder="KBL-1234">
@@ -95,8 +120,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Color') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Color', 'رنگ', 'رنګ') }} <span class="text-red-500">*</span>
+                        </label>
                         <input type="text" name="color" value="{{ old('color') }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('color') border-red-400 @enderror"
                             placeholder="White">
@@ -104,8 +130,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Seats') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Seats', 'صندلی‌ها', 'سیټونه') }} <span class="text-red-500">*</span>
+                        </label>
                         <select name="seats"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             @for($i = 1; $i <= 9; $i++)
@@ -115,92 +142,116 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Fuel Type') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Fuel Type', 'نوع سوخت', 'د تیلو ډول') }} <span class="text-red-500">*</span>
+                        </label>
                         <select name="fuel_type"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="petrol" {{ old('fuel_type') === 'petrol' ? 'selected' : '' }}>{{ __('Petrol') }}
+                            <option value="petrol" {{ old('fuel_type') === 'petrol' ? 'selected' : '' }}>
+                                {{ vehT('Petrol', 'پطرول', 'پطرول') }}
                             </option>
-                            <option value="diesel" {{ old('fuel_type') === 'diesel' ? 'selected' : '' }}>{{ __('Diesel') }}
+                            <option value="diesel" {{ old('fuel_type') === 'diesel' ? 'selected' : '' }}>
+                                {{ vehT('Diesel', 'دیزل', 'ډیزل') }}
                             </option>
                             <option value="electric" {{ old('fuel_type') === 'electric' ? 'selected' : '' }}>
-                                {{ __('Electric') }}
+                                {{ vehT('Electric', 'برقی', 'بریښنایی') }}
                             </option>
-                            <option value="hybrid" {{ old('fuel_type') === 'hybrid' ? 'selected' : '' }}>{{ __('Hybrid') }}
+                            <option value="hybrid" {{ old('fuel_type') === 'hybrid' ? 'selected' : '' }}>
+                                {{ vehT('Hybrid', 'هیبرید', 'هایبرید') }}
                             </option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Transmission') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Transmission', 'گیربکس', 'ګیربکس') }} <span class="text-red-500">*</span>
+                        </label>
                         <select name="transmission"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="automatic" {{ old('transmission') === 'automatic' ? 'selected' : '' }}>
-                                {{ __('Automatic') }}
+                                {{ vehT('Automatic', 'اتومات', 'اتومات') }}
                             </option>
-                            <option value="manual" {{ old('transmission') === 'manual' ? 'selected' : '' }}>{{ __('Manual') }}
+                            <option value="manual" {{ old('transmission') === 'manual' ? 'selected' : '' }}>
+                                {{ vehT('Manual', 'دستی', 'لاسي') }}
                             </option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Status') }} <span
-                                class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Status', 'وضعیت', 'حالت') }} <span class="text-red-500">*</span>
+                        </label>
                         <select name="status"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="available" {{ old('status', 'available') === 'available' ? 'selected' : '' }}>
-                                {{ __('Available') }}
+                                {{ vehT('Available', 'موجود', 'شتون لري') }}
                             </option>
                             <option value="maintenance" {{ old('status') === 'maintenance' ? 'selected' : '' }}>
-                                {{ __('Maintenance') }}
+                                {{ vehT('Maintenance', 'تعمیر', 'ترمیم') }}
                             </option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Odometer (km)') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Odometer (km)', 'کیلومتراژ (کم)', 'اودومیټر (کم)') }}
+                        </label>
                         <input type="number" name="odometer" value="{{ old('odometer', 0) }}" min="0"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Features') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Features', 'ویژگی‌ها', 'ځانګړنې') }}
+                        </label>
                         <input type="text" name="features" value="{{ old('features') }}"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="{{ __('GPS, Bluetooth, Sunroof, Backup Camera') }}">
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Comma-separated list of features') }}</p>
+                            placeholder="{{ vehT('GPS, Bluetooth, Sunroof, Backup Camera', 'GPS، بلوتوث، سان‌روف، دوربین عقب', 'GPS، بلوتوث، سن‌روف، شاتنی کیمره') }}">
+                        <p class="text-xs text-gray-400 mt-1">
+                            {{ vehT('Comma-separated list of features', 'لیست ویژگی‌ها با کاما جدا شده', 'د ځانګړنو لیست چې د کوما سره جلا شوی') }}
+                        </p>
                     </div>
 
                     <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Description') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ vehT('Description', 'توضیحات', 'تفصیل') }}
+                        </label>
                         <textarea name="description" rows="3"
                             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="{{ __('Optional vehicle description...') }}">{{ old('description') }}</textarea>
+                            placeholder="{{ vehT('Optional vehicle description...', 'توضیحات اختیاری موتر...', 'اختیاري د موټر تفصیل...') }}">{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
 
             {{-- ─── Images ──────────────────────────────────────────────────────── --}}
             <div class="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 class="font-semibold text-gray-900 mb-5">{{ __('Images') }}</h3>
+                <h3 class="font-semibold text-gray-900 mb-5">
+                    {{ vehT('Images', 'تصاویر', 'انځورونه') }}
+                </h3>
 
                 <div class="space-y-4">
                     {{-- Thumbnail --}}
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2">{{ __('Thumbnail (Main Photo)') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ vehT('Thumbnail (Main Photo)', 'عکس اصلی', 'اصلي انځور') }}
+                        </label>
                         <input type="file" name="thumbnail" accept="image/*"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Will be resized to 800×600. Max 5MB.') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            {{ vehT('Will be resized to 800×600. Max 5MB.', 'به اندازه ۸۰۰×۶۰۰ تغییر اندازه می‌شود. حداکثر ۵ مگابایت.', 'اندازه به 800×600 بدلیږي. اعظمي ۵ MB.') }}
+                        </p>
                     </div>
 
                     {{-- Gallery --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Gallery Images') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ vehT('Gallery Images', 'تصاویر گالری', 'د ګالري انځورونه') }}
+                        </label>
                         <input type="file" name="images[]" accept="image/*" multiple @change="handleImages($event)"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Up to 10 images. Each max 5MB.') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            {{ vehT('Up to 10 images. Each max 5MB.', 'حداکثر ۱۰ تصویر. هر کدام حداکثر ۵ مگابایت.', 'تر ۱۰ انځورونو پورې. هر یو اعظمي ۵ MB.') }}
+                        </p>
 
                         {{-- Preview --}}
                         <div class="flex flex-wrap gap-3 mt-3">
@@ -220,13 +271,15 @@
             {{-- ─── Pricing Rules ───────────────────────────────────────────────── --}}
             <div class="bg-white rounded-xl border border-gray-200 p-6">
                 <div class="flex items-center justify-between mb-5">
-                    <h3 class="font-semibold text-gray-900">{{ __('Pricing Rules') }}</h3>
+                    <h3 class="font-semibold text-gray-900">
+                        {{ vehT('Pricing Rules', 'قوانین قیمت‌گذاری', 'د نرخونو قواعد') }}
+                    </h3>
                     <button type="button" @click="addRule()"
                         class="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        {{ __('Add Rule') }}
+                        {{ vehT('Add Rule', 'افزودن قانون', 'قاعده زیاتول') }}
                     </button>
                 </div>
 
@@ -237,20 +290,23 @@
 
                             {{-- Type --}}
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Type') }}</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    {{ vehT('Type', 'نوع', 'ډول') }}
+                                </label>
                                 <select :name="`pricing_rules[${i}][type]`" x-model="rule.type"
                                     class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                                    <option value="hourly">{{ __('Hourly') }}</option>
-                                    <option value="daily">{{ __('Daily') }}</option>
-                                    <option value="weekly">{{ __('Weekly') }}</option>
-                                    <option value="monthly">{{ __('Monthly') }}</option>
+                                    <option value="hourly">{{ vehT('Hourly', 'ساعتی', 'ساعتی') }}</option>
+                                    <option value="daily">{{ vehT('Daily', 'روزانه', 'ورځنی') }}</option>
+                                    <option value="weekly">{{ vehT('Weekly', 'هفتگی', 'اونیز') }}</option>
+                                    <option value="monthly">{{ vehT('Monthly', 'ماهانه', 'میاشتنی') }}</option>
                                 </select>
                             </div>
 
                             {{-- Rate --}}
                             <div>
-                                <label
-                                    class="block text-xs font-medium text-gray-500 mb-1">{{ __('Base Rate (AFN)') }}</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    {{ vehT('Base Rate (AFN)', 'نرخ پایه (افغانی)', 'بنسټیز نرخ (افغانۍ)') }}
+                                </label>
                                 <input type="number" :name="`pricing_rules[${i}][base_rate]`" x-model="rule.base_rate"
                                     min="0" step="0.01" placeholder="0.00"
                                     class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
@@ -258,7 +314,9 @@
 
                             {{-- Multiplier --}}
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Multiplier') }}</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    {{ vehT('Multiplier', 'ضریب', 'مضرب') }}
+                                </label>
                                 <input type="number" :name="`pricing_rules[${i}][multiplier]`" x-model="rule.multiplier"
                                     min="0.01" max="99.99" step="0.01"
                                     class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
@@ -266,16 +324,18 @@
 
                             {{-- Date From --}}
                             <div>
-                                <label
-                                    class="block text-xs font-medium text-gray-500 mb-1">{{ __('From (optional)') }}</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    {{ vehT('From (optional)', 'از (اختیاری)', 'له (اختیاري)') }}
+                                </label>
                                 <input type="date" :name="`pricing_rules[${i}][date_from]`" x-model="rule.date_from"
                                     class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                             </div>
 
                             {{-- Date To --}}
                             <div>
-                                <label
-                                    class="block text-xs font-medium text-gray-500 mb-1">{{ __('To (optional)') }}</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">
+                                    {{ vehT('To (optional)', 'تا (اختیاری)', 'تر (اختیاري)') }}
+                                </label>
                                 <input type="date" :name="`pricing_rules[${i}][date_to]`" x-model="rule.date_to"
                                     class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                             </div>
@@ -283,13 +343,15 @@
                             {{-- Active + Remove --}}
                             <div class="flex items-end gap-2">
                                 <div class="flex-1">
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Active') }}</label>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">
+                                        {{ vehT('Active', 'فعال', 'فعال') }}
+                                    </label>
                                     <input type="hidden" :name="`pricing_rules[${i}][is_active]`" value="0">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" :name="`pricing_rules[${i}][is_active]`" value="1"
                                             x-model="rule.is_active"
                                             class="w-4 h-4 text-indigo-600 rounded border-gray-300">
-                                        <span class="text-sm text-gray-600">{{ __('Yes') }}</span>
+                                        <span class="text-sm text-gray-600">{{ vehT('Yes', 'بله', 'هو') }}</span>
                                     </label>
                                 </div>
                                 <button type="button" @click="removeRule(i)" x-show="rules.length > 1"
@@ -317,30 +379,35 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                     </svg>
-                    GPS Tracker
+                    {{ vehT('GPS Tracker', 'ردیاب GPS', 'GPS ردیاب') }}
                 </h3>
                 <p class="text-xs text-gray-500 mb-4">
-                    After creating the vehicle, go to the vehicle detail page to generate
-                    a GPS tracker URL for the Samsung phone in the car.
+                    {{ vehT(
+        'After creating the vehicle, go to the vehicle detail page to generate a GPS tracker URL for the Samsung phone in the car.',
+        'پس از ایجاد موتر، به صفحه جزئیات موتر بروید تا یک لینک ردیاب GPS برای گوشی سامسونگ در موتر ایجاد کنید.',
+        'د موټر له جوړیدو وروسته، د موټر تفصیل پاڼې ته لاړ شئ ترڅو په موټر کې د سامسونګ ګوشي لپاره د GPS ردیاب لینک جوړ کړئ.'
+    ) }}
                 </p>
                 <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700">
-                    <strong>How it works:</strong> A Samsung phone is placed in each car.
-                    It opens a special page in Chrome that sends GPS location every 5 minutes.
-                    No app installation needed.
+                    <strong>{{ vehT('How it works:', 'چگونه کار می‌کند:', 'دا څنګه کار کوي:') }}</strong>
+                    {{ vehT(
+        'A Samsung phone is placed in each car. It opens a special page in Chrome that sends GPS location every 5 minutes. No app installation needed.',
+        'یک گوشی سامسونگ در هر موتر قرار می‌گیرد. این صفحه‌ای خاص را در کروم باز می‌کند که هر ۵ دقیقه موقعیت GPS را ارسال می‌کند. نیازی به نصب برنامه نیست.',
+        'یو سامسونګ ګوشی په هر موټر کې ایښودل کیږي. دا په کروم کې یوه ځانګړې پاڼه خلاصوي چې هر ۵ دقیقې GPS موقعیت لیږي. د اپلیکیشن نصب کولو ته اړتیا نشته.'
+    ) }}
                 </div>
             </div>
 
             {{-- Submit --}}
             <div class="flex items-center gap-3">
-                <button type="submit" {{-- Submit --}} <div class="flex items-center gap-3">
-                    <button type="submit"
-                        class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
-                        {{ __('Create Vehicle') }}
-                    </button>
-                    <a href="{{ route('admin.vehicles.index') }}"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                        {{ __('Cancel') }}
-                    </a>
+                <button type="submit"
+                    class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+                    {{ vehT('Create Vehicle', 'ایجاد موتر', 'موټر جوړول') }}
+                </button>
+                <a href="{{ route('admin.vehicles.index') }}"
+                    class="px-6 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    {{ vehT('Cancel', 'لغو', 'لغول') }}
+                </a>
             </div>
 
         </form>

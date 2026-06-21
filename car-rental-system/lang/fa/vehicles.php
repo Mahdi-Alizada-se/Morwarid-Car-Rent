@@ -8,7 +8,7 @@ return [
     'add_vehicle' => 'افزودن وسیله نقلیه',
     'edit_vehicle' => 'ویرایش وسیله نقلیه',
     'all_vehicles' => 'همه وسایط نقلیه',
-    'manage_fleet' => 'مدیریت ناوگان شما',
+    'manage_fleet' => 'مدیریت مجموعه وسایط شما',
     'find_perfect_car' => 'ماشین مناسب سفر خود را پیدا کنید',
 
     // ─── Vehicle Fields ───────────────────────────────────────────────────────
@@ -16,7 +16,7 @@ return [
     'model' => 'مدل',
     'year' => 'سال',
     'category' => 'دسته‌بندی',
-    'license_plate' => 'شماره پلاک',
+    'license_plate' => 'شماره پلیت',
     'color' => 'رنگ',
     'seats' => 'تعداد صندلی',
     'fuel_type' => 'نوع سوخت',
@@ -119,13 +119,13 @@ return [
     'price_high_low' => 'قیمت: زیاد به کم',
     'clear_all_filters' => 'پاک کردن همه فیلترها',
     'search_placeholder' => 'جستجوی مارک، مدل...',
-    'search_admin_placeholder' => 'جستجوی مارک، مدل، پلاک...',
+    'search_admin_placeholder' => 'جستجوی مارک، مدل، پلیت...',
     'vehicles_found' => ':count وسیله نقلیه یافت شد',
 
     // ─── Specs ────────────────────────────────────────────────────────────────
     'specifications' => 'مشخصات فنی',
     'about_vehicle' => 'درباره این وسیله نقلیه',
-    'plate' => 'پلاک',
+    'plate' => 'پلیت',
 
     // ─── Basic Info Section ───────────────────────────────────────────────────
     'basic_information' => 'اطلاعات اساسی',
@@ -147,7 +147,12 @@ return [
     'no_vehicles_found' => 'وسیله نقلیه‌ای یافت نشد.',
     'add_first_vehicle' => 'اولین وسیله نقلیه خود را اضافه کنید.',
     'no_vehicles_customer' => 'وسیله نقلیه‌ای یافت نشد',
-    'try_adjusting_filters' => 'فیلترها را تغییر دهید',
+
+    'available_vehicles' => 'وسایط نقلیه موجود',
+    'browse_subtitle' => 'از مجموعه وسایط با کیفیت ما انتخاب کنید',
+    'all_transmissions' => 'همه گیربکس‌ها',
+    'not_available' => 'در دسترس نیست',
+    'try_different_filters' => 'فیلترهای مختلف را امتحان کنید',
 
     // ─── Success / Error Messages ─────────────────────────────────────────────
     'created_successfully' => 'وسیله نقلیه با موفقیت ایجاد شد.',
@@ -158,8 +163,31 @@ return [
 
     // ─── Validation Messages ──────────────────────────────────────────────────
     'fix_errors' => 'لطفاً خطاهای زیر را برطرف کنید:',
-    'plate_taken' => 'این شماره پلاک قبلاً ثبت شده است.',
+    'plate_taken' => 'این شماره پلیت قبلاً ثبت شده است.',
     'category_not_exist' => 'دسته‌بندی انتخاب شده وجود ندارد.',
     'year_min' => 'سال وسیله نقلیه باید ۱۹۹۰ یا بعد از آن باشد.',
+    'book_this_vehicle' => 'رزرو این وسیله نقلیه',
+    'login_to_book' => 'برای رزرو وارد شوید',
+    'not_available' => 'در دسترس نیست',
+    'try_different_filters' => 'فیلترهای مختلف را امتحان کنید',
+    'available_vehicles' => 'وسایط نقلیه موجود',
+    'browse_subtitle' => 'از موتر های با کیفیت ما انتخاب کنید',
+    'all_transmissions' => 'همه گیربکس‌ها',
+    // ─── Colors ───────────────────────────────────────────────────────────────────
+    'color_black' => 'سیاه',
+    'color_white' => 'سفید',
+    'color_silver' => 'نقره‌ای',
+    'color_gray' => 'خاکستری',
+    'color_red' => 'سرخ',
+    'color_blue' => 'آبی',
+    'color_green' => 'سبز',
+    'color_yellow' => 'زرد',
+    'color_orange' => 'نارنجی',
+    'color_brown' => 'قهوه‌ای',
+    'color_gold' => 'طلایی',
+    'color_beige' => 'کریمی',
+    'color_steel' => 'فولادی',
+    'color_pearl' => 'مرواریدی',
+    'color_maroon' => 'زرشکی',
 
 ];

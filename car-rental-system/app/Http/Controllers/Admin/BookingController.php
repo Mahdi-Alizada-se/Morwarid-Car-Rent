@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BookingController extends Controller
@@ -52,14 +54,6 @@ class BookingController extends Controller
         return view('admin.bookings.index', compact('bookings'));
     }
 
-
-
-    public function markFeePaid(Booking $booking): RedirectResponse
-    {
-        $booking->update(['cancellation_fee_paid' => true]);
-
-        return back()->with('success', 'Cancellation fee marked as paid.');
-    }
     // ─── Show ─────────────────────────────────────────────────────────────────
 
     public function show(Booking $booking): View
@@ -71,7 +65,7 @@ class BookingController extends Controller
 
     // ─── Update Status ────────────────────────────────────────────────────────
 
-    public function updateStatus(Request $request, Booking $booking)
+    public function updateStatus(Request $request, Booking $booking): RedirectResponse
     {
         $request->validate([
             'status' => ['required', 'in:pending,confirmed,active,completed,cancelled'],
@@ -89,9 +83,24 @@ class BookingController extends Controller
             default => $booking->update(['status' => $request->status]),
         };
 
+        // Clear chatbot cache so AI gets fresh booking data
+        Cache::flush();
+
         return redirect()
             ->route('admin.bookings.show', $booking)
-            ->with('success', __('Booking status updated successfully.'));
+            ->with('success', 'Booking status updated successfully.');
+    }
+
+    // ─── Mark Cancellation Fee As Paid ───────────────────────────────────────
+
+    public function markFeePaid(Booking $booking): RedirectResponse
+    {
+        $booking->update(['cancellation_fee_paid' => true]);
+
+        // Clear chatbot cache
+        Cache::flush();
+
+        return back()->with('success', 'Cancellation fee marked as paid.');
     }
 
     // ─── Calendar Data (JSON for FullCalendar) ────────────────────────────────
